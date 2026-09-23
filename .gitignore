@@ -1,0 +1,12 @@
+node_modules
+.next
+.turbo
+dist
+*.tsbuildinfo
+test-results
+playwright-report
+.env*
+!.env.example
+
+verification-logs/
+Untitled

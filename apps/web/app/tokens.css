@@ -1,0 +1,57 @@
+:root {
+  color-scheme: light;
+  --bg: #f5f6f1;
+  --surface: #ffffff;
+  --surface-subtle: #f7f8f3;
+  --ink: #15332d;
+  --ink-soft: #315846;
+  --muted: #64766d;
+  --muted-strong: #526c57;
+  --line: #dce4d9;
+  --green: #285f49;
+  --green-bright: #2d7950;
+  --lime: #c8ef88;
+  --accent-text: #47745c;
+  --danger: #aa4f42;
+  --warning: #9d7430;
+
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-display: Arial, Helvetica, sans-serif;
+  --font-mono: Consolas, 'Courier New', monospace;
+
+  /* Type scale — keep page surfaces on ≤10 sizes */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 22px;
+  --text-3xl: 36px;
+  --text-hero: clamp(56px, 6.3vw, 92px);
+  --text-section: clamp(39px, 4vw, 55px);
+  --text-tool: clamp(45px, 5vw, 70px);
+
+  /* Corner radii — keep ≤6 values in active use */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #101d18;
+  --surface: #182a22;
+  --surface-subtle: #1b3027;
+  --ink: #e7f2e7;
+  --ink-soft: #c5d9c8;
+  --muted: #a6bbaa;
+  --muted-strong: #b7cbb8;
+  --line: #355044;
+  --green: #7fc295;
+  --green-bright: #8fd4a0;
+  --lime: #b8e384;
+  --accent-text: #aad889;
+  --danger: #e09186;
+  --warning: #e0b86a;
+}

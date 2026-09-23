@@ -1,0 +1,19 @@
+{
+  "$format": "codeformattertools.xml.v1",
+  "nodes": [
+    {
+      "catalog": [
+        {
+          "item": [
+            {
+              "#text": "Book"
+            }
+          ],
+          ":@": {
+            "@_id": "1"
+          }
+        }
+      ]
+    }
+  ]
+}
