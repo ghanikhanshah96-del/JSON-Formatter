@@ -120,7 +120,7 @@ function converter(config: {
     input: { language: input, extensions: input === "yaml" ? [".yaml", ".yml"] : [`.${input}`] }, output: { language: output, extension: `.${output}` },
     options: [{ id: "mode", label: "Mode", type: "select", defaultValue: defaultMode, choices: [{ label: "Lossless", value: "lossless" }, { label: "Best effort", value: "best-effort" }, { label: "Compatibility", value: "compatibility" }] }],
     privacy: "local", worker: "tool-worker", inputLabel: `Input ${input.toUpperCase()}`, outputLabel: `Output ${output.toUpperCase()}`, buttonLabel: `Convert to ${output.toUpperCase()}`,
-    seo: { title: `${name} Online | Code Format Tools`, description: `${description} Processed privately in your browser, with clear warnings for mapping loss.` },
+    seo: { title: `${name} Online | CodeFormatterTools`, description: `${description} Processed privately in your browser, with clear warnings for mapping loss.` },
     about, howItWorks: [`Paste ${input.toUpperCase()} or open a file.`, "Choose Lossless, Best effort, or Compatibility mode.", "Convert, review warnings, then copy or download the result."],
     commonErrors, faq, relatedTools, example
   };
@@ -167,8 +167,8 @@ const toolDefinitions: Tool[] = [
     id: "json-formatter", slug: "json-formatter", name: "JSON Formatter", eyebrow: "FORMAT & READ", action: "format",
     description: "Turn dense JSON into clean, readable structure. Precise numbers and every key stay intact.",
     inputLabel: "Input JSON", outputLabel: "Formatted JSON", buttonLabel: "Format JSON",
-    seo: { title: "JSON Formatter & Validator Online | Code Format Tools", description: "Format JSON in your browser with precise numbers, duplicate key warnings, and clear errors. No upload required." },
-    about: "A JSON formatter adds consistent spacing and indentation so nested data is easier to inspect. Code Format Tools processes your input in a browser worker, preserving large numeric literals and duplicate keys rather than converting through ordinary JavaScript objects.",
+    seo: { title: "JSON Formatter & Validator Online | CodeFormatterTools", description: "Format JSON in your browser with precise numbers, duplicate key warnings, and clear errors. No upload required." },
+    about: "A JSON formatter adds consistent spacing and indentation so nested data is easier to inspect. CodeFormatterTools processes your input in a browser worker, preserving large numeric literals and duplicate keys rather than converting through ordinary JavaScript objects.",
     howItWorks: ["Paste JSON or open a .json file.", "Choose two spaces, four spaces, or tabs.", "Format, inspect warnings, then copy or download the result."],
     faq: [
       { question: "Does my JSON leave my browser?", answer: "No. Formatting runs in a browser worker. This site does not send your input to a server." },
@@ -181,7 +181,7 @@ const toolDefinitions: Tool[] = [
     id: "json-validator", slug: "json-validator", name: "JSON Validator", eyebrow: "CHECK SYNTAX", action: "validate",
     description: "Find syntax mistakes and duplicate keys with line and column details.",
     inputLabel: "Input JSON", outputLabel: "Validation result", buttonLabel: "Validate JSON",
-    seo: { title: "JSON Validator Online | Code Format Tools", description: "Validate JSON privately in your browser. See accurate syntax errors and duplicate key warnings." },
+    seo: { title: "JSON Validator Online | CodeFormatterTools", description: "Validate JSON privately in your browser. See accurate syntax errors and duplicate key warnings." },
     about: "JSON validation checks whether text follows strict JSON syntax. It catches missing commas, invalid quotes, trailing commas, and other structural errors before the data reaches an API or application.",
     howItWorks: ["Paste or upload JSON.", "Run validation.", "Use the line and column details to fix errors."],
     faq: [
@@ -199,7 +199,7 @@ const toolDefinitions: Tool[] = [
     id: "json-minifier", slug: "json-minifier", name: "JSON Minifier", eyebrow: "REMOVE WHITESPACE", action: "minify",
     description: "Remove unnecessary whitespace while preserving numbers and keys exactly.",
     inputLabel: "Input JSON", outputLabel: "Minified JSON", buttonLabel: "Minify JSON",
-    seo: { title: "JSON Minifier Online | Code Format Tools", description: "Minify JSON locally in your browser without changing large numeric values or dropping duplicate keys." },
+    seo: { title: "JSON Minifier Online | CodeFormatterTools", description: "Minify JSON locally in your browser without changing large numeric values or dropping duplicate keys." },
     about: "Minification removes spaces and line breaks that JSON parsers do not need. The result is easier to paste into compact fields or transfer as text.",
     howItWorks: ["Paste or upload valid JSON.", "Select Minify JSON.", "Copy or download the compact result."],
     faq: [
@@ -217,7 +217,7 @@ const toolDefinitions: Tool[] = [
     id: "json-sorter", slug: "json-sorter", name: "JSON Key Sorter", eyebrow: "ORGANIZE KEYS", action: "sort",
     description: "Sort object keys alphabetically at every level without changing numeric precision.",
     inputLabel: "Input JSON", outputLabel: "Sorted JSON", buttonLabel: "Sort JSON Keys",
-    seo: { title: "JSON Key Sorter Online | Code Format Tools", description: "Sort JSON object keys alphabetically in your browser, with precise number handling and duplicate key warnings." },
+    seo: { title: "JSON Key Sorter Online | CodeFormatterTools", description: "Sort JSON object keys alphabetically in your browser, with precise number handling and duplicate key warnings." },
     about: "Sorting keys makes objects easier to scan and compare. Arrays keep their original order, while object properties are sorted alphabetically at every nested level.",
     howItWorks: ["Paste or upload JSON.", "Choose indentation.", "Sort keys and copy the result."],
     faq: [
@@ -237,7 +237,7 @@ const toolDefinitions: Tool[] = [
     headline: "SQL Formatter", intro: ["Make SQL queries readable across twelve dialects, with control over casing and indentation."], sections: [], cardDescription: "Make SQL queries readable across twelve dialects, with control over casing and indentation.",
     input: { language: "sql", extensions: [".sql", ".txt"] }, output: { language: "sql", extension: ".sql" }, options: sqlOptions, privacy: "local", worker: "tool-worker",
     inputLabel: "Input SQL", outputLabel: "Formatted SQL", buttonLabel: "Format SQL",
-    seo: { title: "SQL Formatter Online — 12 Dialects | Code Format Tools", description: "Format SQL locally in your browser. Choose PostgreSQL, MySQL, SQL Server, BigQuery, Snowflake, SQLite, and more." },
+    seo: { title: "SQL Formatter Online — 12 Dialects | CodeFormatterTools", description: "Format SQL locally in your browser. Choose PostgreSQL, MySQL, SQL Server, BigQuery, Snowflake, SQLite, and more." },
     about: "SQL Formatter arranges query clauses and expressions for easier review. Choose the dialect that matches your database before formatting. The tool changes whitespace and optional keyword case; it does not validate whether a query is semantically correct or execute it.",
     howItWorks: ["Paste a query or open a .sql file.", "Choose the database dialect and formatting options.", "Format, review the output, then copy or download it."],
     commonErrors: [
@@ -256,7 +256,7 @@ const toolDefinitions: Tool[] = [
     id: "yaml-formatter", slug: "yaml-formatter", name: "YAML Formatter", eyebrow: "FORMAT CONFIG", action: "format",
     description: "Format YAML documents locally with bounded alias, merge, and nesting limits.",
     inputLabel: "Input YAML", outputLabel: "Formatted YAML", buttonLabel: "Format YAML",
-    seo: { title: "YAML Formatter Online | Code Format Tools", description: "Format YAML locally in your browser with explicit parser safety limits and clear syntax errors." },
+    seo: { title: "YAML Formatter Online | CodeFormatterTools", description: "Format YAML locally in your browser with explicit parser safety limits and clear syntax errors." },
     about: "YAML Formatter parses and rewrites YAML with consistent indentation. It supports streams, aliases, and merge keys within safety limits. It preserves anchor names and numeric scalar text, but removes comments, so review the result before replacing a source file.",
     howItWorks: ["Paste YAML or open a .yaml or .yml file.", "Choose indentation and format.", "Review the rewritten result before copying or downloading."],
     faq: [
@@ -269,7 +269,7 @@ const toolDefinitions: Tool[] = [
     id: "yaml-validator", slug: "yaml-validator", name: "YAML Validator", eyebrow: "CHECK YAML", action: "validate",
     description: "Check YAML syntax and safety limits with line and column details.",
     inputLabel: "Input YAML", outputLabel: "Validation result", buttonLabel: "Validate YAML",
-    seo: { title: "YAML Validator Online | Code Format Tools", description: "Validate YAML privately in your browser with line and column diagnostics and explicit safety limits." },
+    seo: { title: "YAML Validator Online | CodeFormatterTools", description: "Validate YAML privately in your browser with line and column diagnostics and explicit safety limits." },
     about: "YAML Validator checks syntax without rewriting the source. It also enforces limits on nesting, aliases, merge keys, and expanded nodes to keep untrusted input bounded.",
     howItWorks: ["Paste YAML or open a .yaml or .yml file.", "Run validation.", "Use the error location to fix syntax or reduce complexity."],
     faq: [
@@ -287,7 +287,7 @@ const toolDefinitions: Tool[] = [
     id: "xml-formatter", slug: "xml-formatter", name: "XML Formatter", eyebrow: "FORMAT MARKUP", action: "format",
     description: "Indent XML while retaining attributes, namespaces, comments, and CDATA.",
     inputLabel: "Input XML", outputLabel: "Formatted XML", buttonLabel: "Format XML",
-    seo: { title: "XML Formatter Online | Code Format Tools", description: "Format XML locally with safe entity handling, depth limits, and clear syntax diagnostics." },
+    seo: { title: "XML Formatter Online | CodeFormatterTools", description: "Format XML locally with safe entity handling, depth limits, and clear syntax diagnostics." },
     about: "XML Formatter parses and indents XML in a browser worker. DOCTYPE declarations and custom entities are blocked. Mixed text and elements stay unchanged because inserting whitespace could change their meaning.",
     howItWorks: ["Paste XML or open an .xml file.", "Choose indentation and format.", "Review the output before copying or downloading."],
     faq: [
@@ -299,7 +299,7 @@ const toolDefinitions: Tool[] = [
     id: "xml-validator", slug: "xml-validator", name: "XML Validator", eyebrow: "CHECK MARKUP", action: "validate",
     description: "Check XML structure and entity safety with source-location errors.",
     inputLabel: "Input XML", outputLabel: "Validation result", buttonLabel: "Validate XML",
-    seo: { title: "XML Validator Online | Code Format Tools", description: "Validate XML locally in your browser with clear errors and restricted entity processing." },
+    seo: { title: "XML Validator Online | CodeFormatterTools", description: "Validate XML locally in your browser with clear errors and restricted entity processing." },
     about: "XML Validator checks well-formed markup without changing the source. It rejects DOCTYPE declarations, custom entities, excessive nesting, and oversized tags.",
     howItWorks: ["Paste XML or open an .xml file.", "Run validation.", "Use the line and column diagnostic to correct the source."],
     faq: [
@@ -345,7 +345,7 @@ const toolDefinitions: Tool[] = [
   }),
   converter({
     id: "json-to-xml", name: "JSON to XML", description: "Map JSON objects to XML elements or restore a lossless XML envelope.", input: "json", output: "xml", category: "converters", defaultMode: "best-effort",
-    about: "Best effort maps one root key to an XML element, @keys to attributes, #text to text, and arrays to repeated elements. Lossless mode accepts a Code Format Tools XML envelope produced by XML to JSON.",
+    about: "Best effort maps one root key to an XML element, @keys to attributes, #text to text, and arrays to repeated elements. Lossless mode accepts a CodeFormatterTools XML envelope produced by XML to JSON.",
     example: '{"catalog":{"item":{"@id":"1","#text":"Book"}}}', relatedTools: ["xml-to-json", "xml-validator"],
     commonErrors: [
       { title: "Missing single root", description: "Best effort XML output needs one JSON object key to become the document root element." },
@@ -354,13 +354,13 @@ const toolDefinitions: Tool[] = [
     ],
     faq: [
       { question: "How do attributes work?", answer: "In best effort mode, object keys that begin with @ become XML attributes and #text becomes element text." },
-      { question: "When should I use Lossless mode?", answer: "Use it when you are converting back from a Code Format Tools XML envelope and need comments, CDATA, order, and attributes restored." },
+      { question: "When should I use Lossless mode?", answer: "Use it when you are converting back from a CodeFormatterTools XML envelope and need comments, CDATA, order, and attributes restored." },
       { question: "Can any JSON object become clean XML?", answer: "No. XML has element names, attributes, and one document root, so incompatible JSON structures produce diagnostics." }
     ]
   }),
   converter({
     id: "xml-to-json", name: "XML to JSON", description: "Map XML to readable JSON or a reversible structure envelope.", input: "xml", output: "json", category: "converters", defaultMode: "best-effort",
-    about: "Best effort maps attributes to @keys and repeated child elements to arrays. Lossless mode emits a Code Format Tools XML envelope that retains ordered nodes, attributes, comments, CDATA, and text for conversion back to XML.",
+    about: "Best effort maps attributes to @keys and repeated child elements to arrays. Lossless mode emits a CodeFormatterTools XML envelope that retains ordered nodes, attributes, comments, CDATA, and text for conversion back to XML.",
     example: '<order><line sku="BK-1">Book</line><line sku="PN-2">Pen</line></order>', relatedTools: ["json-to-xml", "xml-formatter"],
     commonErrors: [
       { title: "Comments and CDATA", description: "Readable JSON mappings do not keep comment nodes or CDATA boundaries unless you choose the lossless envelope." },
@@ -368,7 +368,7 @@ const toolDefinitions: Tool[] = [
       { title: "DOCTYPE declarations", description: "DOCTYPE and custom entity declarations are blocked before conversion for safety." }
     ],
     faq: [
-      { question: "What is the XML envelope?", answer: "It is a reversible JSON structure used by Code Format Tools to keep XML node order, attributes, comments, CDATA, and text." },
+      { question: "What is the XML envelope?", answer: "It is a reversible JSON structure used by CodeFormatterTools to keep XML node order, attributes, comments, CDATA, and text." },
       { question: "Why does best effort warn about mapping loss?", answer: "A readable object shape is easier to use, but it cannot represent every XML node boundary and ordering detail." },
       { question: "Does XML to JSON expand entities?", answer: "No. DOCTYPE is blocked and entity expansion is disabled before conversion." }
     ]

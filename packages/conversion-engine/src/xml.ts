@@ -55,7 +55,7 @@ export function toXml(value: Value, mode: string): { output: string; diagnostics
     const payload = toJs(value) as { $format?: string; nodes?: unknown };
     const format = String(payload?.$format ?? "");
     const supportedEnvelope = format === siteConfig.xmlEnvelopeFormat || siteConfig.legacyXmlEnvelopeFormats.some(legacy => legacy === format);
-    if (!payload || !supportedEnvelope || !Array.isArray(payload.nodes)) throw new Error("XML_ENVELOPE_REQUIRED: Lossless XML needs a Code Format Tools XML envelope with $format and nodes.");
+    if (!payload || !supportedEnvelope || !Array.isArray(payload.nodes)) throw new Error("XML_ENVELOPE_REQUIRED: Lossless XML needs a CodeFormatterTools XML envelope with $format and nodes.");
     const output = new XMLBuilder({ ...parserOptions, format: false }).build(payload.nodes).trim();
     const validity = runXml(output, "validate");
     if (!validity.ok) throw new Error("XML_OUTPUT_ERROR: " + validity.diagnostics[0]?.message);

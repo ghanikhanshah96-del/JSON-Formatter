@@ -21,7 +21,7 @@ test("CodeMirror editors expose accessible textbox names", async ({ page }) => {
   await expect(page.getByRole("textbox", { name: "Formatted JSON" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Format JSON|Processing/ })).toBeVisible();
   await page.getByRole("textbox", { name: "Input JSON" }).fill("{bad,}");
-  await expect(page.getByRole("status")).toBeVisible();
+  await expect(page.locator(".status-message")).toBeVisible();
   await expect(page.locator(".diagnostic.error")).toContainText(/JSON|Unexpected|Expected/i);
 });
 
@@ -56,7 +56,7 @@ for (const [path, sentinel] of [
     else if (path.includes("yaml")) await input.fill(`secret: ${sentinel}`);
     else if (path.includes("xml")) await input.fill(`<root>${sentinel}</root>`);
     else await input.fill(`{"secret":"${sentinel}"}`);
-    await expect(page.getByRole("status")).not.toContainText("Ready when you are");
+    await expect(page.locator(".status-message")).not.toContainText("Ready when you are");
     expect(requests.some(request => request.includes(sentinel))).toBe(false);
   });
 }

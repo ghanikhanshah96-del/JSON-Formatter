@@ -185,6 +185,7 @@ export function ToolShell({ tool }: { tool: Tool }) {
       processInput(text);
       return;
     }
+    const grew = text.length > inputRef.current.length + 20 || (inputRef.current.length === 0 && text.length > 0);
     ++requestRef.current;
     clearProcessingTimeout();
     stopAutoTimer();
@@ -193,14 +194,20 @@ export function ToolShell({ tool }: { tool: Tool }) {
     setMetrics(null);
     setDiagnostics([]);
     setStatus(statusForInput(text));
+    if (grew && text.trim()) track({ name: "tool_paste", tool: tool.id, inputSize: inputSizeBucket(encoder.encode(text).length) });
   };
   const onFile = async (file?: File) => {
     if (!file) return;
     const selectionId = ++requestRef.current;
     clearProcessingTimeout(); stopAutoTimer();
     if (file.size > MAX_EDITOR_INPUT_BYTES) {
-      setOutput(""); setMetrics(null); setStatus("error");
+      setInput("");
+      setOutput("");
+      setMetrics(null);
+      setStatus("error");
       setDiagnostics([tooLargeDiagnostic(file.size)]);
+      track({ name: "tool_error", tool: tool.id, action: tool.action, code: "input_too_large", inputSize: inputSizeBucket(file.size) });
+      if (fileRef.current) fileRef.current.value = "";
       return;
     }
     const text = await file.text();
@@ -214,13 +221,19 @@ export function ToolShell({ tool }: { tool: Tool }) {
   };
   const copy = async () => {
     if (!output) return;
-    try { await navigator.clipboard.writeText(output); setCopied(true); window.setTimeout(() => setCopied(false), 2000); }
+    try {
+      await navigator.clipboard.writeText(output);
+      setCopied(true);
+      track({ name: "tool_copy", tool: tool.id, action: tool.action });
+      window.setTimeout(() => setCopied(false), 2000);
+    }
     catch { setDiagnostics([{ severity: "error", code: "COPY_FAILED", message: "Clipboard access was denied. Select and copy the result manually." }]); }
   };
   const download = () => {
     if (!output) return;
     const url = URL.createObjectURL(new Blob([output], { type: downloadMime(tool.output.language) }));
     const anchor = document.createElement("a"); anchor.href = url; anchor.download = `${tool.slug}${tool.output.extension}`; anchor.click();
+    track({ name: "tool_download", tool: tool.id, action: tool.action });
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   const reset = () => {
@@ -235,7 +248,14 @@ export function ToolShell({ tool }: { tool: Tool }) {
   const showIdleEmpty = !output && !showWorkingOverlay;
 
   return <section className="tool-workspace container" aria-label={`${tool.name} application`}>
-    <div className="workspace-toolbar"><div className="workspace-label"><span className="workspace-icon">{`{ }`}</span><span>WORKSPACE</span><span className="workspace-sep">/</span><strong>{tool.name}</strong></div><div className="toolbar-options">
+    <div className="workspace-privacy-bar" aria-label="Runs in your browser. Never uploaded.">
+      <span className="privacy-lock" aria-hidden="true">◉</span>
+      <span className="privacy-bar-full">Runs in your browser · Never uploaded · Max {MAX_EDITOR_INPUT_LABEL}</span>
+      <span className="privacy-bar-short">Local · Never uploaded · {MAX_EDITOR_INPUT_LABEL}</span>
+    </div>
+    <div className="workspace-toolbar">
+      <div className="workspace-label"><span className="workspace-icon">{`{ }`}</span><span>WORKSPACE</span><span className="workspace-sep">/</span><strong>{tool.name}</strong></div>
+      <div className="toolbar-options">
       {visibleOptions.map(option => (
         option.type === "checkbox" ? (
           <label className="tool-option" key={option.id} htmlFor={`option-${option.id}`}>
@@ -283,7 +303,7 @@ export function ToolShell({ tool }: { tool: Tool }) {
         <span className="run-shortcut" title="Keyboard shortcut">Ctrl/⌘ + Enter</span>
       </div>
       <div className={`status-message ${status}`} role="status" aria-live="polite"><span className="status-dot" />{statusText}</div>
-      <span className="workspace-privacy">Your input stays in this browser · Max {MAX_EDITOR_INPUT_LABEL}</span>
+      <span className="workspace-privacy">Private by design · Runs locally · Never uploaded · Max {MAX_EDITOR_INPUT_LABEL}</span>
     </div>
     <DiagnosticPanel source={input} diagnostics={diagnostics} onFix={applyFix} />
   </section>;

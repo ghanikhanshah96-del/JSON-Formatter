@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTool, tools } from "@codeformattools/tool-registry";
-import { toolMetadata, toolSchemas } from "@codeformattools/seo";
+import { toolMetadata, toolSchemas, siteConfig } from "@codeformattools/seo";
 import { AdSlotPlaceholder } from "@/components/ad-slot-placeholder";
 import { ExampleSnippet } from "@/components/example-snippet";
 import { FaqAccordion } from "@/components/faq-accordion";
 import { RelatedTools } from "@/components/related-tools";
 import { SeoSections } from "@/components/seo-sections";
+import { ToolLandTracker } from "@/components/tool-land-tracker";
 import { ToolShell } from "@/components/tool-shell";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -32,13 +33,19 @@ export default async function ToolPage({ params }: Props) {
   const summary = tool.intro[0] ?? tool.description;
 
   return <main>
+    <ToolLandTracker toolId={tool.id} />
     {toolSchemas(tool).map((data, index) => <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />)}
-    <section className="tool-intro container">
+    <section className="tool-intro container tool-intro-compact">
       <div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><Link href={`/tools/${tool.category}`}>{tool.category === "converters" ? "Converters" : `${tool.category.toUpperCase()} tools`}</Link><span>/</span><strong>{tool.name}</strong></div>
       <div className="eyebrow"><span className="live-dot" /> {tool.eyebrow}</div>
       <h1>{tool.headline}<span className="title-accent">.</span></h1>
       <p className="tool-summary">{summary}</p>
-      <div className="trust-line"><span>100% browser based</span><span>No sign up</span><span>No data sent</span></div>
+      <div className="trust-line">
+        <span>Runs in your browser</span>
+        <span>Never uploaded</span>
+        <span>No signup</span>
+        <span>Up to {siteConfig.performance.maxInputLabel}</span>
+      </div>
     </section>
     <div id="workspace">
       <ToolShell tool={tool} />

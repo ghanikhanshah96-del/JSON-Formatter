@@ -17,10 +17,10 @@ test("file, indentation, copy, download, and reset work end to end", async ({ pa
   await page.locator('input[type="file"]').setInputFiles({ name: "sample.json", mimeType: "application/json", buffer: Buffer.from('{"a":1,"b":[2,3]}') });
   await pickThemeValue(page, "Indent", "4");
   await expect(page.locator(".output-pane .cm-content")).toContainText('"a": 1');
-  await page.getByRole("button", { name: "Copy" }).click();
+  await page.locator(".output-pane").getByRole("button", { name: /Copy/ }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('"a": 1');
   const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Download" }).click();
+  await page.locator(".output-pane").getByRole("button", { name: /Download/ }).click();
   expect((await download).suggestedFilename()).toBe("json-formatter.json");
   await page.getByRole("button", { name: /Reset/ }).click();
   await expect(page.locator(".output-pane .cm-content")).toBeEmpty();
@@ -31,7 +31,7 @@ test("large file enters guarded mode and can be run manually", async ({ page }) 
   const large = `{"data":"${"a".repeat(1_100_000)}"}`;
   await page.locator('input[type="file"]').setInputFiles({ name: "large.json", mimeType: "application/json", buffer: Buffer.from(large) });
   await expect(page.getByText("Large input — run manually")).toBeVisible();
-  await page.getByRole("button", { name: "Validate JSON" }).click();
+  await page.locator(".run-button").click();
   await expect(page.getByText("Valid input")).toBeVisible({ timeout: 20_000 });
 });
 
@@ -71,5 +71,6 @@ test("oversized file is rejected before it is read", async ({ page }) => {
   await page.goto("/json-validator");
   await page.locator('input[type="file"]').setInputFiles({ name: "too-large.json", mimeType: "application/json", buffer: Buffer.alloc(5 * 1024 * 1024 + 1, 97) });
   await expect(page.getByText(/The editor can process up to 5 MB/)).toBeVisible();
-  await expect(page.locator(".editor-pane").first().locator(".cm-content")).toBeEmpty();
+  const inputText = await page.locator(".editor-pane").first().locator(".cm-content").innerText();
+  expect(inputText.replace(/\u200b/g, "").replace("Paste or type JSON here...", "").trim()).toBe("");
 });

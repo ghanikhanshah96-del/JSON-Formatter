@@ -26,7 +26,34 @@ export type RelatedToolClickEvent = {
   from: ToolId;
   to: ToolId;
 };
-export type AnalyticsEvent = ToolExecutionEvent | ToolStartEvent | ToolErrorEvent | RelatedToolClickEvent;
+export type ToolLandEvent = {
+  name: "tool_land";
+  tool: ToolId;
+};
+export type ToolPasteEvent = {
+  name: "tool_paste";
+  tool: ToolId;
+  inputSize: ToolExecutionEvent["inputSize"];
+};
+export type ToolCopyEvent = {
+  name: "tool_copy";
+  tool: ToolId;
+  action: Action;
+};
+export type ToolDownloadEvent = {
+  name: "tool_download";
+  tool: ToolId;
+  action: Action;
+};
+export type AnalyticsEvent =
+  | ToolExecutionEvent
+  | ToolStartEvent
+  | ToolErrorEvent
+  | RelatedToolClickEvent
+  | ToolLandEvent
+  | ToolPasteEvent
+  | ToolCopyEvent
+  | ToolDownloadEvent;
 
 export function inputSizeBucket(bytes: number): ToolExecutionEvent["inputSize"] {
   if (bytes < 10_000) return "under_10kb";

@@ -39,10 +39,10 @@ test("SQL comments, file input, copy, download, and errors work", async ({ page,
   await page.locator('input[type="file"]').setInputFiles({ name: "query.sql", mimeType: "text/plain", buffer: Buffer.from("-- keep this comment\nselect id from users where id = ?;") });
   await expect(page.locator(".output-pane .cm-content")).toContainText("-- keep this comment");
   await expect(page.locator(".output-pane .cm-content")).toContainText("?");
-  await page.getByRole("button", { name: "Copy" }).click();
+  await page.locator(".output-pane").getByRole("button", { name: /Copy/ }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("SELECT");
   const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Download" }).click();
+  await page.locator(".output-pane").getByRole("button", { name: /Download/ }).click();
   expect((await download).suggestedFilename()).toBe("sql-formatter.sql");
   await page.locator(".editor-pane").first().locator(".cm-content").fill("select 'unclosed");
   await expect(page.locator(".diagnostic.error")).toContainText(/line 1, column/);

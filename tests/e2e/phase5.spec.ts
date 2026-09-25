@@ -52,7 +52,7 @@ test("CSV category, file download, and mobile layout work", async ({ page }) => 
   await page.locator('input[type="file"]').setInputFiles({ name: "sample.csv", mimeType: "text/csv", buffer: Buffer.from("name\nAisha") });
   await expect(page.locator(".output-pane .cm-content")).toContainText("Aisha");
   const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Download" }).click();
+  await page.locator(".output-pane").getByRole("button", { name: /Download/ }).click();
   expect((await download).suggestedFilename()).toBe("csv-to-json.json");
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
 });

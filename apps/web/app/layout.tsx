@@ -25,11 +25,46 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <html lang="en" suppressHydrationWarning><body>
     <header className="site-header"><div className="container header-inner">
-      <HomeBrandLink className="brand" aria-label={`${siteConfig.name} home`}><span className="brand-mark">{`{ }`}</span><span>Code Format Tools<span className="brand-dot">.</span></span></HomeBrandLink>
-      <nav className="top-nav" aria-label="Primary navigation"><Link href="/#tools">All tools</Link><Link href="/about">About</Link><Link href="/privacy">Privacy</Link><ThemeToggle /></nav>
+      <HomeBrandLink className="brand" aria-label={`${siteConfig.name} home`}>
+        <span className="brand-mark">{`{ }`}</span>
+        <span className="brand-text">
+          <span className="brand-text-full">{siteConfig.name}</span>
+          <span className="brand-text-compact" aria-hidden="true">CFT</span>
+          <span className="brand-dot">.</span>
+        </span>
+      </HomeBrandLink>
+      <nav className="top-nav" aria-label="Primary navigation">
+        <Link href="/#tools">Tools</Link>
+        <Link href="/learn">Learn</Link>
+        <Link href="/about">About</Link>
+        <Link href="/privacy">Privacy</Link>
+        <Link href="/contact">Contact</Link>
+        <ThemeToggle />
+      </nav>
     </div></header>
     {children}
-    <footer className="site-footer"><div className="container footer-inner"><div><HomeBrandLink className="brand footer-brand" aria-label={`${siteConfig.name} home`}><span className="brand-mark">{`{ }`}</span><span>Code Format Tools<span className="brand-dot">.</span></span></HomeBrandLink><p>Useful tools. Your data stays yours.</p></div><div className="footer-links"><Link href="/about">About</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/contact">Contact</Link></div></div></footer>
+    <footer className="site-footer"><div className="container footer-inner">
+      <div>
+        <HomeBrandLink className="brand footer-brand" aria-label={`${siteConfig.name} home`}>
+          <span className="brand-mark">{`{ }`}</span>
+          <span className="brand-text">
+            <span className="brand-text-full">{siteConfig.name}</span>
+            <span className="brand-text-compact" aria-hidden="true">CFT</span>
+            <span className="brand-dot">.</span>
+          </span>
+        </HomeBrandLink>
+        <p>Useful tools. Runs in your browser. Never uploaded.</p>
+      </div>
+      <div className="footer-links">
+        <Link href="/#tools">Tools</Link>
+        <Link href="/learn">Learn</Link>
+        <Link href="/performance">Performance</Link>
+        <Link href="/about">About</Link>
+        <Link href="/privacy">Privacy</Link>
+        <Link href="/terms">Terms</Link>
+        <Link href="/contact">Contact</Link>
+      </div>
+    </div></footer>
     <Observability />
   </body></html>;
 }

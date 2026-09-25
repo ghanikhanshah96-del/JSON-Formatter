@@ -26,7 +26,7 @@ test("production metadata, assets, sitemap, robots, and manifest are coherent", 
   const manifest = await request.get("/manifest.webmanifest");
   expect(manifest.ok()).toBe(true);
   const manifestJson = await manifest.json();
-  expect(manifestJson.name).toBe("Code Format Tools");
+  expect(manifestJson.name).toBe("CodeFormatterTools");
   expect(manifestJson.short_name).toBe("CodeFormatterTools");
   expect(manifestJson.icons.some((icon: { sizes?: string }) => icon.sizes === "192x192")).toBe(true);
   expect(manifestJson.icons.some((icon: { sizes?: string }) => icon.sizes === "512x512")).toBe(true);
@@ -61,6 +61,6 @@ test("file upload and download work in production build", async ({ page }) => {
   await page.locator('input[type="file"]').setInputFiles({ name: "sample.json", mimeType: "application/json", buffer: Buffer.from('{"download":true}') });
   await expect(page.locator(".output-pane .cm-content")).toContainText('"download": true');
   const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Download" }).click();
+  await page.locator(".output-pane").getByRole("button", { name: /Download/ }).click();
   expect((await download).suggestedFilename()).toBe("json-formatter.json");
 });
