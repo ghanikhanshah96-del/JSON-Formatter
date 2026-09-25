@@ -3,7 +3,7 @@ export const siteConfig = {
   shortName: "CodeFormatterTools",
   domain: "codeformattertools.com",
   url: "https://codeformattertools.com",
-  description: "Fast, private developer tools for formatting, validating, minifying, sorting, and converting structured data.",
+  description: "Use free online developer tools to format, validate, minify, and convert JSON, XML, YAML, SQL, CSV, and other data formats.",
   storagePrefix: "codeformattertools",
   legacyStoragePrefixes: ["codeformattools", "formatbase"],
   xmlEnvelopeFormat: "codeformattertools.xml.v1",

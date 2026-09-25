@@ -4,7 +4,7 @@ test("tool pages have server rendered metadata and working JSON processing", asy
   await page.goto("/json-formatter");
   await expect(page).toHaveTitle(/JSON Formatter/);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/json-formatter$/);
-  await expect(page.getByRole("heading", { name: "JSON Formatter." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "JSON Formatter Online." })).toBeVisible();
   const input = page.locator(".editor-pane").first().locator(".cm-content");
   await input.fill('{"id":9123372036854000123,"a":1,"a":2}');
   await expect(page.getByText("Completed with warnings")).toBeVisible();
@@ -58,7 +58,7 @@ test("homepage stays within its initial script budget", async ({ page }) => {
 test("registry category navigation reaches all JSON tools", async ({ page }) => {
   await page.goto("/tools/json");
   await expect(page.getByRole("heading", { name: "JSON tools." })).toBeVisible();
-  for (const name of ["JSON Formatter", "JSON Validator", "JSON Minifier", "JSON Key Sorter"]) {
+  for (const name of ["JSON Formatter", "JSON Validator", "JSON Minifier", "JSON Sorter"]) {
     await expect(page.getByRole("link", { name: new RegExp(name) })).toBeVisible();
   }
 });

@@ -1,4 +1,5 @@
 import type { Tool } from "@codeformattools/tool-registry";
+import { homeSeoCopy, tools } from "@codeformattools/tool-registry";
 import { siteConfig } from "./site-config.ts";
 
 export { contactEmail, siteConfig } from "./site-config.ts";
@@ -21,11 +22,12 @@ export function toolMetadata(tool: Tool) {
 }
 
 export function toolSchemas(tool: Tool) {
+  const categoryLabel = tool.category === "converters" ? "Converters" : `${tool.category.toUpperCase()} tools`;
   return [
     { "@context": "https://schema.org", "@type": "WebApplication", name: tool.name, description: tool.seo.description, url: `${siteOrigin()}/${tool.slug}`, applicationCategory: "DeveloperApplication", operatingSystem: "Any", publisher: { "@type": "Organization", name: siteConfig.name, url: siteOrigin() }, offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } },
     { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: siteOrigin() },
-      { "@type": "ListItem", position: 2, name: `${tool.category.toUpperCase()} tools`, item: `${siteOrigin()}/tools/${tool.category}` },
+      { "@type": "ListItem", position: 2, name: categoryLabel, item: `${siteOrigin()}/tools/${tool.category}` },
       { "@type": "ListItem", position: 3, name: tool.name, item: `${siteOrigin()}/${tool.slug}` }
     ] },
     { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: tool.faq.map(item => ({ "@type": "Question", name: item.question, acceptedAnswer: { "@type": "Answer", text: item.answer } })) }
@@ -34,7 +36,28 @@ export function toolSchemas(tool: Tool) {
 
 export function homeSchemas() {
   return [
-    { "@context": "https://schema.org", "@type": "WebSite", name: siteConfig.name, url: siteOrigin(), description: siteConfig.description },
-    { "@context": "https://schema.org", "@type": "Organization", name: siteConfig.name, url: siteOrigin(), logo: `${siteOrigin()}/icon.svg` }
+    { "@context": "https://schema.org", "@type": "WebSite", name: siteConfig.name, url: siteOrigin(), description: homeSeoCopy.seo.description },
+    { "@context": "https://schema.org", "@type": "Organization", name: siteConfig.name, url: siteOrigin(), logo: `${siteOrigin()}/icon.svg` },
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `${siteConfig.name} developer tools`,
+      numberOfItems: tools.length,
+      itemListElement: tools.map((tool, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: tool.name,
+        url: `${siteOrigin()}/${tool.slug}`
+      }))
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: homeSeoCopy.faq.map(item => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: { "@type": "Answer", text: item.answer }
+      }))
+    }
   ];
 }

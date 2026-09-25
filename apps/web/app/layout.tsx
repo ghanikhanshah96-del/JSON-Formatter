@@ -12,7 +12,7 @@ if (process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION) verification.other = { "msva
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin()),
-  title: { default: `${siteConfig.name} - Private developer tools`, template: "%s" },
+  title: { default: "Free Online Developer Tools | Format, Validate & Convert", template: "%s" },
   description: siteConfig.description,
   applicationName: siteConfig.name,
   icons: { icon: "/icon.svg", apple: "/apple-touch-icon.png" },

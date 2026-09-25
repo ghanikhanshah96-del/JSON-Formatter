@@ -1,4 +1,8 @@
 import type { Action, EditorLanguage, EngineId, OptionValue, ToolId } from "@codeformattools/tool-core";
+import { toolSeoCopy, type SeoContentSection } from "./seo-copy.ts";
+
+export type { HomeSeoCopy, SeoContentSection, ToolSeoCopy } from "./seo-copy.ts";
+export { homeSeoCopy, toolSeoCopy } from "./seo-copy.ts";
 
 export type ToolOption = {
   id: string;
@@ -13,8 +17,10 @@ export type Tool = {
   id: ToolId;
   slug: ToolId;
   name: string;
+  headline: string;
   eyebrow: string;
   description: string;
+  intro: string[];
   category: string;
   engine: EngineId;
   operations: Action[];
@@ -29,11 +35,14 @@ export type Tool = {
   buttonLabel: string;
   seo: { title: string; description: string };
   about: string;
+  cardDescription: string;
   howItWorks: string[];
+  sections: SeoContentSection[];
   commonErrors: { title: string; description: string }[];
   faq: { question: string; answer: string }[];
   relatedTools: ToolId[];
   example: string;
+  cta?: { heading: string; paragraphs: string[] };
 };
 
 const example = '{"project":"codeformattertools","version":1,"features":["private","fast","precise"],"active":true}';
@@ -44,8 +53,28 @@ const jsonErrors = [
 ];
 const jsonIndentation: ToolOption = { id: "indentation", label: "Indent", type: "select", defaultValue: 2, choices: [{ label: "2 spaces", value: 2 }, { label: "4 spaces", value: 4 }, { label: "Tab", value: "tab" }], actions: ["format", "sort"] };
 const yamlIndentation: ToolOption = { id: "indentation", label: "Indent", type: "select", defaultValue: 2, choices: [{ label: "2 spaces", value: 2 }, { label: "4 spaces", value: 4 }], actions: ["format"] };
-function jsonTool(tool: Omit<Tool, "category" | "engine" | "operations" | "input" | "output" | "options" | "privacy" | "worker" | "commonErrors"> & { commonErrors?: Tool["commonErrors"] }): Tool {
-  return { ...tool, category: "json", engine: "json", operations: [tool.action], input: { language: "json", extensions: [".json"] }, output: { language: "json", extension: ".json" }, options: [jsonIndentation], commonErrors: tool.commonErrors ?? jsonErrors, privacy: "local", worker: "tool-worker" };
+type ToolDraft = Omit<Tool, "category" | "engine" | "operations" | "input" | "output" | "options" | "privacy" | "worker" | "commonErrors" | "headline" | "intro" | "sections" | "cta" | "cardDescription"> & {
+  commonErrors?: Tool["commonErrors"];
+  headline?: string;
+  intro?: string[];
+  sections?: SeoContentSection[];
+  cta?: Tool["cta"];
+  cardDescription?: string;
+};
+
+function withContentDefaults<T extends ToolDraft>(tool: T): T & Pick<Tool, "headline" | "intro" | "sections" | "cardDescription"> {
+  return {
+    ...tool,
+    headline: tool.headline ?? tool.name,
+    intro: tool.intro ?? [tool.description],
+    sections: tool.sections ?? [],
+    cardDescription: tool.cardDescription ?? tool.description
+  };
+}
+
+function jsonTool(tool: ToolDraft): Tool {
+  const base = withContentDefaults(tool);
+  return { ...base, category: "json", engine: "json", operations: [tool.action], input: { language: "json", extensions: [".json"] }, output: { language: "json", extension: ".json" }, options: [jsonIndentation], commonErrors: tool.commonErrors ?? jsonErrors, privacy: "local", worker: "tool-worker" };
 }
 
 const sqlOptions: ToolOption[] = [
@@ -66,16 +95,18 @@ const yamlErrors = [
   { title: "Aliases and merges", description: "Aliases and merge keys are supported within explicit safety limits." },
   { title: "Multiple documents", description: "A YAML stream may contain documents separated by --- markers, up to the tool's safety limit." }
 ];
-function yamlTool(tool: Omit<Tool, "category" | "engine" | "operations" | "input" | "output" | "options" | "privacy" | "worker" | "commonErrors"> & { commonErrors?: Tool["commonErrors"] }): Tool {
-  return { ...tool, category: "yaml", engine: "yaml", operations: [tool.action], input: { language: "yaml", extensions: [".yaml", ".yml"] }, output: { language: "yaml", extension: ".yaml" }, options: yamlOptions, commonErrors: tool.commonErrors ?? yamlErrors, privacy: "local", worker: "tool-worker" };
+function yamlTool(tool: ToolDraft): Tool {
+  const base = withContentDefaults(tool);
+  return { ...base, category: "yaml", engine: "yaml", operations: [tool.action], input: { language: "yaml", extensions: [".yaml", ".yml"] }, output: { language: "yaml", extension: ".yaml" }, options: yamlOptions, commonErrors: tool.commonErrors ?? yamlErrors, privacy: "local", worker: "tool-worker" };
 }
 const xmlErrors = [
   { title: "Unclosed tag", description: "Every opening element needs a matching closing tag, unless it is self-closing." },
   { title: "DOCTYPE or entity", description: "DOCTYPE declarations and custom entities are blocked. Use standard XML entities only." },
   { title: "Mixed content", description: "Whitespace around inline text and child elements can be meaningful, so the formatter leaves mixed content unchanged." }
 ];
-function xmlTool(tool: Omit<Tool, "category" | "engine" | "operations" | "input" | "output" | "options" | "privacy" | "worker" | "commonErrors"> & { commonErrors?: Tool["commonErrors"] }): Tool {
-  return { ...tool, category: "xml", engine: "xml", operations: [tool.action], input: { language: "xml", extensions: [".xml"] }, output: { language: "xml", extension: ".xml" }, options: [jsonIndentation], commonErrors: tool.commonErrors ?? xmlErrors, privacy: "local", worker: "tool-worker" };
+function xmlTool(tool: ToolDraft): Tool {
+  const base = withContentDefaults(tool);
+  return { ...base, category: "xml", engine: "xml", operations: [tool.action], input: { language: "xml", extensions: [".xml"] }, output: { language: "xml", extension: ".xml" }, options: [jsonIndentation], commonErrors: tool.commonErrors ?? xmlErrors, privacy: "local", worker: "tool-worker" };
 }
 function converter(config: {
   id: string; name: string; description: string; input: "json" | "yaml" | "xml" | "csv"; output: "json" | "yaml" | "xml" | "csv";
@@ -85,7 +116,8 @@ function converter(config: {
   const { id, name, description, input, output, category, defaultMode, about, example, relatedTools, commonErrors, faq } = config;
   return {
     id, slug: id, name, eyebrow: "CONVERT DATA", category, engine: "conversion", operations: ["convert"], action: "convert",
-    description, input: { language: input, extensions: input === "yaml" ? [".yaml", ".yml"] : [`.${input}`] }, output: { language: output, extension: `.${output}` },
+    description, cardDescription: description, headline: name, intro: [description], sections: [],
+    input: { language: input, extensions: input === "yaml" ? [".yaml", ".yml"] : [`.${input}`] }, output: { language: output, extension: `.${output}` },
     options: [{ id: "mode", label: "Mode", type: "select", defaultValue: defaultMode, choices: [{ label: "Lossless", value: "lossless" }, { label: "Best effort", value: "best-effort" }, { label: "Compatibility", value: "compatibility" }] }],
     privacy: "local", worker: "tool-worker", inputLabel: `Input ${input.toUpperCase()}`, outputLabel: `Output ${output.toUpperCase()}`, buttonLabel: `Convert to ${output.toUpperCase()}`,
     seo: { title: `${name} Online | Code Format Tools`, description: `${description} Processed privately in your browser, with clear warnings for mapping loss.` },
@@ -94,7 +126,43 @@ function converter(config: {
   };
 }
 
-export const tools: Tool[] = [
+function withPrivacyFaq(faq: Tool["faq"]): Tool["faq"] {
+  const hasPrivacy = faq.some(item =>
+    /does my (data|json|yaml|xml|csv|sql|input).*leave|upload|not sent|stays in (your )?browser|processed locally/i.test(
+      `${item.question} ${item.answer}`
+    )
+  );
+  if (hasPrivacy) return faq;
+  return [
+    {
+      question: "Does my data leave the browser?",
+      answer: "No. Processing runs in a browser worker on your device. This site does not upload, store, or log your input."
+    },
+    ...faq
+  ];
+}
+
+function applySeoCopy(tool: Tool): Tool {
+  const copy = toolSeoCopy[tool.id];
+  if (!copy) return { ...tool, cardDescription: tool.cardDescription || tool.description, faq: withPrivacyFaq(tool.faq) };
+  return {
+    ...tool,
+    name: copy.name,
+    headline: copy.headline,
+    cardDescription: tool.cardDescription || tool.description,
+    description: copy.description,
+    intro: copy.intro,
+    about: copy.about,
+    howItWorks: copy.howItWorks,
+    sections: copy.sections,
+    faq: withPrivacyFaq(copy.faq),
+    relatedTools: copy.relatedTools,
+    seo: copy.seo,
+    cta: copy.cta
+  };
+}
+
+const toolDefinitions: Tool[] = [
   jsonTool({
     id: "json-formatter", slug: "json-formatter", name: "JSON Formatter", eyebrow: "FORMAT & READ", action: "format",
     description: "Turn dense JSON into clean, readable structure. Precise numbers and every key stay intact.",
@@ -166,6 +234,7 @@ export const tools: Tool[] = [
   {
     id: "sql-formatter", slug: "sql-formatter", name: "SQL Formatter", eyebrow: "FORMAT QUERIES", category: "sql", engine: "sql", operations: ["format"], action: "format",
     description: "Make SQL queries readable across twelve dialects, with control over casing and indentation.",
+    headline: "SQL Formatter", intro: ["Make SQL queries readable across twelve dialects, with control over casing and indentation."], sections: [], cardDescription: "Make SQL queries readable across twelve dialects, with control over casing and indentation.",
     input: { language: "sql", extensions: [".sql", ".txt"] }, output: { language: "sql", extension: ".sql" }, options: sqlOptions, privacy: "local", worker: "tool-worker",
     inputLabel: "Input SQL", outputLabel: "Formatted SQL", buttonLabel: "Format SQL",
     seo: { title: "SQL Formatter Online — 12 Dialects | Code Format Tools", description: "Format SQL locally in your browser. Choose PostgreSQL, MySQL, SQL Server, BigQuery, Snowflake, SQLite, and more." },
@@ -336,13 +405,15 @@ export const tools: Tool[] = [
   })
 ];
 
+export const tools: Tool[] = toolDefinitions.map(applySeoCopy);
+
 export const categories = [
-  { id: "json", name: "JSON tools", description: "Format, validate, minify, and organize JSON privately in your browser." },
-  { id: "sql", name: "SQL tools", description: "Format SQL queries locally with controls for dialect, casing, and layout." },
-  { id: "yaml", name: "YAML tools", description: "Format and validate YAML locally with explicit parser safety limits." },
-  { id: "xml", name: "XML tools", description: "Format and validate XML locally with restricted entity processing." },
-  { id: "csv", name: "CSV tools", description: "Convert CSV and JSON while preserving cell text or choosing type inference." },
-  { id: "converters", name: "Converters", description: "Convert between JSON, YAML, and XML with explicit mapping choices." }
+  { id: "json", name: "JSON tools", description: "Format, validate, minify, and sort JSON online in your browser — free, with no upload required." },
+  { id: "sql", name: "SQL tools", description: "Format SQL queries online across common database dialects with clear layout and casing controls." },
+  { id: "yaml", name: "YAML tools", description: "Format and validate YAML configuration files locally with explicit parser safety limits." },
+  { id: "xml", name: "XML tools", description: "Format and validate XML documents locally with restricted entity processing and clear errors." },
+  { id: "csv", name: "CSV tools", description: "Convert CSV and JSON for spreadsheets and APIs while preserving cell text or choosing type inference." },
+  { id: "converters", name: "Converters", description: "Convert between JSON, YAML, and XML online with explicit lossless or best-effort mapping modes." }
 ] as const;
 export function getTool(slug: string): Tool | undefined { return tools.find(tool => tool.slug === slug); }
 export function getToolById(id: ToolId): Tool | undefined { return tools.find(tool => tool.id === id); }

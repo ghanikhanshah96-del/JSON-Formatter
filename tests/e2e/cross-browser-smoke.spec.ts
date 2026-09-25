@@ -3,7 +3,7 @@ import { expectThemeOptionAbsent } from "./theme-select";
 
 test("core formatter flow works across browsers", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /Make sense of/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Free Online Developer Tools/ })).toBeVisible();
   await page.goto("/json-formatter");
   await page.getByRole("textbox", { name: "Input JSON" }).fill('{"id":9123372036854000123}');
   await expect(page.locator(".output-pane .cm-content")).toContainText("9123372036854000123");

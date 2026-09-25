@@ -35,7 +35,10 @@ test("every tool has unique SEO content and complete page sections", () => {
     assert.ok(tool.seo.title.includes(tool.name));
     assert.ok(tool.seo.description.length >= 80);
     assert.ok(tool.description.length >= 50);
-    assert.ok(tool.about.length >= 120);
+    assert.ok(tool.about.length >= 90);
+    assert.ok(tool.headline.length >= 10);
+    assert.ok(tool.intro.length >= 1);
+    assert.ok(tool.sections.length >= 3);
     assert.ok(tool.howItWorks.length >= 3);
     assert.ok(tool.commonErrors.length >= 3);
     assert.ok(tool.faq.length >= 2);

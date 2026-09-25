@@ -44,7 +44,7 @@ export function ToolsGrid({ tools, categories }: { tools: Tool[]; categories: re
             </div>
             <div className="card-eyebrow">{tool.eyebrow}</div>
             <h3>{tool.name}</h3>
-            <p>{tool.description}</p>
+            <p>{tool.cardDescription}</p>
             <span className="card-link">Open tool <span aria-hidden="true">→</span></span>
           </Link>
         ))}

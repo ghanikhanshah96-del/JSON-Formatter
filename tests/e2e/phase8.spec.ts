@@ -16,5 +16,5 @@ test("related-tool clicks remain navigable and measurable", async ({ page }) => 
   await page.goto("/json-formatter");
   await page.locator(".related").getByRole("link", { name: /JSON Validator/ }).click();
   await expect(page).toHaveURL(/\/json-validator$/);
-  await expect(page.getByRole("heading", { name: "JSON Validator." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "JSON Validator Online." })).toBeVisible();
 });

@@ -14,7 +14,7 @@ export function RelatedTools({ current, related }: { current: Tool["id"]; relate
           {item.name}<span aria-hidden="true">→</span>
         </Link>
       ))}
-      <div className="related-note">Built for developers who care about their data.</div>
+      <div className="related-note">Private by default. Your data stays in the browser.</div>
     </aside>
   );
 }
