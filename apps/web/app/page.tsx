@@ -35,8 +35,7 @@ export default function Home() {
     <section className="hero"><div className="container hero-grid"><div>
       <div className="eyebrow"><span className="live-dot" /> DEVELOPER TOOLS · LOCAL FIRST</div>
       <h1>{homeSeoCopy.headline}</h1>
-      <p className="hero-copy hero-copy-full">{heroIntro}</p>
-      <p className="hero-copy hero-copy-short">Format, validate and convert JSON, YAML, XML, SQL and CSV instantly. No uploads. No account.</p>
+      <p className="hero-copy">{heroIntro}</p>
       <div className="hero-actions"><a className="button primary" href="/json-formatter">Open JSON Formatter <span aria-hidden="true">→</span></a><a className="button secondary" href="#tools">Explore all tools</a></div>
       <div className="hero-proof"><span>Local processing</span><span>No registration</span><span>5 MB files</span><span>Zero input uploads</span></div>
     </div><div className="hero-preview" aria-label="Example formatted JSON"><div className="preview-top"><span className="preview-dots"><i/><i/><i/></span><span>response.json</span><span className="preview-badge">VALID JSON</span></div><div className="preview-code"><div><b>1</b><span>{"{"}</span></div><div><b>2</b><span>  <i>"project"</i>: <strong>"codeformattertools"</strong>,</span></div><div><b>3</b><span>  <i>"private"</i>: <mark>true</mark>,</span></div><div><b>4</b><span>  <i>"tools"</i>: [</span></div><div><b>5</b><span>    <strong>"format"</strong>,</span></div><div><b>6</b><span>    <strong>"validate"</strong>,</span></div><div><b>7</b><span>    <strong>"minify"</strong></span></div><div><b>8</b><span>  ]</span></div><div><b>9</b><span>{"}"}</span></div></div><div className="preview-footer"><span className="green-dot" /> Processed locally in your browser <span>0.02s</span></div></div></div></section>

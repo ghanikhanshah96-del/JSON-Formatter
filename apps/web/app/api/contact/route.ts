@@ -15,7 +15,8 @@ type Body = {
   email?: string;
   topic?: string;
   message?: string;
-  company?: string; // honeypot
+  company?: string; // legacy honeypot
+  website_url?: string; // honeypot
 };
 
 function isValidEmail(value: string): boolean {
@@ -41,8 +42,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Invalid request body." }, { status: 400 });
   }
 
-  // Honeypot — bots fill hidden fields; humans leave this empty.
-  if (body.company && String(body.company).trim()) {
+  // Honeypot — bots fill hidden fields; humans leave these empty.
+  const trap = String(body.website_url ?? body.company ?? "").trim();
+  if (trap) {
     return NextResponse.json({ ok: true });
   }
 

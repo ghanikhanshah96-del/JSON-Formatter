@@ -1208,14 +1208,9 @@ export const toolSeoCopy: Record<string, ToolSeoCopy> = {
         heading: "Does YAML Formatting Change Data?",
         kind: "prose",
         paragraphs: [
-          "No.",
-          "A YAML formatter does not modify your actual values or configuration settings.",
-          "It only improves:",
-          "Spacing",
-          "Indentation",
-          "Layout",
-          "Readability",
-          "The original information remains unchanged."
+          "Formatting rewrites whitespace and indentation only — keys and values stay the same.",
+          "If the document contains # comments, formatting is blocked by default so comments are never silently removed.",
+          "You can validate without changing layout, or confirm Format without comments to drop comments and continue."
         ],
       },
       {
@@ -1243,7 +1238,7 @@ export const toolSeoCopy: Record<string, ToolSeoCopy> = {
       { question: "What is a YAML Formatter?", answer: "A YAML Formatter is an online tool that organizes YAML content into a clean and readable structure." },
       { question: "Is this YAML Formatter free?", answer: "Yes, you can format YAML files online for free." },
       { question: "How do I format YAML online?", answer: "Paste your YAML data into the tool and generate a properly formatted version." },
-      { question: "Does YAML formatting change my file content?", answer: "No. Formatting only changes the appearance and keeps the original data intact." },
+      { question: "Does YAML formatting change my file content?", answer: "Formatting rewrites whitespace and indentation only. Values stay intact. If the file contains # comments, formatting is blocked unless you confirm Format without comments." },
       { question: "Why is YAML indentation important?", answer: "YAML uses indentation to define structure, so proper spacing is important for correct interpretation." },
       { question: "What is the difference between YAML Formatter and YAML Validator?", answer: "A formatter improves readability, while a validator checks YAML syntax correctness." },
       { question: "Can I format YAML files for Kubernetes?", answer: "Yes, YAML formatters can help make Kubernetes and other configuration files easier to read." },
@@ -2288,7 +2283,7 @@ export const toolSeoCopy: Record<string, ToolSeoCopy> = {
           "JSON objects into CSV rows",
           "JSON keys into CSV columns",
           "Data values into table format",
-          "The original information remains the same."
+          "Nested objects, missing fields, nulls, and typed values can change shape. Prefer Lossless mode when cell text must stay exact."
         ],
       },
       {
@@ -2404,14 +2399,10 @@ export const toolSeoCopy: Record<string, ToolSeoCopy> = {
         heading: "Does JSON to CSV Conversion Change Data?",
         kind: "prose",
         paragraphs: [
-          "No.",
-          "A JSON to CSV Converter keeps the original information while changing the format.",
-          "It does not intentionally change:",
-          "Values",
-          "Data records",
-          "Information content",
-          "The main difference is how the data is organized.",
-          "JSON uses objects and arrays, while CSV uses rows and columns."
+          "It depends on the selected mode and the shape of your input.",
+          "Best effort produces a developer-friendly representation and may simplify nested values, nulls, or uneven keys.",
+          "Use Lossless mode when exact cell-text preservation is required.",
+          "Review warnings in the workspace before copying or downloading the result."
         ],
       },
       {
@@ -2429,7 +2420,7 @@ export const toolSeoCopy: Record<string, ToolSeoCopy> = {
       { question: "Is this JSON to CSV Converter free?", answer: "Yes, you can convert JSON to CSV online for free." },
       { question: "How do I convert JSON to CSV?", answer: "Paste your JSON data into the converter and generate CSV output instantly." },
       { question: "Can CSV files open in Excel?", answer: "Yes, CSV files can be opened and edited using spreadsheet applications." },
-      { question: "Does converting JSON to CSV remove data?", answer: "No. The converter keeps the original information while changing the format." },
+      { question: "Does converting JSON to CSV remove data?", answer: "It can, depending on mode and input shape. Nested objects, arrays, nulls, and uneven keys may lose fidelity — use Lossless when exact preservation is required." },
       { question: "Why convert JSON to CSV?", answer: "CSV is easier to use for spreadsheets, reporting, and data analysis." },
       { question: "Can I convert large JSON files?", answer: "Yes, but performance may depend on your browser and file size." },
       { question: "Can I use JSON to CSV Converter on mobile?", answer: "Yes, the tool works on mobile browsers, tablets, and desktop devices." }
@@ -2657,7 +2648,7 @@ export const toolSeoCopy: Record<string, ToolSeoCopy> = {
           "JSON objects become XML structures",
           "JSON values become XML text values",
           "Arrays become repeated XML elements",
-          "The original information remains unchanged. Only the data format is converted."
+          "Standard mapping produces a developer-friendly representation. Use Lossless mode when exact round-trip preservation is required."
         ],
       },
       {
@@ -2679,7 +2670,7 @@ export const toolSeoCopy: Record<string, ToolSeoCopy> = {
         paragraphs: [],
         items: [
           { title: "Instant JSON Conversion", description: "Convert JSON data into XML format within seconds." },
-          { title: "Maintain Data Structure", description: "Keep your original information while changing the format." },
+          { title: "Maintain Data Structure", description: "Choose Lossless when round-trip fidelity matters; Best effort when a readable mapping is enough." },
           { title: "Clean XML Output", description: "Generate structured XML documents with readable tags." },
           { title: "Developer-Friendly Tool", description: "Useful for programmers and technical users." },
           { title: "No Installation Required", description: "Use the converter directly from your browser." },
@@ -2765,14 +2756,10 @@ export const toolSeoCopy: Record<string, ToolSeoCopy> = {
         heading: "Does JSON to XML Conversion Change Data?",
         kind: "prose",
         paragraphs: [
-          "No.",
-          "A JSON to XML Converter does not change your actual information.",
-          "It keeps:",
-          "Values",
-          "Data relationships",
-          "Object structure",
-          "Only the representation changes.",
-          "JSON uses objects and arrays, while XML uses elements and tags."
+          "It depends on the selected mode and the shape of your input.",
+          "Best effort produces a developer-friendly representation and may simplify nested values.",
+          "Use Lossless mode when exact round-trip preservation is required.",
+          "Review warnings in the workspace before copying or downloading the result."
         ],
       },
       {
@@ -2789,7 +2776,7 @@ export const toolSeoCopy: Record<string, ToolSeoCopy> = {
       { question: "What is JSON to XML conversion?", answer: "JSON to XML conversion changes JSON data into XML format while keeping the same information." },
       { question: "Is this JSON to XML Converter free?", answer: "Yes, you can convert JSON to XML online for free." },
       { question: "How do I convert JSON to XML?", answer: "Paste your JSON data into the converter and generate XML output instantly." },
-      { question: "Does conversion change my JSON data?", answer: "No. The converter only changes the format and keeps the original information." },
+      { question: "Does conversion change my JSON data?", answer: "It can, depending on mode. Use Lossless when exact round-trip preservation is required; Best effort favors a readable mapping." },
       { question: "Why convert JSON to XML?", answer: "Some applications, web services, and enterprise systems require XML format." },
       { question: "Is XML better than JSON?", answer: "Both formats have different uses. JSON is common for APIs, while XML is used in many enterprise and document-based systems." },
       { question: "Can I convert large JSON files?", answer: "Yes, but performance may depend on file size and browser capability." },

@@ -10,14 +10,6 @@ const LOSSLESS_REPLACEMENTS: Array<[RegExp, string]> = [
     "Standard mapping produces a developer-friendly representation. Use Lossless mode when exact round-trip preservation is required."
   ],
   [
-    /\bThe original information remains unchanged\./gi,
-    "Standard mode produces a developer-friendly representation. Use Lossless mode when exact round-trip preservation is required."
-  ],
-  [
-    /\bThe original information remains the same\./gi,
-    "Nested objects, missing fields, nulls, and typed values can change shape in CSV. Prefer Lossless mode when cell text must stay exact."
-  ],
-  [
     /\bThe original XML information remains unchanged\./gi,
     "Formatting changes whitespace and indentation only. Mixed content and xml:space=preserve documents are left unchanged to protect meaningful spacing."
   ],
@@ -28,6 +20,14 @@ const LOSSLESS_REPLACEMENTS: Array<[RegExp, string]> = [
   [
     /\bYour original YAML content remains unchanged\./gi,
     "Formatting rewrites layout only. Documents that contain # comments are blocked so comments are never silently stripped."
+  ],
+  [
+    /\bThe original information remains unchanged\./gi,
+    "Values and structure stay the same; only whitespace and indentation are rewritten."
+  ],
+  [
+    /\bThe original information remains the same\./gi,
+    "Nested objects, missing fields, nulls, and typed values can change shape in CSV. Prefer Lossless mode when cell text must stay exact."
   ],
   [
     /\bThe data remains unchanged\. Only the structure is converted from rows and columns into JSON objects\./gi,
@@ -48,6 +48,10 @@ const LOSSLESS_REPLACEMENTS: Array<[RegExp, string]> = [
   [
     /\bA JSON to XML Converter does not change your actual information\./gi,
     "JSON→XML mappings can reshape structure. Prefer Lossless mode when round-trip fidelity matters."
+  ],
+  [
+    /\bA YAML to JSON Converter does not change your actual information\./gi,
+    "YAML→JSON can reshape aliases and merge keys depending on mode. Prefer Lossless when round-trip fidelity matters."
   ],
   [
     /\bThe converter keeps your original information while changing the format\./gi,
@@ -121,6 +125,7 @@ const PRIVACY_REPLACEMENTS: Array<[RegExp, string]> = [
 ];
 
 const CONVERSION_CHANGE_HEADING = /Does .+ Conversion Change Data\?/i;
+const FORMAT_CHANGE_HEADING = /Does .+ Formatting Change Data\?/i;
 const LOSSY_HINT = /lossy|Lossless|Best effort|round-trip|reshape|nested|nulls|attributes|CDATA|mixed content/i;
 
 export function polishCopyText(input: string): string {
@@ -128,7 +133,6 @@ export function polishCopyText(input: string): string {
   for (const [pattern, replacement] of [...LOSSLESS_REPLACEMENTS, ...PRIVACY_REPLACEMENTS]) {
     out = out.replace(pattern, replacement);
   }
-  // Drop contradictory "No." prefixes once the body already admits loss/modes.
   if (/^No\.\s+/i.test(out) && LOSSY_HINT.test(out)) {
     out = out.replace(/^No\.\s+/i, "");
   }
@@ -136,17 +140,20 @@ export function polishCopyText(input: string): string {
 }
 
 export function polishFaq(faq: { question: string; answer: string }[]): { question: string; answer: string }[] {
-  return faq.map(item => ({
-    question: polishCopyText(item.question),
-    answer: polishCopyText(item.answer)
-  }));
+  return faq.map(item => {
+    let answer = polishCopyText(item.answer);
+    if (/formatting change/i.test(item.question) && /^No\./i.test(answer)) {
+      answer = "Formatting rewrites whitespace and indentation only. Values stay intact. If the file contains # comments, formatting is blocked unless you confirm Format without comments.";
+    }
+    return { question: polishCopyText(item.question), answer };
+  });
 }
 
 export function polishParagraphs(paragraphs: string[]): string[] {
   return paragraphs.map(polishCopyText).filter(Boolean);
 }
 
-/** Rewrite contradictory “Does conversion change data?” sections for converters. */
+/** Rewrite contradictory change-data sections with tool-aware wording. */
 export function polishSections(
   sections: Array<{
     heading: string;
@@ -161,11 +168,27 @@ export function polishSections(
       return {
         ...section,
         paragraphs: [
-          "It depends on the mode and the shape of your input.",
+          "It depends on the selected mode and the shape of your input.",
           "Best effort produces a developer-friendly representation and may simplify nested values, attributes, mixed content, nulls, or uneven keys.",
           "Use Lossless mode when exact round-trip preservation is required — otherwise expect a readable mapping rather than a byte-for-byte guarantee.",
           "Review warnings in the workspace before copying or downloading the result."
         ]
+      };
+    }
+    if (FORMAT_CHANGE_HEADING.test(section.heading) && section.kind === "prose") {
+      const yaml = /yaml/i.test(section.heading);
+      return {
+        ...section,
+        paragraphs: yaml
+          ? [
+              "Formatting rewrites whitespace and indentation only — keys and values stay the same.",
+              "If the document contains # comments, formatting is blocked by default so comments are never silently removed.",
+              "You can validate without changing layout, or confirm Format without comments to drop comments and continue."
+            ]
+          : [
+              "Formatting rewrites whitespace and indentation only.",
+              "Keys, values, and document structure stay the same — the tool changes presentation, not meaning."
+            ]
       };
     }
     return {

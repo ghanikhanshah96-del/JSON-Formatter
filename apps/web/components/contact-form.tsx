@@ -18,7 +18,7 @@ export function ContactForm() {
   const [email, setEmail] = useState("");
   const [topic, setTopic] = useState<string>("other");
   const [message, setMessage] = useState("");
-  const [company, setCompany] = useState("");
+  const [hp, setHp] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
 
@@ -30,7 +30,7 @@ export function ContactForm() {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, topic, message, company })
+        body: JSON.stringify({ name, email, topic, message, website_url: hp })
       });
       const data = await response.json().catch(() => ({ ok: false, error: "Unexpected response." }));
       if (!response.ok || !data.ok) {
@@ -43,7 +43,7 @@ export function ContactForm() {
       setEmail("");
       setTopic("other");
       setMessage("");
-      setCompany("");
+      setHp("");
     } catch {
       setStatus("error");
       setError("Network error. Check your connection and try again.");
@@ -116,15 +116,16 @@ export function ContactForm() {
         />
       </label>
 
-      {/* Honeypot — no visible label text; off-screen + excluded from a11y tree */}
-      <div className="contact-honeypot" aria-hidden="true">
+      {/* Spam honeypot: excluded from a11y tree; nonsense name avoids "Company" exposure */}
+      <div className="contact-honeypot" aria-hidden="true" hidden inert>
         <input
-          name="company"
+          name="website_url"
           type="text"
           tabIndex={-1}
           autoComplete="off"
-          value={company}
-          onChange={e => setCompany(e.target.value)}
+          aria-hidden="true"
+          value={hp}
+          onChange={e => setHp(e.target.value)}
         />
       </div>
 

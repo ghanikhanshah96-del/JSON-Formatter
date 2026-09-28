@@ -22,10 +22,15 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
   await expect(page.locator('form.contact-form textarea[name="message"]')).toBeVisible();
   await expect(page.getByRole("button", { name: /Send message/i })).toBeVisible();
   await expect(page.locator("main a[href^='mailto:']")).toHaveCount(0);
-  // Honeypot must not appear as an accessible "Company" field.
+  // Honeypot must not appear as an accessible "Company" field or named control.
   await expect(page.getByLabel(/^Company$/i)).toHaveCount(0);
+  await expect(page.getByText(/^Company$/)).toHaveCount(0);
   await expect(page.locator(".contact-honeypot")).toHaveAttribute("aria-hidden", "true");
-  await expect(page.locator('form.contact-form input[name="company"]')).toHaveCount(1);
+  await expect(page.locator(".contact-honeypot")).toHaveAttribute("hidden", "");
+  await expect(page.locator('form.contact-form input[name="company"]')).toHaveCount(0);
+  await expect(page.locator('form.contact-form input[name="website_url"]')).toHaveCount(1);
+  // Visible contact fields only: Name, Email, Message (Topic is a combobox).
+  await expect(page.locator("form.contact-form").getByRole("textbox")).toHaveCount(3);
 
   const sitemap = await request.get("/sitemap.xml");
   const sitemapText = await sitemap.text();
