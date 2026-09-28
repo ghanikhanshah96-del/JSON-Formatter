@@ -68,7 +68,7 @@ export default function ContactPage() {
       <div className="seo-cta-actions">
         <Link className="button secondary" href="/privacy">Read privacy</Link>
         <Link className="button secondary" href="/performance">Performance budget</Link>
-        <Link className="button secondary" href="/learn">Browse Learn guides</Link>
+        <Link className="button secondary" href="/blog">Browse Blog</Link>
       </div>
     </main>
   );

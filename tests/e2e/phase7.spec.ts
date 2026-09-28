@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { siteConfig } from "@codeformattools/seo";
 
 test("trust pages, contact form, and footer links are launch ready", async ({ page, request }) => {
-  for (const path of ["/about", "/privacy", "/terms", "/contact", "/learn", "/performance"]) {
+  for (const path of ["/about", "/privacy", "/terms", "/contact", "/blog", "/performance"]) {
     await page.goto(path);
     await expect(page.locator("main")).toBeVisible();
     await expect(page.locator("h1")).toBeVisible();
@@ -35,8 +35,21 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
   const sitemap = await request.get("/sitemap.xml");
   const sitemapText = await sitemap.text();
   expect(sitemapText).toContain("/contact");
-  expect(sitemapText).toContain("/learn");
+  expect(sitemapText).toContain("/blog");
+  expect(sitemapText).toContain("/blog/format-json-online");
   expect(sitemapText).toContain("/performance");
+});
+
+test("blog index cards and article hero share cover images", async ({ page }) => {
+  await page.goto("/blog");
+  await expect(page.getByRole("heading", { name: /Developer articles/i })).toBeVisible();
+  const firstCard = page.locator(".blog-card").first();
+  await expect(firstCard.locator(".blog-card-media img")).toBeVisible();
+  const cardSrc = await firstCard.locator(".blog-card-media img").getAttribute("src");
+  expect(cardSrc).toMatch(/^\/blog\/.+\.svg$/);
+  await firstCard.click();
+  await expect(page).toHaveURL(/\/blog\//);
+  await expect(page.locator(".blog-hero-media img")).toHaveAttribute("src", cardSrc!);
 });
 
 test("contact API validates required fields", async ({ request }) => {

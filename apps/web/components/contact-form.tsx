@@ -6,7 +6,7 @@ const TOPICS = [
   { id: "privacy", label: "Privacy / data handling" },
   { id: "security", label: "Security report" },
   { id: "bug", label: "Tool bug or incorrect output" },
-  { id: "docs", label: "Docs / Learn correction" },
+  { id: "docs", label: "Docs / Blog correction" },
   { id: "legal", label: "Terms / takedown" },
   { id: "other", label: "Something else" }
 ] as const;

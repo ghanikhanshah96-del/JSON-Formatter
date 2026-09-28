@@ -42,14 +42,14 @@ export default function Home() {
     <section className="tools-section container" id="tools"><div className="section-heading"><div><div className="eyebrow">THE TOOLBOX</div><h2>All-in-One Developer Utility Platform</h2></div><p>Format JSON, validate XML, organize YAML, clean SQL, or convert between formats — all locally in your browser.</p></div><ToolsGrid tools={tools} categories={categories} /></section>
     <section className="home-guides container">
       <div className="section-heading">
-        <div><div className="eyebrow">LEARN</div><h2>Short guides into live tools</h2></div>
+        <div><div className="eyebrow">BLOG</div><h2>Short guides into live tools</h2></div>
         <p>Practical long-tails — API responses, Kubernetes YAML, private processing — each linked into a workspace.</p>
       </div>
       <div className="home-guide-links">
-        <a href="/learn/format-json-api-response">JSON for API responses →</a>
-        <a href="/learn/yaml-kubernetes-config">YAML for Kubernetes →</a>
-        <a href="/learn/private-browser-developer-tools">Private-by-design tools →</a>
-        <a href="/learn">All guides →</a>
+        <a href="/blog/format-json-api-response">JSON for API responses →</a>
+        <a href="/blog/yaml-kubernetes-config">YAML for Kubernetes →</a>
+        <a href="/blog/private-browser-developer-tools">Private-by-design tools →</a>
+        <a href="/blog">All articles →</a>
         <a href="/performance">Performance budget →</a>
       </div>
     </section>
@@ -77,6 +77,6 @@ export default function Home() {
       </div>
     </section>
     <section className="privacy-band"><div className="container privacy-grid"><div className="privacy-symbol" aria-hidden="true">🛡</div><div><div className="eyebrow">PRIVACY IS THE DEFAULT</div><h2>Your data stays<br /><em>on your device.</em></h2><p>Everything runs in your browser. Your input is never uploaded, logged, or stored by {siteConfig.name}. Work with real data confidently.</p><a href="/privacy">How our privacy works <span aria-hidden="true">→</span></a></div><div className="privacy-list"><div><span>01</span><strong>Local processing</strong><p>Every operation runs in a dedicated browser worker.</p></div><div><span>02</span><strong>No account required</strong><p>Open a tool and get straight to work.</p></div><div><span>03</span><strong>Input never stored</strong><p>We do not save your pasted text or files.</p></div></div></div></section>
-    <section className="bottom-cta container"><div className="eyebrow">READY WHEN YOU ARE</div><h2>Less friction.<br /><em>More flow.</em></h2><div className="seo-cta-actions" style={{ justifyContent: "center" }}><a className="button primary" href="/json-formatter">Start formatting <span aria-hidden="true">→</span></a><a className="button secondary" href="/learn">Browse Learn</a></div></section>
+    <section className="bottom-cta container"><div className="eyebrow">READY WHEN YOU ARE</div><h2>Less friction.<br /><em>More flow.</em></h2><div className="seo-cta-actions" style={{ justifyContent: "center" }}><a className="button primary" href="/json-formatter">Start formatting <span aria-hidden="true">→</span></a><a className="button secondary" href="/blog">Browse Blog</a></div></section>
   </main>;
 }

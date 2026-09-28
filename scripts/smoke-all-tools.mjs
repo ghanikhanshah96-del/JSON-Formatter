@@ -43,7 +43,7 @@ async function main() {
   const page = await browser.newPage();
   const failures = [];
 
-  for (const path of ["/", "/learn", "/performance", "/contact", "/about", "/privacy"]) {
+  for (const path of ["/", "/blog", "/performance", "/contact", "/about", "/privacy"]) {
     const res = await page.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" });
     if (!res?.ok()) failures.push(`${path} status ${res?.status()}`);
     const h1 = page.locator("h1");

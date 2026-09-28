@@ -10,7 +10,7 @@ const base = process.argv[2] || "http://127.0.0.1:3200";
 const outDir = join(process.cwd(), "lighthouse-reports");
 mkdirSync(outDir, { recursive: true });
 
-const pages = ["/", "/json-formatter", "/learn", "/contact"];
+const pages = ["/", "/json-formatter", "/blog", "/contact"];
 const forms = [
   { id: "mobile", formFactor: "mobile", screenEmulation: { mobile: true, width: 412, height: 823, deviceScaleFactor: 1.75, disabled: false } },
   { id: "desktop", formFactor: "desktop", screenEmulation: { mobile: false, width: 1350, height: 940, deviceScaleFactor: 1, disabled: false } }

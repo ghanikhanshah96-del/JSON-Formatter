@@ -20,7 +20,7 @@ export default function AboutPage() {
       </p>
       <h2>What we build</h2>
       <p>
-        Launch coverage includes JSON, SQL, YAML, XML, CSV, and format converters — plus a Learn hub for practical workflows. Tool pages include examples, common mistakes, and related tools so you can move through a job without searching again.
+        Launch coverage includes JSON, SQL, YAML, XML, CSV, and format converters — plus a Blog hub for practical workflows. Tool pages include examples, common mistakes, and related tools so you can move through a job without searching again.
       </p>
       <h2>What we avoid</h2>
       <p>

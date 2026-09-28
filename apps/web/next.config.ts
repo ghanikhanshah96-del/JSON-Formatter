@@ -31,6 +31,12 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["@codeformattools/tool-registry", "@codeformattools/seo"]
   },
+  async redirects() {
+    return [
+      { source: "/learn", destination: "/blog", permanent: true },
+      { source: "/learn/:slug", destination: "/blog/:slug", permanent: true }
+    ];
+  },
   async headers() {
     return [{
       source: "/:path*",

@@ -28,7 +28,7 @@ function topicLabel(topic: string): string {
     case "privacy": return "Privacy / data handling";
     case "security": return "Security report";
     case "bug": return "Tool bug or incorrect output";
-    case "docs": return "Docs / Learn correction";
+    case "docs": return "Docs / Blog correction";
     case "legal": return "Terms / takedown";
     default: return "General support";
   }

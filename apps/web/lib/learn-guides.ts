@@ -1,14 +1,23 @@
-export type LearnGuide = {
+export type BlogPost = {
   slug: string;
   title: string;
   description: string;
   eyebrow: string;
   relatedTools: string[];
   readMinutes: number;
+  image: string;
+  imageAlt: string;
   sections: { heading: string; paragraphs: string[]; bullets?: string[] }[];
 };
 
-export const learnGuides: LearnGuide[] = [
+/** @deprecated Prefer BlogPost */
+export type LearnGuide = BlogPost;
+
+function cover(slug: string, alt: string) {
+  return { image: `/blog/${slug}.svg`, imageAlt: alt };
+}
+
+export const blogPosts: BlogPost[] = [
   {
     slug: "format-json-online",
     title: "How to format JSON online",
@@ -16,6 +25,7 @@ export const learnGuides: LearnGuide[] = [
     eyebrow: "JSON",
     relatedTools: ["json-formatter", "json-validator"],
     readMinutes: 4,
+    ...cover("format-json-online", "Illustration for formatting JSON online"),
     sections: [
       {
         heading: "Why format JSON?",
@@ -47,6 +57,7 @@ export const learnGuides: LearnGuide[] = [
     eyebrow: "LONG-TAIL · JSON",
     relatedTools: ["json-formatter", "json-validator", "json-minifier"],
     readMinutes: 5,
+    ...cover("format-json-api-response", "Illustration for formatting a JSON API response"),
     sections: [
       {
         heading: "The common workflow",
@@ -74,6 +85,7 @@ export const learnGuides: LearnGuide[] = [
     eyebrow: "JSON",
     relatedTools: ["json-validator", "json-formatter"],
     readMinutes: 4,
+    ...cover("validate-json-before-ship", "Illustration for validating JSON before shipping"),
     sections: [
       {
         heading: "What validation catches",
@@ -92,6 +104,7 @@ export const learnGuides: LearnGuide[] = [
     eyebrow: "JSON",
     relatedTools: ["json-minifier", "json-formatter"],
     readMinutes: 3,
+    ...cover("minify-json-payloads", "Illustration for minifying JSON payloads"),
     sections: [
       {
         heading: "When to minify",
@@ -112,6 +125,7 @@ export const learnGuides: LearnGuide[] = [
     eyebrow: "JSON",
     relatedTools: ["json-sorter", "json-formatter"],
     readMinutes: 3,
+    ...cover("sort-json-keys-for-diffs", "Illustration for sorting JSON keys"),
     sections: [
       {
         heading: "Why sort keys?",
@@ -128,6 +142,7 @@ export const learnGuides: LearnGuide[] = [
     eyebrow: "SQL",
     relatedTools: ["sql-formatter"],
     readMinutes: 4,
+    ...cover("format-sql-queries", "Illustration for formatting SQL queries"),
     sections: [
       {
         heading: "Dialect matters",
@@ -150,6 +165,7 @@ export const learnGuides: LearnGuide[] = [
     eyebrow: "LONG-TAIL · YAML",
     relatedTools: ["yaml-formatter", "yaml-validator", "json-to-yaml"],
     readMinutes: 5,
+    ...cover("yaml-kubernetes-config", "Illustration for formatting Kubernetes YAML"),
     sections: [
       {
         heading: "Why YAML formatting helps ops work",
@@ -177,6 +193,7 @@ export const learnGuides: LearnGuide[] = [
     eyebrow: "YAML",
     relatedTools: ["yaml-validator", "yaml-formatter"],
     readMinutes: 4,
+    ...cover("validate-yaml-configs", "Illustration for validating YAML configs"),
     sections: [
       {
         heading: "Common YAML pitfalls",
@@ -191,6 +208,7 @@ export const learnGuides: LearnGuide[] = [
     eyebrow: "XML",
     relatedTools: ["xml-formatter", "xml-validator"],
     readMinutes: 4,
+    ...cover("format-xml-documents", "Illustration for formatting XML documents"),
     sections: [
       {
         heading: "Safe defaults",
@@ -207,6 +225,7 @@ export const learnGuides: LearnGuide[] = [
     eyebrow: "CONVERTERS",
     relatedTools: ["json-to-yaml", "yaml-to-json", "yaml-formatter"],
     readMinutes: 4,
+    ...cover("convert-json-to-yaml", "Illustration for converting JSON to YAML"),
     sections: [
       {
         heading: "When conversion helps",
@@ -223,6 +242,7 @@ export const learnGuides: LearnGuide[] = [
     eyebrow: "CSV",
     relatedTools: ["csv-to-json", "json-to-csv", "json-formatter"],
     readMinutes: 4,
+    ...cover("convert-csv-to-json", "Illustration for converting CSV to JSON"),
     sections: [
       {
         heading: "Header row matters",
@@ -235,10 +255,11 @@ export const learnGuides: LearnGuide[] = [
   {
     slug: "private-browser-developer-tools",
     title: "Why private browser tools matter",
-    description: "Learn how CodeFormatterTools keeps formatting, validation, and conversion on your device.",
+    description: "How CodeFormatterTools keeps formatting, validation, and conversion on your device.",
     eyebrow: "PRIVACY · PERFORMANCE",
     relatedTools: ["json-formatter", "yaml-formatter", "sql-formatter"],
     readMinutes: 5,
+    ...cover("private-browser-developer-tools", "Illustration for private browser developer tools"),
     sections: [
       {
         heading: "Local by default",
@@ -256,6 +277,14 @@ export const learnGuides: LearnGuide[] = [
   }
 ];
 
-export function getLearnGuide(slug: string): LearnGuide | undefined {
-  return learnGuides.find(guide => guide.slug === slug);
+/** @deprecated Prefer blogPosts */
+export const learnGuides = blogPosts;
+
+export function getBlogPost(slug: string): BlogPost | undefined {
+  return blogPosts.find(post => post.slug === slug);
+}
+
+/** @deprecated Prefer getBlogPost */
+export function getLearnGuide(slug: string): BlogPost | undefined {
+  return getBlogPost(slug);
 }

@@ -70,7 +70,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </HomeBrandLink>
           <nav className="top-nav" aria-label="Primary navigation">
             <a href="/#tools">Tools</a>
-            <a href="/learn">Learn</a>
+            <a href="/blog">Blog</a>
             <a href="/about">About</a>
             <a href="/privacy">Privacy</a>
             <a href="/contact">Contact</a>
@@ -92,7 +92,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </div>
           <div className="footer-links">
             <a href="/#tools">Tools</a>
-            <a href="/learn">Learn</a>
+            <a href="/blog">Blog</a>
             <a href="/performance">Performance</a>
             <a href="/about">About</a>
             <a href="/privacy">Privacy</a>

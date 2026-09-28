@@ -54,7 +54,7 @@ export default function PerformancePage() {
 
       <div className="seo-cta-actions" style={{ marginTop: 28 }}>
         <Link className="button primary" href="/json-formatter">Try JSON Formatter</Link>
-        <Link className="button secondary" href="/learn/private-browser-developer-tools">Read the privacy guide</Link>
+        <Link className="button secondary" href="/blog/private-browser-developer-tools">Read the privacy guide</Link>
       </div>
       <p className="learn-back" style={{ marginTop: 24 }}>
         <Link href="/">← Home</Link>
