@@ -46,6 +46,10 @@ const LOSSLESS_REPLACEMENTS: Array<[RegExp, string]> = [
     "Best-effort mapping simplifies attributes and mixed content. Use Lossless mode for a reversible envelope that preserves comments, CDATA, order, and attributes."
   ],
   [
+    /\bA JSON to XML Converter does not change your actual information\./gi,
+    "JSON→XML mappings can reshape structure. Prefer Lossless mode when round-trip fidelity matters."
+  ],
+  [
     /\bThe converter keeps your original information while changing the format\./gi,
     "Choose Lossless when round-trip fidelity matters; Best effort when a readable mapping is enough."
   ],
@@ -74,6 +78,10 @@ const LOSSLESS_REPLACEMENTS: Array<[RegExp, string]> = [
     "Structure and scalar representation can change by mode. Prefer Lossless for round-trips."
   ],
   [
+    /\bJSON to XML conversion changes JSON data into XML format while keeping the same information\./gi,
+    "JSON to XML conversion maps objects to elements. Use Lossless mode when exact round-trip preservation is required."
+  ],
+  [
     /\bThe information remains the same, but the structure follows XML formatting rules\./gi,
     "This example shows a simplified mapping. Use Lossless mode when attributes, comments, CDATA, or order must round-trip."
   ],
@@ -84,6 +92,10 @@ const LOSSLESS_REPLACEMENTS: Array<[RegExp, string]> = [
   [
     /\bThe data remains the same, but it is displayed in a table format\./gi,
     "Flat object arrays map cleanly to CSV. Nested values may become JSON text cells or require a different mode."
+  ],
+  [
+    /\bOnly the representation changes\./gi,
+    "Mode still matters: Best effort favors readability; Lossless favors round-trip fidelity."
   ],
   [/\bA XML formatter\b/g, "An XML formatter"],
   [/\bA XML Formatter\b/g, "An XML Formatter"],
@@ -108,10 +120,17 @@ const PRIVACY_REPLACEMENTS: Array<[RegExp, string]> = [
   ],
 ];
 
+const CONVERSION_CHANGE_HEADING = /Does .+ Conversion Change Data\?/i;
+const LOSSY_HINT = /lossy|Lossless|Best effort|round-trip|reshape|nested|nulls|attributes|CDATA|mixed content/i;
+
 export function polishCopyText(input: string): string {
   let out = input;
   for (const [pattern, replacement] of [...LOSSLESS_REPLACEMENTS, ...PRIVACY_REPLACEMENTS]) {
     out = out.replace(pattern, replacement);
+  }
+  // Drop contradictory "No." prefixes once the body already admits loss/modes.
+  if (/^No\.\s+/i.test(out) && LOSSY_HINT.test(out)) {
+    out = out.replace(/^No\.\s+/i, "");
   }
   return out.replace(/\s{2,}/g, " ").trim();
 }
@@ -125,4 +144,38 @@ export function polishFaq(faq: { question: string; answer: string }[]): { questi
 
 export function polishParagraphs(paragraphs: string[]): string[] {
   return paragraphs.map(polishCopyText).filter(Boolean);
+}
+
+/** Rewrite contradictory “Does conversion change data?” sections for converters. */
+export function polishSections(
+  sections: Array<{
+    heading: string;
+    kind: "prose" | "steps" | "items";
+    paragraphs: string[];
+    steps?: string[];
+    items?: { title: string; description: string }[];
+  }>
+) {
+  return sections.map(section => {
+    if (CONVERSION_CHANGE_HEADING.test(section.heading) && section.kind === "prose") {
+      return {
+        ...section,
+        paragraphs: [
+          "It depends on the mode and the shape of your input.",
+          "Best effort produces a developer-friendly representation and may simplify nested values, attributes, mixed content, nulls, or uneven keys.",
+          "Use Lossless mode when exact round-trip preservation is required — otherwise expect a readable mapping rather than a byte-for-byte guarantee.",
+          "Review warnings in the workspace before copying or downloading the result."
+        ]
+      };
+    }
+    return {
+      ...section,
+      paragraphs: polishParagraphs(section.paragraphs).filter(paragraph => paragraph !== "No."),
+      steps: section.steps?.map(polishCopyText),
+      items: section.items?.map(item => ({
+        title: polishCopyText(item.title),
+        description: polishCopyText(item.description)
+      }))
+    };
+  });
 }

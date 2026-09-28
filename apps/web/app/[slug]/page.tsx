@@ -25,20 +25,14 @@ export default async function ToolPage({ params }: Props) {
   if (!tool) notFound();
   const related = tool.relatedTools.map(id => getTool(id)).filter(item => item !== undefined);
   const howToSection = tool.sections.find(section => section.heading.startsWith("How to "));
-  const primarySections = tool.sections.filter(section => {
-    if (section.heading.startsWith("How to ")) return false;
-    if (section.heading.endsWith(" Example") || section.heading.endsWith(" Conversion Example")) return false;
-    if (/^(What Is|Features of|Why Use|Who Can|Common Uses|Is .+ Safe|Does .+ Change)/i.test(section.heading)) return false;
-    return true;
-  });
   const deepSections = tool.sections.filter(section => {
     if (section.heading.startsWith("How to ")) return false;
     if (section.heading.endsWith(" Example") || section.heading.endsWith(" Conversion Example")) return false;
-    return !primarySections.includes(section);
+    return true;
   });
   const summary = tool.intro[0] ?? tool.description;
 
-  return <main>
+  return <main className="tool-page">
     <ToolLandTracker toolId={tool.id} />
     {toolSchemas(tool).map((data, index) => <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />)}
     <section className="tool-intro container tool-intro-compact">
@@ -56,7 +50,7 @@ export default async function ToolPage({ params }: Props) {
       <ToolWorkspaceGate tool={tool} />
     </div>
     <AdSlotPlaceholder placement="after-tool" enabled />
-    <section className={`content-section container${related.length ? "" : " single"}`}>
+    <section className={`content-section container tool-utility-content${related.length ? "" : " single"}`}>
       <div className="content-main">
         <section className="seo-block">
           <h2>Example {tool.input.language.toUpperCase()}</h2>
@@ -71,27 +65,30 @@ export default async function ToolPage({ params }: Props) {
           <h2>Frequently asked questions</h2>
           <FaqAccordion items={tool.faq} />
         </section>
-        <section className="seo-block">
-          <h2>{howToSection?.heading ?? `How to use ${tool.name}`}</h2>
-          {howToSection?.paragraphs?.map(paragraph => <p key={paragraph.slice(0, 48)}>{paragraph}</p>)}
-          <ol>{(howToSection?.steps?.length ? howToSection.steps : tool.howItWorks).map(item => <li key={item}>{item}</li>)}</ol>
-        </section>
-        <section className="seo-block">
-          <h2>About {tool.name}</h2>
-          <p>{tool.about}</p>
-          {tool.intro.slice(1).map(paragraph => <p key={paragraph.slice(0, 64)}>{paragraph}</p>)}
-        </section>
-        <SeoSections sections={[...primarySections, ...deepSections]} related={related} />
-        {tool.cta ? (
-          <section className="seo-cta">
-            <h2>{tool.cta.heading}</h2>
-            {tool.cta.paragraphs.map(paragraph => <p key={paragraph.slice(0, 48)}>{paragraph}</p>)}
-            <div className="seo-cta-actions">
-              <a className="button primary" href="#workspace">Use {tool.name} <span aria-hidden="true">↑</span></a>
-              {related[0] ? <Link className="button secondary" href={`/${related[0].slug}`}>Try {related[0].name}</Link> : null}
-            </div>
+        <details className="seo-deep-details">
+          <summary>More about {tool.name}</summary>
+          <section className="seo-block">
+            <h2>{howToSection?.heading ?? `How to use ${tool.name}`}</h2>
+            {howToSection?.paragraphs?.map(paragraph => <p key={paragraph.slice(0, 48)}>{paragraph}</p>)}
+            <ol>{(howToSection?.steps?.length ? howToSection.steps : tool.howItWorks).map(item => <li key={item}>{item}</li>)}</ol>
           </section>
-        ) : null}
+          <section className="seo-block">
+            <h2>About {tool.name}</h2>
+            <p>{tool.about}</p>
+            {tool.intro.slice(1).map(paragraph => <p key={paragraph.slice(0, 64)}>{paragraph}</p>)}
+          </section>
+          <SeoSections sections={deepSections} related={related} />
+          {tool.cta ? (
+            <section className="seo-cta">
+              <h2>{tool.cta.heading}</h2>
+              {tool.cta.paragraphs.map(paragraph => <p key={paragraph.slice(0, 48)}>{paragraph}</p>)}
+              <div className="seo-cta-actions">
+                <a className="button primary" href="#workspace">Use {tool.name} <span aria-hidden="true">↑</span></a>
+                {related[0] ? <Link className="button secondary" href={`/${related[0].slug}`}>Try {related[0].name}</Link> : null}
+              </div>
+            </section>
+          ) : null}
+        </details>
       </div>
       {related.length > 0 && <RelatedTools related={related} />}
     </section>

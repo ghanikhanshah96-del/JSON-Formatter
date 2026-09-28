@@ -116,11 +116,9 @@ export function ContactForm() {
         />
       </label>
 
-      {/* Honeypot — off-screen for bots; hidden from assistive tech and keyboard */}
+      {/* Honeypot — no visible label text; off-screen + excluded from a11y tree */}
       <div className="contact-honeypot" aria-hidden="true">
-        <label htmlFor="company-website">Company</label>
         <input
-          id="company-website"
           name="company"
           type="text"
           tabIndex={-1}

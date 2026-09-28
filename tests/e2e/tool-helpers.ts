@@ -1,5 +1,10 @@
 import { expect, type Page } from "@playwright/test";
 
+/** Live interactive workspace (excludes the hidden SSR gate). */
+function liveWorkspace(page: Page) {
+  return page.locator("section.tool-workspace").filter({ has: page.locator(".run-button") });
+}
+
 /** Wait for the interactive workspace (tool pages auto-hydrate). */
 export async function openWorkspace(page: Page) {
   const open = page.getByRole("button", { name: /Open workspace/i });
@@ -12,7 +17,7 @@ export async function openWorkspace(page: Page) {
 /** Fill the first tool input editor (textarea fallback or CodeMirror). */
 export async function fillToolInput(page: Page, text: string) {
   await openWorkspace(page);
-  const pane = page.locator(".editor-pane").first();
+  const pane = liveWorkspace(page).locator(".editor-pane").first();
   const surface = pane.locator("textarea.editor-fallback-textarea, .cm-content").first();
   await expect(surface).toBeVisible({ timeout: 20_000 });
 

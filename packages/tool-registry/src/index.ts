@@ -1,21 +1,9 @@
 import type { Action, EditorLanguage, EngineId, OptionValue, ToolId } from "@codeformattools/tool-core";
 import { toolSeoCopy, homeSeoCopy as rawHomeSeoCopy, type SeoContentSection, type HomeSeoCopy } from "./seo-copy.ts";
-import { polishCopyText, polishFaq, polishParagraphs } from "./polish-copy.ts";
+import { polishCopyText, polishFaq, polishParagraphs, polishSections } from "./polish-copy.ts";
 
 export type { HomeSeoCopy, SeoContentSection, ToolSeoCopy } from "./seo-copy.ts";
 export { toolSeoCopy } from "./seo-copy.ts";
-
-function polishSections(sections: SeoContentSection[]): SeoContentSection[] {
-  return sections.map(section => ({
-    ...section,
-    paragraphs: polishParagraphs(section.paragraphs),
-    steps: section.steps?.map(polishCopyText),
-    items: section.items?.map(item => ({
-      title: polishCopyText(item.title),
-      description: polishCopyText(item.description)
-    }))
-  }));
-}
 
 export const homeSeoCopy: HomeSeoCopy = {
   ...rawHomeSeoCopy,

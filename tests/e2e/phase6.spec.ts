@@ -10,6 +10,7 @@ test("all tool pages expose unique SEO sections and structured data", async ({ p
     await expect(page.locator("meta[name='description']")).toHaveAttribute("content", tool.seo.description);
     await expect(page.locator("link[rel='canonical']")).toHaveAttribute("href", new RegExp(`/${tool.slug}$`));
     await expect(page.getByRole("heading", { name: `${tool.headline}.` })).toBeVisible();
+    await page.locator(".seo-deep-details").evaluate((el: HTMLDetailsElement) => { el.open = true; });
     await expect(page.getByText(tool.about).first()).toBeVisible();
     await expect(page.locator(".example-code")).toContainText(tool.example.split("\n")[0]);
     for (const item of tool.commonErrors) await expect(page.locator(".error-grid strong").getByText(item.title, { exact: true })).toBeVisible();

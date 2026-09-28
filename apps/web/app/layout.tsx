@@ -47,7 +47,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${sora.variable} ${ibmPlexMono.variable}`}>
-      <body style={{ fontFamily: "var(--font-sora), var(--font-sans)" }}>
+      <body style={{ fontFamily: "var(--font-sora), var(--font-sans)" }} suppressHydrationWarning>
         <a className="skip-link" href="#main-content">Skip to content</a>
         <script
           dangerouslySetInnerHTML={{

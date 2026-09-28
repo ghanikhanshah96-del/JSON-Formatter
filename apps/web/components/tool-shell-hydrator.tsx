@@ -17,11 +17,12 @@ export function ToolShellHydrator({ tool }: { tool: Tool }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!Shell) return;
+    // Drop the SSR placeholder entirely so it cannot collide with live selectors/a11y.
+    document.getElementById("tool-workspace-gate")?.remove();
+  }, [Shell]);
+
   if (!Shell) return null;
-  return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: "#tool-workspace-gate{display:none!important}" }} />
-      <Shell tool={tool} />
-    </>
-  );
+  return <Shell tool={tool} />;
 }
