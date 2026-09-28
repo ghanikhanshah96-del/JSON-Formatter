@@ -18,9 +18,9 @@ test("XML formatter handles attributes, comments, CDATA, and indentation", async
 test("XML validator locates syntax errors and blocks DOCTYPE", async ({ page }) => {
   await page.goto("/xml-validator");
   await fillAndRun(page, "<root><item></root>");
-  await expect(page.locator(".diagnostic.error")).toContainText(/line 1, column/);
+  await expect(page.locator(".diagnostic-card.error")).toContainText(/line 1, column/i);
   await fillAndRun(page, '<!DOCTYPE r SYSTEM "https://example.invalid/x.dtd"><r/>');
-  await expect(page.locator(".diagnostic.error")).toContainText(/DOCTYPE/);
+  await expect(page.locator(".diagnostic-card.error")).toContainText(/DOCTYPE/i);
   await fillAndRun(page, "<root/>");
   await expect(page.getByText("Valid input")).toBeVisible();
 });

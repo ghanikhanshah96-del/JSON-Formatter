@@ -4,7 +4,8 @@ import test from "node:test";
 import { runJson } from "../src/index.ts";
 
 const root = new URL("../../test-fixtures/json/", import.meta.url);
-const fixture = name => readFileSync(new URL(name, root), "utf8").trimEnd();
+const normalize = text => text.replace(/\r\n/g, "\n");
+const fixture = name => normalize(readFileSync(new URL(name, root), "utf8")).trimEnd();
 const options = { indentation: 2 };
 const valid = ["simple", "nested", "unicode", "emoji", "large-integer", "huge-decimal", "duplicate-keys", "deep-nesting", "large-array"];
 

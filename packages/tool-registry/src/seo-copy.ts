@@ -1074,11 +1074,12 @@ export const toolSeoCopy: Record<string, ToolSeoCopy> = {
     name: "YAML Formatter",
     headline: "YAML Formatter Online",
     description: "Format and beautify your YAML files with our free YAML Formatter. Convert messy or difficult-to-read YAML data into a clean, organized, and properly structured format with correct indentation.",
-    about: "A YAML Formatter is an online tool that organizes YAML data into a clean and readable structure.",
+    about: "YAML Formatter parses and rewrites YAML with consistent indentation. It supports streams, aliases, and merge keys within safety limits. Anchor names and numeric scalar text are preserved. Documents that contain # comments are blocked from formatting so comments are never silently stripped.",
     intro: [
       "Format and beautify your YAML files with our free YAML Formatter. Convert messy or difficult-to-read YAML data into a clean, organized, and properly structured format with correct indentation.",
       "Our YAML Formatter online tool helps developers, DevOps engineers, programmers, and students make YAML documents easier to read and maintain.",
-      "Simply paste your YAML content, format it instantly, and get a cleaner version ready for configuration files, development projects, or documentation.",
+      "YAML Formatter parses and rewrites YAML with consistent indentation. It supports streams, aliases, and merge keys within safety limits. Anchor names and numeric scalar text are preserved. Documents that contain # comments are blocked from formatting so comments are never silently stripped.",
+      "Simply paste your YAML content, format it, and get a cleaner version ready for configuration files, development projects, or documentation.",
       "No installation required. No signup needed. Format YAML directly from your browser."
     ],
     howItWorks: [

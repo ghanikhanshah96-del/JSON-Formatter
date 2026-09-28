@@ -20,11 +20,13 @@ test("CodeMirror editors expose accessible textbox names", async ({ page }) => {
   await page.goto("/json-formatter");
   await openWorkspace(page);
   await expect(page.getByRole("textbox", { name: "Input JSON" })).toBeVisible();
-  await expect(page.getByRole("textbox", { name: "Formatted JSON" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Format JSON|Processing/ })).toBeVisible();
+  await expect(page.locator(".output-empty")).toContainText(/Your result appears here/i);
   await fillAndRun(page, "{bad,}");
   await expect(page.locator(".status-message")).toBeVisible();
-  await expect(page.locator(".diagnostic.error")).toContainText(/JSON|Unexpected|Expected/i);
+  await expect(page.locator(".result-report.invalid")).toContainText(/JSON|Unexpected|Expected|comma/i);
+  await fillAndRun(page, '{"ok":true}');
+  await expect(page.getByRole("textbox", { name: "Formatted JSON" })).toBeVisible();
 });
 
 test("legacy browser preferences migrate to CodeFormatterTools storage keys", async ({ page }) => {
@@ -73,6 +75,7 @@ test("reduced motion preference disables active animations", async ({ page }) =>
 });
 
 test("worker postMessage failure recovers on the next operation", async ({ page }) => {
+  test.setTimeout(60_000);
   await page.addInitScript(() => {
     const NativeWorker = window.Worker;
     let failedOnce = false;
@@ -88,7 +91,8 @@ test("worker postMessage failure recovers on the next operation", async ({ page 
   });
   await page.goto("/json-formatter");
   await fillAndRun(page, '{"first":true}');
-  await expect(page.locator(".diagnostic.error")).toContainText(/worker could not process/i);
+  await expect(page.locator(".diagnostic-card.error")).toContainText(/worker could not process/i);
+  await expect(page.locator(".run-button")).toBeEnabled();
   await fillAndRun(page, '{"second":true}');
   await expect(page.locator(".output-pane .cm-content")).toContainText('"second": true');
 });

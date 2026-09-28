@@ -25,6 +25,6 @@ export function runSql(input: string, options: ToolOptions): Result {
     const line = match ? Number(match[1]) : undefined;
     const column = match ? Number(match[2]) : undefined;
     const startOffset = line && column ? location(input, line, column) : undefined;
-    return { ok: false, output: "", diagnostics: [{ severity: "error", code: "SQL_PARSE_ERROR", message: raw.split("\n")[0], line, column, startOffset, endOffset: startOffset === undefined ? undefined : startOffset + 1, suggestion: "Check the selected SQL dialect and the syntax near this location." }] };
+    return { ok: false, output: "", diagnostics: [{ severity: "error", code: "SQL_PARSE_ERROR", title: "SQL could not be parsed", category: "syntax", message: raw.split("\n")[0], line, column, startOffset, endOffset: startOffset === undefined ? undefined : startOffset + 1, suggestion: dialect === "sql" ? "Check the syntax near this location, or try a more specific dialect (PostgreSQL, MySQL, SQL Server, …) if this query uses vendor features." : `Check the syntax near this location for the ${dialect} dialect, or try another dialect if this query targets a different database.` }] };
   }
 }

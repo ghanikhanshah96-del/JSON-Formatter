@@ -15,11 +15,11 @@ test("JSON to YAML and YAML to JSON work with exact large integers", async ({ pa
 test("YAML alias conversion requires a mode decision", async ({ page }) => {
   await page.goto("/yaml-to-json");
   await fillAndRun(page, "base: &base {a: 1}\ncopy: *base");
-  await expect(page.locator(".diagnostic.error")).toContainText(/aliases cannot be represented/);
+  await expect(page.locator(".result-report.invalid")).toContainText(/aliases cannot be represented/i);
   await pickThemeValue(page, "Mode", "best-effort");
   await runTool(page);
   await expect(page.locator(".output-pane .cm-content")).toContainText('"copy"');
-  await expect(page.locator(".diagnostic.warning")).toContainText(/materialized/);
+  await expect(page.locator(".diagnostic-card.warning")).toContainText(/materialized/);
 });
 
 test("XML converters expose best effort mapping and lossless envelope", async ({ page }) => {
@@ -38,7 +38,7 @@ test("CSV converters show type loss, inference, and safe formula escaping", asyn
   await page.goto("/json-to-csv");
   await fillAndRun(page, '[{"name":"=2+2","age":30}]');
   await expect(page.locator(".output-pane .cm-content")).toContainText("'=2+2");
-  await expect(page.locator(".diagnostic.warning").filter({ hasText: /formula-like/ })).toBeVisible();
+  await expect(page.locator(".diagnostic-card.warning").filter({ hasText: /formula-like/ })).toBeVisible();
   await page.goto("/csv-to-json");
   await fillAndRun(page, "name,age\nAisha,30");
   await expect(page.locator(".output-pane .cm-content")).toContainText('"age": "30"');

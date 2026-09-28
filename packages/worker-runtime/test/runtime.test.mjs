@@ -48,7 +48,7 @@ test("does not return raw input in an error", async () => {
   assert.equal(JSON.stringify(result).includes("PRIVATE_SECRET"), false);
 });
 test("enforces the size limit inside the worker runtime", async () => {
-  const result = await executeRequest({ requestId: "4", tool: "json-validator", engine: "json", action: "validate", input: " ".repeat(3 * 1024 * 1024 + 1), options: {} });
+  const result = await executeRequest({ requestId: "4", tool: "json-validator", engine: "json", action: "validate", input: " ".repeat(5 * 1024 * 1024 + 1), options: {} });
   assert.equal(result.ok, false);
   assert.equal(result.diagnostics[0].code, "INPUT_TOO_LARGE");
 });

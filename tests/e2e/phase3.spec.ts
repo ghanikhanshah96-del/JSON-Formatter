@@ -20,17 +20,17 @@ test("YAML formatter handles anchors, comments, and indentation", async ({ page 
 test("YAML formatter does not destructively remove comments", async ({ page }) => {
   await page.goto("/yaml-formatter");
   await fillAndRun(page, "# application config\nserver:\n  # production host\n  host: example.com\n");
-  await expect(page.locator(".diagnostic.warning")).toContainText(/comments are not reformatted/i);
+  await expect(page.locator(".result-report.blocked")).toContainText(/comment/i);
   await expect(page.locator(".output-pane .cm-content")).toHaveCount(0);
-  await expect(page.locator(".output-pane .pane-footer")).toContainText(/No output yet/i);
+  await expect(page.locator(".output-pane .pane-footer")).toContainText(/No output/i);
 });
 
 test("YAML validator reports syntax and rejects recursive aliases", async ({ page }) => {
   await page.goto("/yaml-validator");
   await fillAndRun(page, "name: [oops");
-  await expect(page.locator(".diagnostic.error")).toContainText(/line 1, column/);
+  await expect(page.locator(".diagnostic-card.error")).toContainText(/line 1, column/i);
   await fillAndRun(page, "loop: &loop\n  self: *loop");
-  await expect(page.locator(".diagnostic.error")).toContainText(/node safety limit/);
+  await expect(page.locator(".diagnostic-card.error")).toContainText(/node safety limit/i);
   await fillAndRun(page, "name: api");
   await expect(page.getByText("Valid input")).toBeVisible();
 });

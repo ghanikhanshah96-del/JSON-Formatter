@@ -13,17 +13,17 @@ export async function openWorkspace(page: Page) {
 export async function fillToolInput(page: Page, text: string) {
   await openWorkspace(page);
   const pane = page.locator(".editor-pane").first();
-  const fallback = pane.locator("textarea.editor-fallback-textarea");
-  const cm = pane.locator(".cm-content");
+  const surface = pane.locator("textarea.editor-fallback-textarea, .cm-content").first();
+  await expect(surface).toBeVisible({ timeout: 20_000 });
 
+  const fallback = pane.locator("textarea.editor-fallback-textarea");
   if (await fallback.count()) {
     await fallback.fill(text);
-  } else if (await cm.count()) {
+  } else {
+    const cm = pane.locator(".cm-content");
     await cm.click();
     await page.keyboard.press("Control+A");
     await page.keyboard.insertText(text);
-  } else {
-    await pane.locator("textarea").first().fill(text);
   }
 
   // Confirm React state accepted the input (run button enables).
@@ -33,7 +33,9 @@ export async function fillToolInput(page: Page, text: string) {
 /** Fill input and click the primary action button (no auto-process). */
 export async function fillAndRun(page: Page, text: string) {
   await fillToolInput(page, text);
-  await page.locator(".run-button").click();
+  const run = page.locator(".run-button");
+  await expect(run).toBeEnabled({ timeout: 15_000 });
+  await run.click({ timeout: 15_000 });
 }
 
 export async function runTool(page: Page) {

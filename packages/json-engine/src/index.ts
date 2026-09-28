@@ -101,22 +101,44 @@ function syntaxDiagnostic(source: string, error: unknown): Diagnostic {
   const message = e instanceof Error ? e.message.replace(/ \(\d+:\d+\)$/, "") : "Invalid JSON";
   const offset = e.offset;
   const char = offset === undefined ? "" : source[offset];
-  let code = "INVALID_JSON", explanation = message, suggestion: string | undefined;
+  let code = "INVALID_JSON", explanation = message, suggestion: string | undefined, title: string | undefined;
   let fix: Diagnostic["fix"];
   if (offset !== undefined && (char === "}" || char === "]")) {
     let previous = offset - 1;
     while (previous >= 0 && /\s/.test(source[previous])) previous--;
     if (source[previous] === ",") {
-      code = "TRAILING_COMMA"; explanation = "Unexpected trailing comma"; suggestion = "Remove the comma before the closing bracket.";
+      code = "TRAILING_COMMA"; title = "Trailing comma"; explanation = "Unexpected trailing comma"; suggestion = "Remove the comma before the closing bracket.";
       fix = { label: "Remove trailing comma", startOffset: previous, endOffset: previous + 1, replacement: "" };
     }
   }
-  if (code === "INVALID_JSON" && char === "'") { code = "SINGLE_QUOTES"; explanation = "Single quotes are not valid JSON string delimiters"; suggestion = "Use double quotes for property names and string values."; }
-  if (code === "INVALID_JSON" && offset !== undefined && (char === "\\" || source[offset - 1] === "\\")) { code = "BAD_ESCAPE"; explanation = "Invalid escape sequence in a JSON string"; suggestion = "Use a supported escape such as \\n, \\t, \\uXXXX, or \\\\."; }
-  if (code === "INVALID_JSON" && message.includes("end of input")) { code = "UNEXPECTED_END"; explanation = "JSON ended before the structure was complete"; suggestion = "Check for a missing closing brace, bracket, or quote."; }
-  if (code === "INVALID_JSON" && message.includes("Unexpected token String")) { code = "MISSING_COMMA"; explanation = "Expected a comma before this string"; suggestion = "Separate object properties or array items with a comma."; }
+  if (code === "INVALID_JSON" && offset !== undefined && char === "'") {
+    code = "SINGLE_QUOTES"; title = "Single quotes"; explanation = "Single quotes are not valid JSON string delimiters"; suggestion = "Use double quotes for property names and string values.";
+    let end = offset + 1;
+    while (end < source.length && source[end] !== "'" && source[end] !== "\n") end++;
+    if (end < source.length && source[end] === "'") {
+      fix = { label: "Replace with double quotes", startOffset: offset, endOffset: end + 1, replacement: `"${source.slice(offset + 1, end)}"` };
+    } else {
+      fix = { label: "Replace quote with \"", startOffset: offset, endOffset: offset + 1, replacement: "\"" };
+    }
+  }
+  if (code === "INVALID_JSON" && offset !== undefined && (char === "\\" || source[offset - 1] === "\\")) {
+    code = "BAD_ESCAPE"; title = "Bad escape"; explanation = "Invalid escape sequence in a JSON string"; suggestion = "Use a supported escape such as \\n, \\t, \\uXXXX, or \\\\.";
+  }
+  if (code === "INVALID_JSON" && message.includes("end of input")) {
+    code = "UNEXPECTED_END"; title = "Unexpected end"; explanation = "JSON ended before the structure was complete"; suggestion = "Check for a missing closing brace, bracket, or quote.";
+  }
+  if (code === "INVALID_JSON" && (message.includes("Unexpected token String") || message.includes("Unexpected token \""))) {
+    code = "MISSING_COMMA"; title = "Missing comma"; explanation = "Expected a comma before this string"; suggestion = "Separate object properties or array items with a comma.";
+    if (offset !== undefined) {
+      let previous = offset - 1;
+      while (previous >= 0 && /\s/.test(source[previous])) previous--;
+      if (previous >= 0 && source[previous] !== ",") {
+        fix = { label: "Insert missing comma", startOffset: previous + 1, endOffset: previous + 1, replacement: "," };
+      }
+    }
+  }
   return {
-    severity: "error", code, message: explanation,
+    severity: "error", code, title, message: explanation, category: "syntax",
     line: e.line, column: e.column, startOffset: offset,
     endOffset: offset === undefined ? undefined : offset + 1,
     suggestion, fix

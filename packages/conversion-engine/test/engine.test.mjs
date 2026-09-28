@@ -3,7 +3,8 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { runConversion } from "../src/index.ts";
 
-const fixture = name => readFileSync(new URL("../../test-fixtures/conversion/" + name, import.meta.url), "utf8").trimEnd();
+const normalize = text => text.replace(/\r\n/g, "\n");
+const fixture = name => normalize(readFileSync(new URL("../../test-fixtures/conversion/" + name, import.meta.url), "utf8")).trimEnd();
 const run = (tool, input, mode = "lossless") => runConversion(tool, input, { mode });
 
 test("JSON to YAML and back retains large number text", () => {

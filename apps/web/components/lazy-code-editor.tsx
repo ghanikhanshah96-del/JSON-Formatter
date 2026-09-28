@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import type { Diagnostic, EditorLanguage } from "@codeformattools/tool-core";
 
@@ -12,6 +12,7 @@ type Props = {
   diagnostics?: Diagnostic[];
   label: string;
   placeholder?: string;
+  revealOffset?: number | null;
 };
 
 const LazyEditor = dynamic(
@@ -30,7 +31,11 @@ const LazyEditor = dynamic(
 export function LazyCodeEditor(props: Props) {
   const [unlocked, setUnlocked] = useState(false);
   const activate = useCallback(() => setUnlocked(true), []);
-  const active = unlocked || Boolean(props.value);
+  const active = unlocked || Boolean(props.value) || props.revealOffset != null;
+
+  useEffect(() => {
+    if (props.revealOffset != null) setUnlocked(true);
+  }, [props.revealOffset]);
 
   if (!active) {
     return (

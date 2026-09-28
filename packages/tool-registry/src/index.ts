@@ -114,14 +114,30 @@ function converter(config: {
   commonErrors: { title: string; description: string }[]; faq: { question: string; answer: string }[];
 }): Tool {
   const { id, name, description, input, output, category, defaultMode, about, example, relatedTools, commonErrors, faq } = config;
+  const modeChoices = category === "csv"
+    ? [
+      { label: "Lossless (all text cells)", value: "lossless" as const },
+      { label: "Best effort (infer types)", value: "best-effort" as const },
+      { label: "Compatibility (spreadsheet-friendly)", value: "compatibility" as const }
+    ]
+    : [
+      { label: "Lossless (fail on mapping loss)", value: "lossless" as const },
+      { label: "Best effort (convert with warnings)", value: "best-effort" as const }
+    ];
   return {
     id, slug: id, name, eyebrow: "CONVERT DATA", category, engine: "conversion", operations: ["convert"], action: "convert",
     description, cardDescription: description, headline: name, intro: [description], sections: [],
     input: { language: input, extensions: input === "yaml" ? [".yaml", ".yml"] : [`.${input}`] }, output: { language: output, extension: `.${output}` },
-    options: [{ id: "mode", label: "Mode", type: "select", defaultValue: defaultMode, choices: [{ label: "Lossless", value: "lossless" }, { label: "Best effort", value: "best-effort" }, { label: "Compatibility", value: "compatibility" }] }],
+    options: [{ id: "mode", label: "Mode", type: "select", defaultValue: defaultMode, choices: modeChoices }],
     privacy: "local", worker: "tool-worker", inputLabel: `Input ${input.toUpperCase()}`, outputLabel: `Output ${output.toUpperCase()}`, buttonLabel: `Convert to ${output.toUpperCase()}`,
     seo: { title: `${name} Online | CodeFormatterTools`, description: `${description} Processed privately in your browser, with clear warnings for mapping loss.` },
-    about, howItWorks: [`Paste ${input.toUpperCase()} or open a file.`, "Choose Lossless, Best effort, or Compatibility mode.", "Convert, review warnings, then copy or download the result."],
+    about, howItWorks: [
+      `Paste ${input.toUpperCase()} or open a file.`,
+      category === "csv"
+        ? "Choose Lossless, Best effort, or Compatibility mode."
+        : "Choose Lossless (reject lossy mappings) or Best effort (convert with warnings).",
+      "Convert, review warnings, then copy or download the result."
+    ],
     commonErrors, faq, relatedTools, example
   };
 }
@@ -257,11 +273,11 @@ const toolDefinitions: Tool[] = [
     description: "Format YAML documents locally with bounded alias, merge, and nesting limits.",
     inputLabel: "Input YAML", outputLabel: "Formatted YAML", buttonLabel: "Format YAML",
     seo: { title: "YAML Formatter Online | CodeFormatterTools", description: "Format YAML locally in your browser with explicit parser safety limits and clear syntax errors." },
-    about: "YAML Formatter parses and rewrites YAML with consistent indentation. It supports streams, aliases, and merge keys within safety limits. It preserves anchor names and numeric scalar text, but removes comments, so review the result before replacing a source file.",
+    about: "YAML Formatter parses and rewrites YAML with consistent indentation. It supports streams, aliases, and merge keys within safety limits. Anchor names and numeric scalar text are preserved. Documents that contain # comments are blocked from formatting so comments are never silently stripped.",
     howItWorks: ["Paste YAML or open a .yaml or .yml file.", "Choose indentation and format.", "Review the rewritten result before copying or downloading."],
     faq: [
       { question: "Does my YAML leave the browser?", answer: "No. Parsing runs in a browser worker and the site does not upload the input." },
-      { question: "Are comments and anchors preserved?", answer: "Anchor names remain in the formatted text, but comments are removed. Review the output before replacing your source." },
+      { question: "Are comments and anchors preserved?", answer: "Anchor names remain in the formatted text. Comments cannot be rewritten yet, so documents with # comments are blocked instead of stripping them." },
       { question: "How are large aliases handled?", answer: "Depth, alias count, merge keys, and materialized node counts have explicit limits." }
     ], relatedTools: ["yaml-validator"], example: "service:\n  name: api\n  ports: [8080, 8081]"
   }),
@@ -405,7 +421,28 @@ const toolDefinitions: Tool[] = [
   })
 ];
 
-export const tools: Tool[] = toolDefinitions.map(applySeoCopy);
+function withYamlCommentFaq(tool: Tool): Tool {
+  if (tool.id !== "yaml-formatter") return tool;
+  const question = "Can I format YAML that contains comments?";
+  const answer = "Not yet. Documents with # comments are blocked from formatting so comments are not silently removed. Use YAML Validator to check syntax, or remove comments before formatting.";
+  const faq = [
+    { question, answer },
+    ...tool.faq.filter(item => !/comment/i.test(item.question))
+  ];
+  return {
+    ...tool,
+    about: "YAML Formatter parses and rewrites YAML with consistent indentation. It supports streams, aliases, and merge keys within safety limits. Anchor names and numeric scalar text are preserved. Documents that contain # comments are blocked from formatting so comments are never silently stripped.",
+    faq,
+    howItWorks: [
+      "Paste YAML or open a .yaml/.yml file.",
+      "Choose 2- or 4-space indentation.",
+      "Format comment-free YAML. If comments are present, formatting is blocked so comments stay intact — validate instead, or remove comments first.",
+      "Copy or download the formatted result."
+    ]
+  };
+}
+
+export const tools: Tool[] = toolDefinitions.map(applySeoCopy).map(withYamlCommentFaq);
 
 export const categories = [
   { id: "json", name: "JSON tools", description: "Format, validate, minify, and sort JSON online in your browser — free, with no upload required." },

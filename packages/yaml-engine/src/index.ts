@@ -88,9 +88,12 @@ export function runYaml(input: string, action: string, options: ToolOptions = {}
       ok: false,
       output: "",
       diagnostics: [{
-        severity: "warning",
+        severity: "blocked",
         code: "YAML_COMMENT_PRESERVATION_LIMIT",
-        message: "YAML comments are not reformatted yet because preserving operational comments safely is required. Validation remains available, and comment-free YAML can still be formatted."
+        title: "Comments block formatting",
+        category: "safety",
+        message: "This YAML contains comments. Formatting is blocked so operational comments are not silently dropped.",
+        suggestion: "Remove comments to format, or use YAML Validator to check syntax while keeping comments. Comment-preserving format is not available yet."
       }]
     };
     const indentation = options.indentation === 4 ? 4 : 2;

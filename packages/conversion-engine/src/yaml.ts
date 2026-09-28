@@ -54,6 +54,6 @@ export function toYaml(value: Value, mode: string): { output: string; diagnostic
   const output = present([document], { schema, indent: 2, lineWidth: -1 }).trimEnd();
   const validation = runYaml(output, "validate");
   if (!validation.ok) throw new Error("YAML_OUTPUT_ERROR: " + validation.diagnostics[0]?.message);
-  const duplicates = mode === "lossless" ? [] : [];
+  const duplicates: Diagnostic[] = [];
   return { output, diagnostics: duplicates };
 }

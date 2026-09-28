@@ -3,8 +3,9 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { runYaml, YAML_LIMITS } from "../src/index.ts";
 
-const fixture = name => readFileSync(new URL(`../../test-fixtures/yaml/${name}.yaml`, import.meta.url), "utf8");
-const expected = name => readFileSync(new URL(`../../test-fixtures/yaml/expected/${name}.yaml`, import.meta.url), "utf8").trimEnd();
+const normalize = text => text.replace(/\r\n/g, "\n");
+const fixture = name => normalize(readFileSync(new URL(`../../test-fixtures/yaml/${name}.yaml`, import.meta.url), "utf8"));
+const expected = name => normalize(readFileSync(new URL(`../../test-fixtures/yaml/expected/${name}.yaml`, import.meta.url), "utf8")).trimEnd();
 
 for (const name of ["simple", "unicode", "multidocument", "alias-heavy", "merge-heavy"]) test(`${name} formats, validates, and is idempotent`, () => {
   const first = runYaml(fixture(name), "format", { indentation: 2 });

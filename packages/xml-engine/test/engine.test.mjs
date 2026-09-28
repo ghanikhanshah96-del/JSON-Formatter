@@ -3,8 +3,9 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { runXml, XML_LIMITS } from "../src/index.ts";
 
-const fixture = name => readFileSync(new URL("../../test-fixtures/xml/" + name + ".xml", import.meta.url), "utf8");
-const expected = name => readFileSync(new URL("../../test-fixtures/xml/expected/" + name + ".xml", import.meta.url), "utf8").trimEnd();
+const normalize = text => text.replace(/\r\n/g, "\n");
+const fixture = name => normalize(readFileSync(new URL("../../test-fixtures/xml/" + name + ".xml", import.meta.url), "utf8"));
+const expected = name => normalize(readFileSync(new URL("../../test-fixtures/xml/expected/" + name + ".xml", import.meta.url), "utf8")).trimEnd();
 
 for (const name of ["simple", "comments", "cdata", "namespaces"]) test(name + " formats, validates, and is idempotent", () => {
   const first = runXml(fixture(name), "format", { indentation: 2 });

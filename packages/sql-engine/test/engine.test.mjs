@@ -3,8 +3,9 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { runSql } from "../src/index.ts";
 
-const fixture = name => readFileSync(new URL(`../../test-fixtures/sql/${name}.sql`, import.meta.url), "utf8").trimEnd();
-const expected = name => readFileSync(new URL(`../../test-fixtures/sql/expected/${name}.sql`, import.meta.url), "utf8").trimEnd();
+const normalize = text => text.replace(/\r\n/g, "\n");
+const fixture = name => normalize(readFileSync(new URL(`../../test-fixtures/sql/${name}.sql`, import.meta.url), "utf8")).trimEnd();
+const expected = name => normalize(readFileSync(new URL(`../../test-fixtures/sql/expected/${name}.sql`, import.meta.url), "utf8")).trimEnd();
 const options = { dialect: "sql", indentation: 2, keywordCase: "upper", linesBetweenQueries: 1 };
 
 const dialectFixtures = [

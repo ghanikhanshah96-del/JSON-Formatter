@@ -14,6 +14,8 @@ type Props = {
   diagnostics?: Diagnostic[];
   label: string;
   placeholder?: string;
+  /** When this number changes, scroll/select that offset in the document. */
+  revealOffset?: number | null;
 };
 
 async function languageExtension(language: EditorLanguage) {
@@ -26,7 +28,7 @@ async function languageExtension(language: EditorLanguage) {
   }
 }
 
-export function CodeEditor({ value, language, onChange, readOnly = false, diagnostics = [], label, placeholder }: Props) {
+export function CodeEditor({ value, language, onChange, readOnly = false, diagnostics = [], label, placeholder, revealOffset = null }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
@@ -45,17 +47,16 @@ export function CodeEditor({ value, language, onChange, readOnly = false, diagno
         ".cm-line": { padding: "0 12px 0 6px" },
         ".cm-gutters": { backgroundColor: "transparent", color: "#62736f", border: "none", padding: "0 8px 0 12px", minWidth: "2.5em" },
         ".cm-gutterElement": { padding: "0 4px 0 0", minWidth: "2ch" },
-      ".cm-activeLine, .cm-activeLineGutter": { backgroundColor: "#ffffff08" },
-      ".cm-cursor": { borderLeftColor: "#b3e57c" },
-      /* High-contrast selection so Select All / drag-select stays readable */
-      ".cm-selectionBackground": { backgroundColor: "#c8ef88 !important" },
-      "&.cm-focused .cm-selectionBackground": { backgroundColor: "#c8ef88 !important" },
-      ".cm-content ::selection": { backgroundColor: "#c8ef88", color: "#143028" },
-      ".cm-line ::selection": { backgroundColor: "#c8ef88", color: "#143028" },
-      ".cm-selectionMatch": { backgroundColor: "#8cb96755" },
-      ".cm-tooltip": { backgroundColor: "#18302d", color: "#e6efea", border: "1px solid #38534a" },
-      ".cm-lint-marker": { width: "0.8em" },
-      ".cm-placeholder": { color: "#657d6d", fontStyle: "normal", fontFamily: "var(--font-mono)" }
+        ".cm-activeLine, .cm-activeLineGutter": { backgroundColor: "#ffffff08" },
+        ".cm-cursor": { borderLeftColor: "#b3e57c" },
+        ".cm-selectionBackground": { backgroundColor: "#c8ef88 !important" },
+        "&.cm-focused .cm-selectionBackground": { backgroundColor: "#c8ef88 !important" },
+        ".cm-content ::selection": { backgroundColor: "#c8ef88", color: "#143028" },
+        ".cm-line ::selection": { backgroundColor: "#c8ef88", color: "#143028" },
+        ".cm-selectionMatch": { backgroundColor: "#8cb96755" },
+        ".cm-tooltip": { backgroundColor: "#18302d", color: "#e6efea", border: "1px solid #38534a" },
+        ".cm-lint-marker": { width: "0.8em" },
+        ".cm-placeholder": { color: "#657d6d", fontStyle: "normal", fontFamily: "var(--font-mono)" }
       }),
       EditorView.lineWrapping,
       EditorView.contentAttributes.of({ "aria-label": label }),
@@ -78,16 +79,35 @@ export function CodeEditor({ value, language, onChange, readOnly = false, diagno
     return () => { active = false; };
   }, [language, readOnly]);
 
-  useEffect(() => { const editor = view.current; if (editor && editor.state.doc.toString() !== value) editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: value } }); }, [value]);
+  useEffect(() => {
+    const editor = view.current;
+    if (editor && editor.state.doc.toString() !== value) {
+      editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: value } });
+    }
+  }, [value]);
+
   useEffect(() => {
     const editor = view.current;
     if (!editor) return;
     const marks: CmDiagnostic[] = diagnostics.filter(d => d.startOffset !== undefined).map(d => ({
       from: Math.min(d.startOffset!, editor.state.doc.length),
       to: Math.min(Math.max(d.endOffset ?? d.startOffset! + 1, d.startOffset! + 1), editor.state.doc.length),
-      severity: d.severity, message: d.message
+      severity: d.severity === "blocked" ? "error" : d.severity === "info" ? "info" : d.severity,
+      message: d.message
     }));
     editor.dispatch(setDiagnostics(editor.state, marks));
   }, [diagnostics, value]);
+
+  useEffect(() => {
+    const editor = view.current;
+    if (!editor || revealOffset == null || revealOffset < 0) return;
+    const pos = Math.min(revealOffset, editor.state.doc.length);
+    editor.focus();
+    editor.dispatch({
+      selection: { anchor: pos, head: Math.min(pos + 1, editor.state.doc.length) },
+      effects: EditorView.scrollIntoView(pos, { y: "center" })
+    });
+  }, [revealOffset]);
+
   return <div className="editor-host" ref={host} aria-label={label} />;
 }

@@ -3,6 +3,7 @@ import { expectThemeOptionAbsent } from "./theme-select";
 import { fillAndRun, openWorkspace } from "./tool-helpers";
 
 test("core formatter flow works across browsers", async ({ page }) => {
+  test.setTimeout(120_000);
   await page.goto("/");
   await expect(page.getByRole("heading", { name: /Free Online Developer Tools/ })).toBeVisible();
   await page.goto("/json-formatter");

@@ -51,7 +51,7 @@ test("SQL comments, file input, copy, download, and errors work", async ({ page,
   await page.locator(".output-pane").getByRole("button", { name: /Download/ }).click();
   expect((await download).suggestedFilename()).toBe("sql-formatter.sql");
   await fillAndRun(page, "select 'unclosed");
-  await expect(page.locator(".diagnostic.error")).toContainText(/line 1, column/);
+  await expect(page.locator(".diagnostic-card.error")).toContainText(/line 1, column/i);
   await expect(page.locator(".diagnostic-excerpt")).toContainText("^");
   await page.getByRole("button", { name: /Reset/ }).click();
   await expect(page.locator(".output-pane .cm-content")).toHaveCount(0);
