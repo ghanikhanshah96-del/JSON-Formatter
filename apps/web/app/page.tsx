@@ -5,6 +5,7 @@ import { categories, homeSeoCopy, tools } from "@codeformattools/tool-registry";
 import { FaqAccordion } from "@/components/faq-accordion";
 import { SeoSections } from "@/components/seo-sections";
 import { ToolsGrid } from "@/components/tools-grid";
+import { getBlogPost } from "@/lib/learn-guides";
 
 export const metadata: Metadata = {
   title: homeSeoCopy.seo.title,
@@ -26,9 +27,16 @@ export const metadata: Metadata = {
   }
 };
 
+const featuredBlogSlugs = [
+  "format-json-api-response",
+  "yaml-kubernetes-config",
+  "private-browser-developer-tools"
+] as const;
+
 export default function Home() {
   const heroIntro = homeSeoCopy.intro[0];
   const remainingIntro = homeSeoCopy.intro.slice(1);
+  const featuredPosts = featuredBlogSlugs.map(slug => getBlogPost(slug)).filter(Boolean);
 
   return <main>
     {homeSchemas().map((data, index) => <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />)}
@@ -45,10 +53,25 @@ export default function Home() {
         <div><div className="eyebrow">BLOG</div><h2>Short guides into live tools</h2></div>
         <p>Practical long-tails — API responses, Kubernetes YAML, private processing — each linked into a workspace.</p>
       </div>
+      <div className="home-guide-grid">
+        {featuredPosts.map(post => post ? (
+          <a className="home-guide-card" href={`/blog/${post.slug}`} key={post.slug}>
+            <div className="home-guide-media">
+              <img src={post.image} alt="" width={1200} height={675} loading="lazy" decoding="async" aria-hidden="true" />
+            </div>
+            <div className="home-guide-body">
+              <div className="home-guide-meta">
+                <span className="card-eyebrow">{post.eyebrow}</span>
+                <span className="learn-minutes">{post.readMinutes} min</span>
+              </div>
+              <h3>{post.title}</h3>
+              <p>{post.description}</p>
+              <span className="card-link">Read article <span aria-hidden="true">→</span></span>
+            </div>
+          </a>
+        ) : null)}
+      </div>
       <div className="home-guide-links">
-        <a href="/blog/format-json-api-response">JSON for API responses →</a>
-        <a href="/blog/yaml-kubernetes-config">YAML for Kubernetes →</a>
-        <a href="/blog/private-browser-developer-tools">Private-by-design tools →</a>
         <a href="/blog">All articles →</a>
         <a href="/performance">Performance budget →</a>
       </div>
