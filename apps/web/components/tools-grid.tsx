@@ -3,25 +3,45 @@ import { iconForTool } from "@/lib/tool-icons";
 
 type Category = { id: string; name: string };
 
-/** Server-rendered tools grid — plain anchors avoid Link hydration/TBT. */
+/**
+ * CSS radio-tab filter — works before deferred homepage scripts hydrate,
+ * so chips filter in place without navigating to /tools/[category].
+ */
 export function ToolsGrid({ tools, categories }: { tools: Tool[]; categories: readonly Category[] }) {
+  const filters = [{ id: "all", name: "All" }, ...categories.map(c => ({ id: c.id, name: c.name.replace(/ tools$/i, "") }))];
+
   return (
-    <div className="tools-browser">
-      <div className="tools-filter" aria-label="Tool categories">
-        <a href="/#tools" className="tools-filter-chip active">All</a>
-        {categories.map(category => (
-          <a
-            key={category.id}
-            href={`/tools/${category.id}`}
+    <div className="tools-browser" id="tools-browser">
+      {filters.map((filter, index) => (
+        <input
+          key={filter.id}
+          type="radio"
+          name="tools-category"
+          id={`tools-cat-${filter.id}`}
+          className="tools-cat-input visually-hidden"
+          defaultChecked={index === 0}
+        />
+      ))}
+      <div className="tools-filter" role="tablist" aria-label="Tool categories">
+        {filters.map(filter => (
+          <label
+            key={filter.id}
+            htmlFor={`tools-cat-${filter.id}`}
             className="tools-filter-chip"
+            role="tab"
           >
-            {category.name.replace(/ tools$/i, "")}
-          </a>
+            {filter.name}
+          </label>
         ))}
       </div>
       <div className="tool-grid">
         {tools.map(tool => (
-          <a href={`/${tool.slug}`} className="tool-card" key={tool.id}>
+          <a
+            href={`/${tool.slug}`}
+            className="tool-card"
+            data-category={tool.category}
+            key={tool.id}
+          >
             <div className="card-top">
               <span className="card-icon" aria-hidden="true">{iconForTool(tool.id)}</span>
             </div>

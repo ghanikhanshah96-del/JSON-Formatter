@@ -105,6 +105,18 @@ test("CSV malformed data and duplicate headers fail cleanly", () => {
   assert.equal(run("csv-to-json", fixture("duplicate.csv")).diagnostics[0].code, "CSV_DUPLICATE_HEADER");
 });
 
+test("JSON to XML best effort wraps multi-key objects and arrays", () => {
+  const multi = run("json-to-xml", '{"name":"John","age":30}', "best-effort");
+  assert.equal(multi.ok, true, multi.diagnostics[0]?.message);
+  assert.match(multi.output, /<root>/);
+  assert.match(multi.output, /<name>John<\/name>/);
+  assert.equal(multi.diagnostics.some(item => item.code === "XML_ROOT_WRAPPED"), true);
+  const list = run("json-to-xml", '[{"sku":"A"},{"sku":"B"}]', "best-effort");
+  assert.equal(list.ok, true, list.diagnostics[0]?.message);
+  assert.match(list.output, /<item>[\s\S]*<sku>A<\/sku>/);
+  assert.match(list.output, /<sku>B<\/sku>/);
+});
+
 test("JSON to XML lossless requires the reversible envelope", () => {
   assert.equal(run("json-to-xml", '{"root":{"item":"A"}}').diagnostics[0].code, "XML_ENVELOPE_REQUIRED");
 });

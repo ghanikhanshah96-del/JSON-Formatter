@@ -59,7 +59,8 @@ export const homeSeoCopy: HomeSeoCopy = {
         { title: "Simple and Fast", description: "Complete common formatting and conversion tasks within seconds." },
         { title: "Developer Friendly", description: "Built for programmers, students, and technical professionals." },
         { title: "Works in Your Browser", description: "Use tools directly from desktop, tablet, or mobile devices." },
-        { title: "No Registration Required", description: "Start using tools instantly without creating an account." }
+        { title: "No Registration Required", description: "Start using tools instantly without creating an account." },
+        { title: "Privacy-Friendly", description: "Process your data directly in your browser without unnecessary data collection or account requirements." }
       ],
     },
     {
@@ -71,7 +72,8 @@ export const homeSeoCopy: HomeSeoCopy = {
         { title: "Software Engineers", description: "Manage structured data and development files efficiently." },
         { title: "Backend Developers", description: "Work with APIs, databases, and data formats." },
         { title: "DevOps Professionals", description: "Manage YAML configuration files and automation workflows." },
-        { title: "Students", description: "Learn programming concepts and practice working with different formats." }
+        { title: "Students", description: "Learn programming concepts and practice working with different formats." },
+        { title: "Data Analysts", description: "Work with structured data, CSV files, JSON datasets, and other formats for analysis and data processing." }
       ],
     },
   ],

@@ -385,14 +385,14 @@ const toolDefinitions: Tool[] = [
     about: "Best effort maps one root key to an XML element, @keys to attributes, #text to text, and arrays to repeated elements. Lossless mode accepts a CodeFormatterTools XML envelope produced by XML to JSON.",
     example: '{"catalog":{"item":{"@id":"1","#text":"Book"}}}', relatedTools: ["xml-to-json", "xml-validator"],
     commonErrors: [
-      { title: "Missing single root", description: "Best effort XML output needs one JSON object key to become the document root element." },
+      { title: "Multiple top-level keys", description: "Best effort wraps multi-key objects and arrays in a <root> element so the XML document stays valid." },
       { title: "Invalid XML names", description: "Object keys used as element or attribute names must be valid XML names." },
       { title: "Envelope required", description: "Lossless mode only accepts the reversible XML envelope produced by the XML to JSON converter." }
     ],
     faq: [
       { question: "How do attributes work?", answer: "In best effort mode, object keys that begin with @ become XML attributes and #text becomes element text." },
       { question: "When should I use Lossless mode?", answer: "Use it when you are converting back from a CodeFormatterTools XML envelope and need comments, CDATA, order, and attributes restored." },
-      { question: "Can any JSON object become clean XML?", answer: "No. XML has element names, attributes, and one document root, so incompatible JSON structures produce diagnostics." }
+      { question: "Can any JSON object become clean XML?", answer: "Best effort maps most objects and arrays. Multi-key roots are wrapped in <root>. Prefer a single root key when you need a named document element." }
     ]
   }),
   converter({

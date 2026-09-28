@@ -64,7 +64,7 @@ export default function Home() {
         <SeoSections sections={homeSeoCopy.sections.filter(section => section.heading !== "All-in-One Developer Utility Platform")} related={tools.slice(0, 8)} />
         <section className="seo-block">
           <h2>Frequently Asked Questions</h2>
-          <FaqAccordion items={homeSeoCopy.faq} />
+          <FaqAccordion items={homeSeoCopy.faq} group="home-faq" />
         </section>
         <section className="seo-cta">
           <h2>{homeSeoCopy.cta.heading}</h2>

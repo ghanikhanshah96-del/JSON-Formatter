@@ -61,8 +61,22 @@ export function toXml(value: Value, mode: string): { output: string; diagnostics
     if (!validity.ok) throw new Error("XML_OUTPUT_ERROR: " + validity.diagnostics[0]?.message);
     return { output, diagnostics: [] };
   }
-  const object = value.kind === "object" ? value.entries : [["root", value] as [string, Value]];
-  if (object.length !== 1) throw new Error("XML_ROOT_ERROR: JSON must have exactly one root key.");
+  const diagnostics: Diagnostic[] = [warning("XML_MAPPING_LOSS", "JSON types and structure were mapped to XML elements, text, and @attributes; review the result.")];
+  let rootName = "root";
+  let rootContent = value;
+  if (value.kind === "object") {
+    if (value.entries.length === 0) throw new Error("XML_ROOT_ERROR: JSON object is empty and cannot become an XML document.");
+    if (value.entries.length === 1) {
+      rootName = value.entries[0][0];
+      rootContent = value.entries[0][1];
+    } else {
+      diagnostics.push(warning("XML_ROOT_WRAPPED", "Multiple top-level JSON keys were wrapped in a <root> element so the result is a valid XML document."));
+    }
+  } else if (value.kind === "array") {
+    diagnostics.push(warning("XML_ROOT_WRAPPED", "A top-level JSON array was wrapped in a <root> element with repeated <item> children."));
+  } else {
+    diagnostics.push(warning("XML_ROOT_WRAPPED", "A top-level JSON scalar was wrapped in a <root> element."));
+  }
   const element = (name: string, content: Value): OrderedNode => {
     const children: OrderedNode[] = [];
     const attributes: Record<string, string> = {};
@@ -74,11 +88,13 @@ export function toXml(value: Value, mode: string): { output: string; diagnostics
         if (child.kind === "array") for (const item of child.items) children.push(element(key, item));
         else children.push(element(key, child));
       }
+    } else if (content.kind === "array") {
+      for (const item of content.items) children.push(element("item", item));
     } else if (content.kind !== "null") children.push({ "#text": String(toJs(content)) });
     return Object.keys(attributes).length ? { [name]: children, ":@": attributes } : { [name]: children };
   };
-  const output = new XMLBuilder({ ...parserOptions, processEntities: true, format: true, indentBy: "  " }).build([element(object[0][0], object[0][1])]).trim();
+  const output = new XMLBuilder({ ...parserOptions, processEntities: true, format: true, indentBy: "  " }).build([element(rootName, rootContent)]).trim();
   const validity = runXml(output, "validate");
   if (!validity.ok) throw new Error("XML_OUTPUT_ERROR: " + validity.diagnostics[0]?.message);
-  return { output, diagnostics: [warning("XML_MAPPING_LOSS", "JSON types and structure were mapped to XML elements, text, and @attributes; review the result.")] };
+  return { output, diagnostics };
 }

@@ -32,6 +32,11 @@ test("XML converters expose best effort mapping and lossless envelope", async ({
   await page.goto("/json-to-xml");
   await fillAndRun(page, '{"root":{"item":{"@id":"1","#text":"Book"}}}');
   await expect(page.locator(".output-pane .cm-content")).toContainText('<item id="1">Book</item>');
+  // Everyday multi-key JSON should convert (wrapped under <root>), not fail hard.
+  await fillAndRun(page, '{"name":"John","age":30}');
+  await expect(page.locator(".output-pane .cm-content")).toContainText("<root>");
+  await expect(page.locator(".output-pane .cm-content")).toContainText("<name>John</name>");
+  await expect(page.locator(".diagnostic-card.warning").filter({ hasText: /wrapped/i })).toBeVisible();
 });
 
 test("CSV converters show type loss, inference, and safe formula escaping", async ({ page }) => {

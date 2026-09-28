@@ -57,12 +57,21 @@ test("homepage stays within its initial script budget", async ({ page }) => {
   expect(scripts.some(script => script.name.includes("tool.worker"))).toBe(false);
 });
 
-test("registry category navigation reaches all JSON tools", async ({ page }) => {
-  await page.goto("/tools/json");
-  await expect(page.getByRole("heading", { name: "JSON tools." })).toBeVisible();
-  for (const name of ["JSON Formatter", "JSON Validator", "JSON Minifier", "JSON Sorter"]) {
-    await expect(page.getByRole("link", { name: new RegExp(name) })).toBeVisible();
-  }
+test("homepage category chips filter in place without navigation", async ({ page }) => {
+  await page.goto("/");
+  const grid = page.locator(".tools-browser .tool-grid");
+  await expect(grid.locator(".tool-card")).toHaveCount(15);
+  await page.locator('label[for="tools-cat-json"]').click();
+  await expect(page).toHaveURL(/\/(?:$|\?|#)/);
+  await expect(grid.locator(".tool-card:visible")).toHaveCount(4);
+  await expect(grid.getByRole("heading", { name: "JSON Formatter" })).toBeVisible();
+  await expect(grid.locator('.tool-card[data-category="sql"]:visible')).toHaveCount(0);
+  await page.locator('label[for="tools-cat-converters"]').click();
+  await expect(grid.locator(".tool-card:visible")).toHaveCount(4);
+  await expect(grid.getByRole("heading", { name: "JSON to XML Converter" })).toBeVisible();
+  await expect(grid.locator('.tool-card[data-category="json"]:visible')).toHaveCount(0);
+  await page.locator('label[for="tools-cat-all"]').click();
+  await expect(grid.locator(".tool-card:visible")).toHaveCount(15);
 });
 
 test("tools do not auto-process without the action button", async ({ page }) => {

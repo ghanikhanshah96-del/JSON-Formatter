@@ -63,7 +63,7 @@ export default async function ToolPage({ params }: Props) {
         </section>
         <section className="seo-block">
           <h2>Frequently asked questions</h2>
-          <FaqAccordion items={tool.faq} />
+          <FaqAccordion items={tool.faq} group={`faq-${tool.slug}`} />
         </section>
         <details className="seo-deep-details">
           <summary>More about {tool.name}</summary>
