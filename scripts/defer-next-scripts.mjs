@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "../apps/web/.next/server/app");
 
-const LOADER = `(function(){var loaded=false;function go(){if(loaded)return;loaded=true;var nodes=document.querySelectorAll("script[data-cft-defer]");nodes.forEach(function(n){var s=document.createElement("script");s.src=n.getAttribute("data-src");s.async=true;if(n.getAttribute("data-type"))s.type=n.getAttribute("data-type");document.body.appendChild(s);});}if(document.getElementById("tool-workspace-root")||document.getElementById("workspace")){if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go();}else{["pointerdown","keydown","touchstart"].forEach(function(ev){window.addEventListener(ev,go,{once:true,passive:true});});}})();`;
+const LOADER = `(function(){var loaded=false;function go(){if(loaded)return;loaded=true;var nodes=document.querySelectorAll("script[data-cft-defer]");nodes.forEach(function(n){var s=document.createElement("script");s.src=n.getAttribute("data-src");s.async=true;if(n.getAttribute("data-type"))s.type=n.getAttribute("data-type");document.body.appendChild(s);});}if(document.getElementById("tool-workspace-root")||document.getElementById("workspace")||document.querySelector("form.contact-form")){if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go();}else{["pointerdown","keydown","touchstart"].forEach(function(ev){window.addEventListener(ev,go,{once:true,passive:true});});}})();`;
 
 function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {

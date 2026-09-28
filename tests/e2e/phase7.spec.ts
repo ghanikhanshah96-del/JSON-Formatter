@@ -59,7 +59,84 @@ test("contact API validates required fields", async ({ request }) => {
   expect(response.status()).toBe(400);
   const body = await response.json();
   expect(body.ok).toBe(false);
-  expect(String(body.error)).toMatch(/name|email|message/i);
+  expect(body.errors?.name).toMatch(/name/i);
+  expect(body.errors?.email).toMatch(/email/i);
+  expect(body.errors?.message).toMatch(/message|characters/i);
+});
+
+test("contact API rejects invalid email and short name", async ({ request }) => {
+  const response = await request.post("/api/contact", {
+    data: { name: "A", email: "not-an-email", topic: "bug", message: "This message is long enough." }
+  });
+  expect(response.status()).toBe(400);
+  const body = await response.json();
+  expect(body.ok).toBe(false);
+  expect(body.errors?.name).toBeTruthy();
+  expect(body.errors?.email).toBeTruthy();
+});
+
+test("contact API rejects numeric or symbolic names and empty message content", async ({ request }) => {
+  const numeric = await request.post("/api/contact", {
+    data: { name: "12345", email: "alex@example.com", topic: "other", message: "This message is long enough." }
+  });
+  expect(numeric.status()).toBe(400);
+  expect((await numeric.json()).errors?.name).toMatch(/numbers|letters/i);
+
+  const symbols = await request.post("/api/contact", {
+    data: { name: "John@#$", email: "alex@example.com", topic: "other", message: "This message is long enough." }
+  });
+  expect(symbols.status()).toBe(400);
+  expect((await symbols.json()).errors?.name).toMatch(/letters|special|numbers/i);
+
+  const spamMessage = await request.post("/api/contact", {
+    data: { name: "Alex", email: "alex@example.com", topic: "other", message: "!!!!!!!!!!" }
+  });
+  expect(spamMessage.status()).toBe(400);
+  expect((await spamMessage.json()).errors?.message).toMatch(/readable text|characters/i);
+});
+
+test("contact API accepts honeypot spam silently", async ({ request }) => {
+  const response = await request.post("/api/contact", {
+    data: {
+      name: "Bot",
+      email: "bot@example.com",
+      topic: "other",
+      message: "This is a long enough spam message.",
+      website_url: "https://spam.example"
+    }
+  });
+  expect(response.status()).toBe(200);
+  expect((await response.json()).ok).toBe(true);
+});
+
+test("contact form shows field errors before submit", async ({ page }) => {
+  await page.goto("/contact");
+  await expect(page.locator("form.contact-form")).toBeVisible();
+  await page.waitForLoadState("domcontentloaded");
+  // Allow client hydration (contact form scripts load immediately).
+  await expect(page.getByRole("button", { name: /Send message/i })).toBeEnabled();
+  await page.waitForTimeout(600);
+  await page.getByRole("button", { name: /Send message/i }).click();
+  if (await page.locator(".contact-field-error").count() === 0) {
+    await page.waitForTimeout(400);
+    await page.getByRole("button", { name: /Send message/i }).click();
+  }
+  await expect(page.locator(".contact-field-error").first()).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator(".contact-field-error", { hasText: /Please enter your name/i })).toBeVisible();
+  await expect(page.locator(".contact-field-error", { hasText: /Please enter your email/i })).toBeVisible();
+  await expect(page.locator(".contact-field-error", { hasText: /Please enter a message/i })).toBeVisible();
+  await page.locator('input[name="name"]').fill("Alex");
+  await page.locator('input[name="email"]').fill("not-valid");
+  await page.locator('input[name="email"]').blur();
+  await expect(page.locator(".contact-field-error", { hasText: /valid email address/i })).toBeVisible();
+  await page.locator('input[name="name"]').fill("12345");
+  await page.locator('input[name="name"]').blur();
+  await expect(page.locator(".contact-field-error", { hasText: /numbers|letters/i })).toBeVisible();
+  await page.locator('input[name="name"]').fill("Alex");
+  await page.locator('input[name="email"]').fill("alex@example.com");
+  await page.locator('textarea[name="message"]').fill("Short");
+  await page.getByRole("button", { name: /Send message/i }).click();
+  await expect(page.locator(".contact-field-error", { hasText: /at least 10 characters/i })).toBeVisible();
 });
 
 test("contact API returns 503 when Resend is not configured", async ({ request }) => {

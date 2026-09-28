@@ -396,6 +396,29 @@
 .faq-trigger:hover {
   color: var(--primary);
 }
+.faq-list details.faq-item[open] {
+  background: transparent;
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+.faq-chevron {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--muted-strong, var(--muted));
+}
+.faq-list details.faq-item[open] .faq-chevron {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+}
+.faq-list details.faq-item[open] .faq-index {
+  color: var(--primary);
+}
+:root[data-theme="dark"] .faq-list details.faq-item[open] {
+  background: transparent;
+}
+:root[data-theme="dark"] .faq-panel p {
+  color: var(--muted);
+}
 .related {
   background: var(--surface-subtle);
   border-color: var(--line);
@@ -537,6 +560,26 @@
 .contact-field textarea:focus {
   outline-color: var(--primary);
   border-color: var(--primary);
+}
+.contact-field.has-error input,
+.contact-field.has-error select,
+.contact-field.has-error textarea {
+  border-color: var(--danger);
+}
+.contact-field.has-error input:focus,
+.contact-field.has-error select:focus,
+.contact-field.has-error textarea:focus {
+  outline-color: var(--danger);
+  border-color: var(--danger);
+}
+.contact-field-error {
+  color: var(--danger);
+}
+.contact-field-hint.is-warning {
+  color: #b45309;
+}
+:root[data-theme="dark"] .contact-field-hint.is-warning {
+  color: #fbbf24;
 }
 .contact-honeypot {
   position: absolute !important;
