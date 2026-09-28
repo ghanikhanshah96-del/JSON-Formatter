@@ -1,11 +1,12 @@
 import { test, expect } from "@playwright/test";
 import { pickThemeValue, expectThemeValue } from "./theme-select";
+import { fillAndRun, fillToolInput, openWorkspace, runTool } from "./tool-helpers";
 
 test("trailing comma shows context and can be fixed", async ({ page }) => {
   await page.goto("/json-validator");
-  await page.locator(".editor-pane").first().locator(".cm-content").fill('{"a":1,}');
+  await fillAndRun(page, '{"a":1,}');
   await expect(page.getByText("Unexpected trailing comma")).toBeVisible();
-  await expect(page.locator(".diagnostic-excerpt")).toContainText('^');
+  await expect(page.locator(".diagnostic-excerpt")).toContainText("^");
   await page.getByRole("button", { name: "Remove trailing comma" }).click();
   await expect(page.getByText("Valid input")).toBeVisible();
   await expect(page.getByText("Unexpected trailing comma")).toHaveCount(0);
@@ -14,8 +15,10 @@ test("trailing comma shows context and can be fixed", async ({ page }) => {
 test("file, indentation, copy, download, and reset work end to end", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/json-formatter");
+  await openWorkspace(page);
   await page.locator('input[type="file"]').setInputFiles({ name: "sample.json", mimeType: "application/json", buffer: Buffer.from('{"a":1,"b":[2,3]}') });
   await pickThemeValue(page, "Indent", "4");
+  await runTool(page);
   await expect(page.locator(".output-pane .cm-content")).toContainText('"a": 1');
   await page.locator(".output-pane").getByRole("button", { name: /Copy/ }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('"a": 1');
@@ -23,14 +26,15 @@ test("file, indentation, copy, download, and reset work end to end", async ({ pa
   await page.locator(".output-pane").getByRole("button", { name: /Download/ }).click();
   expect((await download).suggestedFilename()).toBe("json-formatter.json");
   await page.getByRole("button", { name: /Reset/ }).click();
-  await expect(page.locator(".output-pane .cm-content")).toBeEmpty();
+  await expect(page.locator(".output-pane .cm-content")).toHaveCount(0);
 });
 
 test("large file enters guarded mode and can be run manually", async ({ page }) => {
   await page.goto("/json-validator");
+  await openWorkspace(page);
   const large = `{"data":"${"a".repeat(1_100_000)}"}`;
   await page.locator('input[type="file"]').setInputFiles({ name: "large.json", mimeType: "application/json", buffer: Buffer.from(large) });
-  await expect(page.getByText("Large input — run manually")).toBeVisible();
+  await expect(page.getByText(/Large input — click the button to run|Large input — run manually/)).toBeVisible();
   await page.locator(".run-button").click();
   await expect(page.getByText("Valid input")).toBeVisible({ timeout: 20_000 });
 });
@@ -38,7 +42,7 @@ test("large file enters guarded mode and can be run manually", async ({ page }) 
 test("key sorter preserves array order on mobile", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/json-sorter");
-  await page.locator(".editor-pane").first().locator(".cm-content").fill('{"z":[2,1],"a":0}');
+  await fillAndRun(page, '{"z":[2,1],"a":0}');
   await expect(page.locator(".output-pane .cm-content")).toContainText('"a": 0');
   const result = await page.locator(".output-pane .cm-content").innerText();
   expect(result.indexOf('"a": 0')).toBeLessThan(result.indexOf('"z"'));
@@ -48,29 +52,33 @@ test("key sorter preserves array order on mobile", async ({ page }) => {
 
 test("indentation preference and keyboard execution persist", async ({ page }) => {
   await page.goto("/json-formatter");
+  await openWorkspace(page);
   await pickThemeValue(page, "Indent", "4");
   await page.reload();
+  await openWorkspace(page);
   await expectThemeValue(page, "Indent", "4");
-  const input = page.locator(".editor-pane").first().locator(".cm-content");
-  await input.fill('{"a":1}');
+  await fillToolInput(page, '{"a":1}');
+  const input = page.locator(".editor-pane").first().locator(".cm-content, textarea").first();
   await input.press("Control+Enter");
   await expect(page.locator(".output-pane .cm-content")).toContainText('"a": 1');
   await expect(page.locator(".output-pane .cm-line").nth(1)).toHaveText('    "a": 1');
   await pickThemeValue(page, "Indent", "2");
+  await runTool(page);
   await expect(page.locator(".output-pane .cm-line").nth(1)).toHaveText('  "a": 1');
 });
 
 test("extreme formatting expansion is stopped before output allocation", async ({ page }) => {
   await page.goto("/json-formatter");
   const chain = `${"[".repeat(511)}0${"]".repeat(511)}`;
-  await page.locator(".editor-pane").first().locator(".cm-content").fill(`[${Array(30).fill(chain).join(",")}]`);
+  await fillAndRun(page, `[${Array(30).fill(chain).join(",")}]`);
   await expect(page.getByText(/formatted result would exceed/)).toBeVisible();
 });
 
 test("oversized file is rejected before it is read", async ({ page }) => {
   await page.goto("/json-validator");
+  await openWorkspace(page);
   await page.locator('input[type="file"]').setInputFiles({ name: "too-large.json", mimeType: "application/json", buffer: Buffer.alloc(5 * 1024 * 1024 + 1, 97) });
   await expect(page.getByText(/The editor can process up to 5 MB/)).toBeVisible();
-  const inputText = await page.locator(".editor-pane").first().locator(".cm-content").innerText();
+  const inputText = await page.locator(".editor-pane").first().locator(".cm-content, textarea").first().innerText();
   expect(inputText.replace(/\u200b/g, "").replace("Paste or type JSON here...", "").trim()).toBe("");
 });

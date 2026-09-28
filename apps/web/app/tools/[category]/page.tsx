@@ -56,7 +56,7 @@ export default async function CategoryPage({ params }: Props) {
     <p className="category-lead">{category.description}</p>
     <p className="category-support">Open any tool below to format, validate, or convert data directly in your browser. No signup and no upload required.</p>
     <div className="tool-grid">{items.map(tool => (
-      <Link className="tool-card" href={`/${tool.slug}`} key={tool.id}>
+      <Link className="tool-card" href={`/${tool.slug}`} prefetch={false} key={tool.id}>
         <div className="card-top"><span className="card-icon" aria-hidden="true">{iconForTool(tool.id)}</span></div>
         <div className="card-eyebrow">{tool.eyebrow}</div>
         <h2>{tool.name}</h2>

@@ -1,8 +1,4 @@
-"use client";
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import type { ReactNode, MouseEvent } from "react";
+import type { ReactNode } from "react";
 
 type Props = {
   href?: string;
@@ -11,21 +7,11 @@ type Props = {
   children: ReactNode;
 };
 
+/** Plain anchor — no Next.js client router hydration cost. */
 export function HomeBrandLink({ href = "/", className, "aria-label": ariaLabel, children }: Props) {
-  const pathname = usePathname();
-
-  const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (pathname !== "/" || href !== "/") return;
-    event.preventDefault();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    if (window.location.hash) {
-      window.history.replaceState(null, "", "/");
-    }
-  };
-
   return (
-    <Link href={href} className={className} aria-label={ariaLabel} onClick={onClick}>
+    <a href={href} className={className} aria-label={ariaLabel}>
       {children}
-    </Link>
+    </a>
   );
 }

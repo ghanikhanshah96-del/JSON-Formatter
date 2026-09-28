@@ -25,6 +25,12 @@ const contentSecurityPolicy = [
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@codeformattools/tool-core", "@codeformattools/tool-registry", "@codeformattools/json-engine", "@codeformattools/sql-engine", "@codeformattools/yaml-engine", "@codeformattools/xml-engine", "@codeformattools/csv-engine", "@codeformattools/conversion-engine", "@codeformattools/analytics", "@codeformattools/worker-runtime", "@codeformattools/seo", "@codeformattools/editor"],
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false
+  },
+  experimental: {
+    optimizePackageImports: ["@codeformattools/tool-registry", "@codeformattools/seo"]
+  },
   async headers() {
     return [{
       source: "/:path*",

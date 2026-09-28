@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { fillAndRun, openWorkspace, runTool } from "./tool-helpers";
 
 const productionOrigin = "https://codeformattertools.com";
 
@@ -47,7 +48,7 @@ test("production metadata, assets, sitemap, robots, and manifest are coherent", 
   expect(robotsText).toContain("Allow: /");
   expect(robotsText).toContain(`${productionOrigin}/sitemap.xml`);
 
-  await page.getByRole("textbox", { name: "Input JSON" }).fill('{"ok":true}');
+  await fillAndRun(page, '{"ok":true}');
   await expect(page.locator(".output-pane .cm-content")).toContainText('"ok": true');
   await expect.poll(() => consoleProblems.filter(item => {
     if (/Failed to load resource: the server responded with a status of 404/.test(item)) return false;
@@ -58,7 +59,9 @@ test("production metadata, assets, sitemap, robots, and manifest are coherent", 
 
 test("file upload and download work in production build", async ({ page }) => {
   await page.goto("/json-formatter");
+  await openWorkspace(page);
   await page.locator('input[type="file"]').setInputFiles({ name: "sample.json", mimeType: "application/json", buffer: Buffer.from('{"download":true}') });
+  await runTool(page);
   await expect(page.locator(".output-pane .cm-content")).toContainText('"download": true');
   const download = page.waitForEvent("download");
   await page.locator(".output-pane").getByRole("button", { name: /Download/ }).click();

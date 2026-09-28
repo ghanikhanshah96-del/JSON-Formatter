@@ -9,7 +9,7 @@ import { FaqAccordion } from "@/components/faq-accordion";
 import { RelatedTools } from "@/components/related-tools";
 import { SeoSections } from "@/components/seo-sections";
 import { ToolLandTracker } from "@/components/tool-land-tracker";
-import { ToolShell } from "@/components/tool-shell";
+import { ToolWorkspaceGate } from "@/components/tool-workspace-gate";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -48,7 +48,7 @@ export default async function ToolPage({ params }: Props) {
       </div>
     </section>
     <div id="workspace">
-      <ToolShell tool={tool} />
+      <ToolWorkspaceGate tool={tool} />
     </div>
     <AdSlotPlaceholder placement="after-tool" enabled />
     <section className={`content-section container${related.length ? "" : " single"}`}>
@@ -90,7 +90,7 @@ export default async function ToolPage({ params }: Props) {
           </section>
         ) : null}
       </div>
-      {related.length > 0 && <RelatedTools current={tool.id} related={related} />}
+      {related.length > 0 && <RelatedTools related={related} />}
     </section>
   </main>;
 }

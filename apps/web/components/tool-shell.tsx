@@ -3,18 +3,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Tool } from "@codeformattools/tool-registry";
 import { MAX_EDITOR_INPUT_BYTES, MAX_EDITOR_INPUT_LABEL, type Diagnostic, type ToolOptions, type WorkerRequest, type WorkerResponse } from "@codeformattools/tool-core";
 import { inputSizeBucket, track } from "@codeformattools/analytics";
-import { CodeEditor } from "@codeformattools/editor";
+import { LazyCodeEditor } from "./lazy-code-editor";
 import { migratedStorageValue, setStorageValue } from "@/lib/browser-storage";
 import { downloadMime } from "@/lib/download-mime";
 import { DiagnosticPanel } from "./diagnostic-panel";
-import { LOAD_EXAMPLE_EVENT } from "./example-snippet";
+import { LOAD_EXAMPLE_EVENT, PENDING_EXAMPLE_KEY } from "./example-snippet";
 import { ThemeSelect } from "./theme-select";
 
-const AUTO_LIMIT_BYTES = 1 * 1024 * 1024;
-const SMALL_INPUT_BYTES = 100 * 1024;
+const GUARD_LIMIT_BYTES = 1 * 1024 * 1024;
 const MAX_PROCESSING_MS = 30_000;
 const encoder = new TextEncoder();
-type Status = "idle" | "working" | "guarded" | "success" | "error";
+type Status = "idle" | "ready" | "working" | "guarded" | "success" | "error";
 
 function defaults(tool: Tool): ToolOptions {
   return Object.fromEntries(tool.options.map(option => [option.id, option.defaultValue]));
@@ -22,7 +21,7 @@ function defaults(tool: Tool): ToolOptions {
 
 function statusForInput(text: string): Status {
   if (!text.trim()) return "idle";
-  return encoder.encode(text).length > AUTO_LIMIT_BYTES ? "guarded" : "working";
+  return encoder.encode(text).length > GUARD_LIMIT_BYTES ? "guarded" : "ready";
 }
 
 function formatBytes(size: number): string {
@@ -51,11 +50,13 @@ export function ToolShell({ tool }: { tool: Tool }) {
   const [metrics, setMetrics] = useState<WorkerResponse["metrics"] | null>(null);
   const workerRef = useRef<Worker | null>(null);
   const timeoutRef = useRef<number | null>(null);
-  const autoTimerRef = useRef<number | null>(null);
   const requestRef = useRef(0);
   const inputRef = useRef(input);
   const fileRef = useRef<HTMLInputElement>(null);
-  inputRef.current = input;
+
+  useEffect(() => {
+    inputRef.current = input;
+  }, [input]);
 
   const clearProcessingTimeout = useCallback(() => {
     if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current);
@@ -89,10 +90,6 @@ export function ToolShell({ tool }: { tool: Tool }) {
     workerRef.current = worker;
     return worker;
   }, [clearProcessingTimeout, tool, workerError]);
-  const stopAutoTimer = useCallback(() => {
-    if (autoTimerRef.current !== null) window.clearTimeout(autoTimerRef.current);
-    autoTimerRef.current = null;
-  }, []);
 
   useEffect(() => {
     const values = defaults(tool);
@@ -111,10 +108,9 @@ export function ToolShell({ tool }: { tool: Tool }) {
     if (!preferencesReady) return;
     for (const option of tool.options) setStorageValue(`option.${tool.id}.${option.id}`, String(options[option.id] ?? option.defaultValue));
   }, [options, preferencesReady, tool]);
-  useEffect(() => () => { stopWorker(); stopAutoTimer(); }, [stopWorker, stopAutoTimer]);
+  useEffect(() => () => { stopWorker(); }, [stopWorker]);
 
   const processInput = useCallback((source: string) => {
-    stopAutoTimer();
     clearProcessingTimeout();
     const requestId = String(++requestRef.current);
     setCopied(false);
@@ -140,16 +136,8 @@ export function ToolShell({ tool }: { tool: Tool }) {
     const request: WorkerRequest = { requestId, tool: tool.id, engine: tool.engine, action: tool.action, input: source, options };
     try { worker.postMessage(request); }
     catch { workerError(inputSize); }
-  }, [clearProcessingTimeout, getWorker, options, stopAutoTimer, stopWorker, tool, workerError]);
+  }, [clearProcessingTimeout, getWorker, options, stopWorker, tool, workerError]);
 
-  useEffect(() => {
-    if (!input.trim() || !preferencesReady) return;
-    const size = encoder.encode(input).length;
-    if (size > AUTO_LIMIT_BYTES) return;
-    const timer = window.setTimeout(() => processInput(input), size <= SMALL_INPUT_BYTES ? 450 : 900);
-    autoTimerRef.current = timer;
-    return () => { window.clearTimeout(timer); if (autoTimerRef.current === timer) autoTimerRef.current = null; };
-  }, [input, preferencesReady, processInput]);
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key === "Enter" && input.trim()) { event.preventDefault(); processInput(input); }
@@ -158,37 +146,39 @@ export function ToolShell({ tool }: { tool: Tool }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [input, processInput]);
   useEffect(() => {
-    const onLoadExample = (event: Event) => {
-      const detail = (event as CustomEvent<{ example?: string }>).detail;
-      if (typeof detail?.example !== "string") return;
-      const text = detail.example;
+    const applyExample = (text: string) => {
       ++requestRef.current;
       clearProcessingTimeout();
-      stopAutoTimer();
       setInput(text);
       setOutput("");
       setMetrics(null);
       setDiagnostics([]);
       setStatus(statusForInput(text));
     };
+    try {
+      const pending = sessionStorage.getItem(PENDING_EXAMPLE_KEY);
+      if (pending) {
+        sessionStorage.removeItem(PENDING_EXAMPLE_KEY);
+        applyExample(pending);
+      }
+    } catch {
+      /* ignore storage failures */
+    }
+    const onLoadExample = (event: Event) => {
+      const detail = (event as CustomEvent<{ example?: string }>).detail;
+      if (typeof detail?.example !== "string") return;
+      applyExample(detail.example);
+    };
     window.addEventListener(LOAD_EXAMPLE_EVENT, onLoadExample);
     return () => window.removeEventListener(LOAD_EXAMPLE_EVENT, onLoadExample);
-  }, [clearProcessingTimeout, stopAutoTimer]);
+  }, [clearProcessingTimeout]);
 
   const onInput = (text: string) => {
-    if (text === inputRef.current) {
-      if (!text.trim()) return;
-      if (encoder.encode(text).length > AUTO_LIMIT_BYTES) {
-        setStatus("guarded");
-        return;
-      }
-      processInput(text);
-      return;
-    }
+    if (text === inputRef.current) return;
     const grew = text.length > inputRef.current.length + 20 || (inputRef.current.length === 0 && text.length > 0);
     ++requestRef.current;
     clearProcessingTimeout();
-    stopAutoTimer();
+    inputRef.current = text;
     setInput(text);
     setOutput("");
     setMetrics(null);
@@ -199,7 +189,7 @@ export function ToolShell({ tool }: { tool: Tool }) {
   const onFile = async (file?: File) => {
     if (!file) return;
     const selectionId = ++requestRef.current;
-    clearProcessingTimeout(); stopAutoTimer();
+    clearProcessingTimeout();
     if (file.size > MAX_EDITOR_INPUT_BYTES) {
       setInput("");
       setOutput("");
@@ -214,7 +204,7 @@ export function ToolShell({ tool }: { tool: Tool }) {
     if (selectionId === requestRef.current) onInput(text);
   };
   const updateOption = (id: string, value: string | number | boolean) => {
-    ++requestRef.current; clearProcessingTimeout(); stopAutoTimer(); setOutput(""); setMetrics(null); setDiagnostics([]);
+    ++requestRef.current; clearProcessingTimeout(); setOutput(""); setMetrics(null); setDiagnostics([]);
     setStatus(statusForInput(input));
     setStorageValue(`option.${tool.id}.${id}`, String(value));
     setOptions(current => ({ ...current, [id]: value }));
@@ -237,12 +227,28 @@ export function ToolShell({ tool }: { tool: Tool }) {
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   const reset = () => {
-    ++requestRef.current; clearProcessingTimeout(); stopAutoTimer(); setInput(""); setOutput(""); setDiagnostics([]); setStatus("idle"); setMetrics(null);
+    ++requestRef.current; clearProcessingTimeout(); setInput(""); setOutput(""); setDiagnostics([]); setStatus("idle"); setMetrics(null);
     if (fileRef.current) fileRef.current.value = "";
   };
-  const applyFix = (fix: NonNullable<Diagnostic["fix"]>) => onInput(`${input.slice(0, fix.startOffset)}${fix.replacement}${input.slice(fix.endOffset)}`);
+  const applyFix = (fix: NonNullable<Diagnostic["fix"]>) => {
+    const next = `${input.slice(0, fix.startOffset)}${fix.replacement}${input.slice(fix.endOffset)}`;
+    // Sync ref before setState so CodeMirror's value→onChange echo does not cancel processInput.
+    inputRef.current = next;
+    setInput(next);
+    setOutput("");
+    setMetrics(null);
+    setDiagnostics([]);
+    processInput(next);
+  };
   const visibleOptions = tool.options.filter(option => !option.actions || option.actions.includes(tool.action));
-  const statusText = status === "idle" ? "Ready when you are" : status === "guarded" ? "Large input — run manually" : status === "working" ? "Processing in your browser…" : status === "error" ? "Needs attention" : diagnostics.some(d => d.severity === "warning") ? "Completed with warnings" : tool.action === "validate" ? "Valid input" : "Done — processed locally";
+  const statusText =
+    status === "idle" ? "Ready when you are" :
+    status === "ready" ? "Ready — click the button to run" :
+    status === "guarded" ? "Large input — click the button to run" :
+    status === "working" ? "Processing in your browser…" :
+    status === "error" ? "Needs attention" :
+    diagnostics.some(d => d.severity === "warning") ? "Completed with warnings" :
+    tool.action === "validate" ? "Valid input" : "Done — processed locally";
   const runIcon = tool.action === "validate" ? "✓" : "▶";
   const showWorkingOverlay = status === "working" && !output;
   const showIdleEmpty = !output && !showWorkingOverlay;
@@ -276,27 +282,27 @@ export function ToolShell({ tool }: { tool: Tool }) {
       ))}
       <button type="button" className="button secondary reset-button" onClick={reset} disabled={!input} aria-label="Reset workspace">Reset ↺</button>
     </div></div>
-    <div className="editor-grid"><div className="editor-pane"><div className="pane-header"><div><span className="pane-dot input-dot" />{tool.inputLabel}</div><div className="pane-actions"><input ref={fileRef} type="file" accept={tool.input.extensions.join(",")} hidden onChange={e => onFile(e.target.files?.[0])} /><button type="button" onClick={() => fileRef.current?.click()}>↑ Open file</button></div></div><div className="editor-area"><CodeEditor value={input} language={tool.input.language} onChange={onInput} diagnostics={diagnostics} label={tool.inputLabel} placeholder={`Paste or type ${tool.input.language.toUpperCase()} here...`} /></div><div className="pane-footer"><span>{input ? `${encoder.encode(input).length.toLocaleString()} bytes` : "Ready for input"}</span><span>Up to {MAX_EDITOR_INPUT_LABEL}</span></div></div>
+    <div className="editor-grid"><div className="editor-pane"><div className="pane-header"><div><span className="pane-dot input-dot" />{tool.inputLabel}</div><div className="pane-actions"><input ref={fileRef} type="file" accept={tool.input.extensions.join(",")} hidden onChange={e => onFile(e.target.files?.[0])} /><button type="button" onClick={() => fileRef.current?.click()}>↑ Open file</button></div></div><div className="editor-area"><LazyCodeEditor value={input} language={tool.input.language} onChange={onInput} diagnostics={diagnostics} label={tool.inputLabel} placeholder={`Paste or type ${tool.input.language.toUpperCase()} here...`} /></div><div className="pane-footer"><span>{input ? `${encoder.encode(input).length.toLocaleString()} bytes` : "Ready for input"}</span><span>Up to {MAX_EDITOR_INPUT_LABEL}</span></div></div>
       <div className="editor-pane output-pane"><div className="pane-header"><div><span className="pane-dot output-dot" />{tool.outputLabel}</div><div className="pane-actions"><button type="button" disabled={!output} onClick={copy}>{copied ? "✓ Copied" : "▢ Copy"}</button><button type="button" disabled={!output} onClick={download}>↓ Download</button></div></div><div className="editor-area">
-        <CodeEditor value={output} language={tool.output.language} readOnly label={tool.outputLabel} />
+        <LazyCodeEditor value={output} language={tool.output.language} readOnly label={tool.outputLabel} />
         {showWorkingOverlay && (
           <div className="output-empty output-loading" role="status" aria-live="polite">
             <span className="loading-spinner" aria-hidden="true" />
             <strong>Updating result…</strong>
-            <small>Applying your option change in this browser</small>
+            <small>Processing in this browser — nothing is uploaded</small>
           </div>
         )}
         {showIdleEmpty && (
           <div className="output-empty">
             <span className="empty-symbol">{`{ }`}</span>
             <strong>{status === "success" && tool.action === "validate" ? "Input is valid" : "Your result appears here"}</strong>
-            <small>{tool.action === "validate" ? "Validation details appear below" : "Enter data to see the result"}</small>
+            <small>{input.trim() ? `Click “${tool.buttonLabel}” below to process` : "Enter data, then click the action button"}</small>
           </div>
         )}
       </div><div className="pane-footer"><span>{output ? `${encoder.encode(output).length.toLocaleString()} bytes` : showWorkingOverlay ? "Working…" : "No output yet"}</span><span>{metrics ? `${metrics.durationMs} ms` : "LOCAL PROCESSING"}</span></div></div></div>
     <div className="workspace-bottom">
       <div className="run-cluster">
-        <button type="button" className="button primary run-button" onClick={() => processInput(input)} disabled={!input.trim()}>
+        <button type="button" className="button primary run-button" onClick={() => processInput(input)} disabled={!input.trim() || status === "working"}>
           {status === "working" ? "Processing…" : tool.buttonLabel}
           <span aria-hidden="true">{runIcon}</span>
         </button>

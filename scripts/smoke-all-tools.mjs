@@ -1,6 +1,6 @@
 /**
- * Functional smoke against a running next dev server.
- * Usage: node --experimental-strip-types scripts/smoke-all-tools.mjs
+ * Functional smoke against a running next server (dev or start).
+ * Usage: node scripts/smoke-all-tools.mjs
  */
 const BASE = process.env.SMOKE_BASE || "http://127.0.0.1:3000";
 
@@ -22,6 +22,21 @@ const cases = [
   { slug: "xml-to-json", fill: "<root><item>ok</item></root>", expectOut: "root" }
 ];
 
+async function openWorkspace(page) {
+  const open = page.getByRole("button", { name: /Open workspace/i });
+  if (await open.count()) await open.click();
+  await page.locator(".run-button").waitFor({ state: "visible", timeout: 20_000 });
+}
+
+async function fillInput(page, text) {
+  await openWorkspace(page);
+  const pane = page.locator(".editor-pane").first();
+  const textarea = pane.locator("textarea");
+  const cm = pane.locator(".cm-content");
+  if (await textarea.count()) await textarea.first().fill(text);
+  else await cm.fill(text);
+}
+
 async function main() {
   const { chromium } = await import("@playwright/test");
   const browser = await chromium.launch();
@@ -35,16 +50,35 @@ async function main() {
     if (!(await h1.count())) failures.push(`${path} missing h1`);
   }
 
+  await page.goto(`${BASE}/contact`, { waitUntil: "domcontentloaded" });
+  if (!(await page.locator("form.contact-form").count())) {
+    failures.push("contact page missing form");
+  } else if (!(await page.getByRole("button", { name: /send message/i }).count())) {
+    failures.push("contact form missing submit button");
+  }
+
   for (const item of cases) {
     try {
       await page.goto(`${BASE}/${item.slug}`, { waitUntil: "domcontentloaded" });
       await expectVisible(page, "h1");
       const privacy = page.locator(".workspace-privacy-bar");
       if (!(await privacy.count())) failures.push(`${item.slug} missing privacy bar`);
-      const input = page.locator(".editor-pane").first().locator(".cm-content");
-      await input.click();
-      await page.keyboard.press("Control+A");
-      await page.keyboard.type(item.fill, { delay: 0 });
+
+      await fillInput(page, item.fill);
+
+      // Assert no auto-process before Run
+      await page.waitForTimeout(400);
+      const beforeOut = (await page.locator(".output-pane .cm-content").innerText().catch(() => "")).trim();
+      const statusText = (await page.locator(".status-message").innerText().catch(() => "")).toLowerCase();
+      if (item.expectOut && beforeOut.includes(item.expectOut)) {
+        failures.push(`${item.slug}: auto-processed before Run click`);
+      }
+      if (/valid input|completed successfully/.test(statusText)) {
+        failures.push(`${item.slug}: success status before Run click (${statusText})`);
+      }
+
+      await page.locator(".run-button").click();
+
       if (item.expectText) {
         await page.getByText(item.expectText).first().waitFor({ timeout: 15000 });
       }
@@ -58,7 +92,6 @@ async function main() {
     }
   }
 
-  // Theme toggle smoke
   await page.goto(`${BASE}/`);
   const theme = page.getByRole("button", { name: /Theme:/ });
   await theme.click();
@@ -78,7 +111,7 @@ async function expectVisible(page, selector) {
   await page.locator(selector).first().waitFor({ state: "visible", timeout: 10000 });
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error(error);
   process.exit(1);
 });

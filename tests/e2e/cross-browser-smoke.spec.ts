@@ -1,33 +1,35 @@
 import { expect, test } from "@playwright/test";
 import { expectThemeOptionAbsent } from "./theme-select";
+import { fillAndRun, openWorkspace } from "./tool-helpers";
 
 test("core formatter flow works across browsers", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: /Free Online Developer Tools/ })).toBeVisible();
   await page.goto("/json-formatter");
-  await page.getByRole("textbox", { name: "Input JSON" }).fill('{"id":9123372036854000123}');
+  await fillAndRun(page, '{"id":9123372036854000123}');
   await expect(page.locator(".output-pane .cm-content")).toContainText("9123372036854000123");
   await page.goto("/json-validator");
-  await page.getByRole("textbox", { name: "Input JSON" }).fill('{"ok":true}');
+  await fillAndRun(page, '{"ok":true}');
   await expect(page.getByText("Valid input")).toBeVisible();
   await page.goto("/json-minifier");
-  await page.getByRole("textbox", { name: "Input JSON" }).fill('{"space": true}');
+  await fillAndRun(page, '{"space": true}');
   await expect(page.locator(".output-pane .cm-content")).toContainText('{"space":true}');
   await page.goto("/json-sorter");
-  await page.getByRole("textbox", { name: "Input JSON" }).fill('{"b":2,"a":1,"items":[{"z":1,"a":2}]}');
+  await fillAndRun(page, '{"b":2,"a":1,"items":[{"z":1,"a":2}]}');
   await expect(page.locator(".output-pane .cm-content")).toContainText('"a": 1');
   await page.goto("/sql-formatter");
-  await page.getByRole("textbox", { name: "Input SQL" }).fill("select * from users");
+  await fillAndRun(page, "select * from users");
   await expect(page.locator(".output-pane .cm-content")).toContainText("SELECT");
   await page.goto("/yaml-formatter");
+  await openWorkspace(page);
   await expectThemeOptionAbsent(page, "Indent", "Tab");
-  await page.getByRole("textbox", { name: "Input YAML" }).fill("service: {name: api}");
+  await fillAndRun(page, "service: {name: api}");
   await expect(page.locator(".output-pane .cm-content")).toContainText("name: api");
   await page.goto("/xml-formatter");
-  await page.getByRole("textbox", { name: "Input XML" }).fill("<root><item>ok</item></root>");
+  await fillAndRun(page, "<root><item>ok</item></root>");
   await expect(page.locator(".output-pane .cm-content")).toContainText("<item>ok</item>");
   await page.goto("/json-to-yaml");
-  await page.getByRole("textbox", { name: "Input JSON" }).fill('{"service":"api"}');
+  await fillAndRun(page, '{"service":"api"}');
   await expect(page.locator(".output-pane .cm-content")).toContainText("service");
   await expect(page.locator(".output-pane .cm-content")).toContainText("api");
   for (const route of ["/about", "/privacy", "/contact"]) {
@@ -39,7 +41,7 @@ test("core formatter flow works across browsers", async ({ page }) => {
 test("mobile layout has no horizontal overflow", async ({ page }) => {
   await page.setViewportSize({ width: 430, height: 932 });
   await page.goto("/json-formatter");
-  await page.getByRole("textbox", { name: "Input JSON" }).fill('{"ok":true}');
+  await fillAndRun(page, '{"ok":true}');
   await expect(page.locator(".output-pane .cm-content")).toContainText('"ok": true');
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
   await page.setViewportSize({ width: 768, height: 1024 });

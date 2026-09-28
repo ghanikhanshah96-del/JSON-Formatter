@@ -18,5 +18,9 @@ export const siteConfig = {
 } as const;
 
 export function contactEmail(): string {
-  return process.env.NEXT_PUBLIC_CONTACT_EMAIL || "uzairnazir42@gmail.com";
+  return (
+    process.env.CONTACT_TO_EMAIL
+    || process.env.NEXT_PUBLIC_CONTACT_EMAIL
+    || "stellixsoft@gmail.com"
+  );
 }

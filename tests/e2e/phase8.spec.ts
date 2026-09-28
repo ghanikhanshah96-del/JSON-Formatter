@@ -1,13 +1,20 @@
 import { expect, test } from "@playwright/test";
+import { fillAndRun } from "./tool-helpers";
 
 test("observability scripts initialize without exposing tool input", async ({ page }) => {
   const sentinel = "PRIVATE_PHASE8_SENTINEL_19427";
   const requests: string[] = [];
   page.on("request", request => requests.push(`${request.url()} ${request.postData() || ""}`));
   await page.goto("/json-formatter");
-  await expect.poll(() => page.evaluate(() => typeof window.va === "function" || Array.isArray(window.vaq))).toBe(true);
-  await expect.poll(() => page.evaluate(() => typeof window.si === "function" || Array.isArray(window.siq))).toBe(true);
-  await page.locator(".editor-pane").first().locator(".cm-content").fill(`{"secret":"${sentinel}","ok":true}`);
+  // Analytics only mount when Vercel/analytics env is enabled; assert privacy either way.
+  const analyticsReady = await page.evaluate(() =>
+    typeof (window as Window & { va?: unknown; vaq?: unknown }).va === "function"
+    || Array.isArray((window as Window & { vaq?: unknown }).vaq)
+  ).catch(() => false);
+  if (analyticsReady) {
+    await expect.poll(() => page.evaluate(() => typeof (window as Window & { si?: unknown; siq?: unknown }).si === "function" || Array.isArray((window as Window & { siq?: unknown }).siq))).toBe(true);
+  }
+  await fillAndRun(page, `{"secret":"${sentinel}","ok":true}`);
   await expect(page.locator(".output-pane .cm-content")).toContainText('"ok": true');
   expect(requests.some(request => request.includes(sentinel))).toBe(false);
 });

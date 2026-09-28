@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { fillAndRun, fillToolInput, openWorkspace } from "./tool-helpers";
 
 test("production security headers are present and the app still executes", async ({ page, request }) => {
   const response = await request.get("/json-formatter");
@@ -11,16 +12,17 @@ test("production security headers are present and the app still executes", async
   expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
   expect(headers["permissions-policy"]).toContain("camera=()");
   await page.goto("/json-formatter");
-  await page.locator(".editor-pane").first().locator(".cm-content").fill('{"ok":true}');
+  await fillAndRun(page, '{"ok":true}');
   await expect(page.locator(".output-pane .cm-content")).toContainText('"ok": true');
 });
 
 test("CodeMirror editors expose accessible textbox names", async ({ page }) => {
   await page.goto("/json-formatter");
+  await openWorkspace(page);
   await expect(page.getByRole("textbox", { name: "Input JSON" })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Formatted JSON" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Format JSON|Processing/ })).toBeVisible();
-  await page.getByRole("textbox", { name: "Input JSON" }).fill("{bad,}");
+  await fillAndRun(page, "{bad,}");
   await expect(page.locator(".status-message")).toBeVisible();
   await expect(page.locator(".diagnostic.error")).toContainText(/JSON|Unexpected|Expected/i);
 });
@@ -51,11 +53,11 @@ for (const [path, sentinel] of [
     const requests: string[] = [];
     page.on("request", request => requests.push(`${request.url()} ${request.postData() || ""}`));
     await page.goto(path);
-    const input = page.locator(".editor-pane").first().locator(".cm-content");
-    if (path.includes("sql")) await input.fill(`select '${sentinel}' as secret`);
-    else if (path.includes("yaml")) await input.fill(`secret: ${sentinel}`);
-    else if (path.includes("xml")) await input.fill(`<root>${sentinel}</root>`);
-    else await input.fill(`{"secret":"${sentinel}"}`);
+    let sample = `{"secret":"${sentinel}"}`;
+    if (path.includes("sql")) sample = `select '${sentinel}' as secret`;
+    else if (path.includes("yaml")) sample = `secret: ${sentinel}`;
+    else if (path.includes("xml")) sample = `<root>${sentinel}</root>`;
+    await fillAndRun(page, sample);
     await expect(page.locator(".status-message")).not.toContainText("Ready when you are");
     expect(requests.some(request => request.includes(sentinel))).toBe(false);
   });
@@ -64,7 +66,7 @@ for (const [path, sentinel] of [
 test("reduced motion preference disables active animations", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/json-formatter");
-  await page.locator(".editor-pane").first().locator(".cm-content").fill('{"ok":true}');
+  await fillToolInput(page, '{"ok":true}');
   const duration = await page.locator(".status-dot").evaluate(element => getComputedStyle(element).animationDuration);
   const name = await page.locator(".status-dot").evaluate(element => getComputedStyle(element).animationName);
   expect(duration === "0.001ms" || duration === "0s" || name === "none").toBe(true);
@@ -85,8 +87,8 @@ test("worker postMessage failure recovers on the next operation", async ({ page 
     };
   });
   await page.goto("/json-formatter");
-  await page.getByRole("textbox", { name: "Input JSON" }).fill('{"first":true}');
+  await fillAndRun(page, '{"first":true}');
   await expect(page.locator(".diagnostic.error")).toContainText(/worker could not process/i);
-  await page.getByRole("textbox", { name: "Input JSON" }).fill('{"second":true}');
+  await fillAndRun(page, '{"second":true}');
   await expect(page.locator(".output-pane .cm-content")).toContainText('"second": true');
 });

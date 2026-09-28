@@ -1,44 +1,27 @@
-"use client";
-
-import Link from "next/link";
-import { useMemo, useState } from "react";
 import type { Tool } from "@codeformattools/tool-registry";
 import { iconForTool } from "@/lib/tool-icons";
 
 type Category = { id: string; name: string };
 
+/** Server-rendered tools grid — plain anchors avoid Link hydration/TBT. */
 export function ToolsGrid({ tools, categories }: { tools: Tool[]; categories: readonly Category[] }) {
-  const [active, setActive] = useState<string>("all");
-
-  const filters = useMemo(
-    () => [{ id: "all", name: "All" }, ...categories.map(category => ({ id: category.id, name: category.name.replace(/ tools$/i, "") }))],
-    [categories]
-  );
-
-  const visible = useMemo(
-    () => (active === "all" ? tools : tools.filter(tool => tool.category === active)),
-    [active, tools]
-  );
-
   return (
     <div className="tools-browser">
-      <div className="tools-filter" role="tablist" aria-label="Filter tools by category">
-        {filters.map(filter => (
-          <button
-            key={filter.id}
-            type="button"
-            role="tab"
-            aria-selected={active === filter.id}
-            className={`tools-filter-chip${active === filter.id ? " active" : ""}`}
-            onClick={() => setActive(filter.id)}
+      <div className="tools-filter" aria-label="Tool categories">
+        <a href="/#tools" className="tools-filter-chip active">All</a>
+        {categories.map(category => (
+          <a
+            key={category.id}
+            href={`/tools/${category.id}`}
+            className="tools-filter-chip"
           >
-            {filter.name}
-          </button>
+            {category.name.replace(/ tools$/i, "")}
+          </a>
         ))}
       </div>
-      <div className="tool-grid" role="tabpanel">
-        {visible.map(tool => (
-          <Link href={`/${tool.slug}`} className="tool-card" key={tool.id}>
+      <div className="tool-grid">
+        {tools.map(tool => (
+          <a href={`/${tool.slug}`} className="tool-card" key={tool.id}>
             <div className="card-top">
               <span className="card-icon" aria-hidden="true">{iconForTool(tool.id)}</span>
             </div>
@@ -46,10 +29,9 @@ export function ToolsGrid({ tools, categories }: { tools: Tool[]; categories: re
             <h3>{tool.name}</h3>
             <p>{tool.cardDescription}</p>
             <span className="card-link">Open tool <span aria-hidden="true">→</span></span>
-          </Link>
+          </a>
         ))}
       </div>
-      {visible.length === 0 && <p className="tools-empty">No tools in this category yet.</p>}
     </div>
   );
 }

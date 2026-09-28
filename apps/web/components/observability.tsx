@@ -1,48 +1,12 @@
-"use client";
+import { ObservabilityLoader } from "./observability-loader";
 
-import { useEffect } from "react";
-import { Analytics, type BeforeSendEvent } from "@vercel/analytics/next";
-import { track as vercelTrack } from "@vercel/analytics";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { setAnalyticsProvider, type AnalyticsEvent } from "@codeformattools/analytics";
+const analyticsEnabled =
+  process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true" ||
+  process.env.NEXT_PUBLIC_VERCEL_ENV === "production" ||
+  process.env.NEXT_PUBLIC_VERCEL_ENV === "preview";
 
-function cleanUrl(value: string): string {
-  try {
-    const url = new URL(value, window.location.origin);
-    return `${url.origin}${url.pathname}`;
-  } catch {
-    return value.split("?")[0]?.split("#")[0] ?? value;
-  }
-}
-
-function cleanAnalyticsEvent(event: BeforeSendEvent): BeforeSendEvent {
-  return { ...event, url: cleanUrl(event.url) };
-}
-
-function cleanSpeedEvent<T extends { url: string }>(event: T): T {
-  return { ...event, url: cleanSpeedEventUrl(event.url) } as T;
-}
-
-function cleanSpeedEventUrl(value: string): string {
-  return cleanUrl(value);
-}
-
-function eventProperties(event: AnalyticsEvent): Record<string, string | number | boolean | null | undefined> {
-  if (event.name === "related_tool_click") return { from: event.from, to: event.to };
-  if (event.name === "tool_error") return { tool: event.tool, action: event.action, code: event.code, inputSize: event.inputSize };
-  if (event.name === "tool_start") return { tool: event.tool, action: event.action, inputSize: event.inputSize };
-  if (event.name === "tool_land") return { tool: event.tool };
-  if (event.name === "tool_paste") return { tool: event.tool, inputSize: event.inputSize };
-  if (event.name === "tool_copy" || event.name === "tool_download") return { tool: event.tool, action: event.action };
-  return { tool: event.tool, action: event.action, success: event.success, inputSize: event.inputSize, durationMs: event.durationMs };
-}
-
+/** Server gate — keeps analytics client chunk off local/production-without-Vercel builds. */
 export function Observability() {
-  useEffect(() => {
-    setAnalyticsProvider({ track: event => vercelTrack(event.name, eventProperties(event)) });
-  }, []);
-  return <>
-    <Analytics beforeSend={cleanAnalyticsEvent} />
-    <SpeedInsights beforeSend={cleanSpeedEvent} />
-  </>;
+  if (!analyticsEnabled) return null;
+  return <ObservabilityLoader />;
 }

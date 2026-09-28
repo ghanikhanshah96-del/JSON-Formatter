@@ -1,12 +1,12 @@
-"use client";
-
-import { useEffect } from "react";
-import { track } from "@codeformattools/analytics";
 import type { ToolId } from "@codeformattools/tool-core";
 
+/** Fire-and-forget land event without a React client bundle. */
 export function ToolLandTracker({ toolId }: { toolId: ToolId }) {
-  useEffect(() => {
-    track({ name: "tool_land", tool: toolId });
-  }, [toolId]);
-  return null;
+  return (
+    <script
+      dangerouslySetInnerHTML={{
+        __html: `try{window.dispatchEvent(new CustomEvent("cft:tool_land",{detail:{tool:${JSON.stringify(toolId)}}}));}catch(e){}`
+      }}
+    />
+  );
 }

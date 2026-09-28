@@ -1,31 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { contactEmail, siteConfig } from "@codeformattools/seo";
-import { ContactActions } from "@/components/contact-actions";
+import { siteConfig } from "@codeformattools/seo";
+import { ContactForm } from "@/components/contact-form";
 
 export const metadata: Metadata = {
   title: `Contact | ${siteConfig.name}`,
-  description: `Contact ${siteConfig.name} for privacy, security, corrections, and product questions. We respond by email — no account required.`
+  description: `Contact ${siteConfig.name} for privacy, security, corrections, and product questions. Send a message from this page — no account required.`
 };
 
-const topics = [
-  { id: "privacy", label: "Privacy / data handling", subject: "Privacy question" },
-  { id: "security", label: "Security report", subject: "Security report" },
-  { id: "bug", label: "Tool bug or incorrect output", subject: "Tool bug report" },
-  { id: "docs", label: "Docs / Learn correction", subject: "Docs correction" },
-  { id: "legal", label: "Terms / takedown", subject: "Legal / takedown" },
-  { id: "other", label: "Something else", subject: `${siteConfig.name} support` }
-] as const;
-
 export default function ContactPage() {
-  const email = contactEmail();
-
   return (
     <main className="simple-page container contact-page">
       <div className="eyebrow">CONTACT</div>
       <h1>Talk to us<span className="title-accent">.</span></h1>
       <p className="learn-lead">
-        Privacy questions, security reports, corrections, or product issues — email is the fastest path. No accounts, no tickets, no chatbots.
+        Privacy questions, security reports, corrections, or product issues — send a message below. No accounts, no tickets, no chatbots.
       </p>
 
       <div className="contact-trust">
@@ -34,26 +23,15 @@ export default function ContactPage() {
         <span>No signup required</span>
       </div>
 
-      <div className="contact-panel">
-        <div className="contact-panel-copy">
-          <div className="card-eyebrow">EMAIL</div>
-          <a className="contact-email-link contact-email-hero" href={`mailto:${email}?subject=${encodeURIComponent(`${siteConfig.name} support`)}`}>{email}</a>
-          <p className="contact-hint">Prefer a topic below — it prefills the subject so we can route faster.</p>
-        </div>
-        <ContactActions email={email} siteName={siteConfig.name} />
-      </div>
-
-      <section className="contact-topics seo-block">
-        <h2>Pick a topic</h2>
-        <ul className="topic-row">
-          {topics.map(topic => (
-            <li key={topic.id}>
-              <a className="topic-chip" href={`mailto:${email}?subject=${encodeURIComponent(topic.subject)}`}>
-                {topic.label}
-              </a>
-            </li>
-          ))}
-        </ul>
+      <section className="contact-panel contact-panel-form" aria-label="Contact form">
+        <header className="contact-panel-copy">
+          <div className="card-eyebrow">MESSAGE</div>
+          <h2 className="contact-form-heading">Send a message</h2>
+          <p className="contact-hint">
+            Fill in the form and we will reply by email. Avoid pasting secrets or full production payloads.
+          </p>
+        </header>
+        <ContactForm />
       </section>
 
       <div className="contact-grid">
@@ -80,7 +58,7 @@ export default function ContactPage() {
       <section className="contact-note seo-block">
         <h2>Please do not paste secrets</h2>
         <p>
-          Tools already run locally in your browser. For support email, avoid sending API keys, production payloads, or personal data unless it is strictly required — and redact when you can.
+          Tools already run locally in your browser. For support messages, avoid sending API keys, production payloads, or personal data unless it is strictly required — and redact when you can.
         </p>
         <p>
           Prefer describing the issue with a tiny redacted sample. Full payloads belong in your local editor, not inbox history.

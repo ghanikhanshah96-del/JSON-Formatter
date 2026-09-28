@@ -1,24 +1,25 @@
 import { test, expect } from "@playwright/test";
+import { fillAndRun, fillToolInput, runTool } from "./tool-helpers";
 
 test("tool pages have server rendered metadata and working JSON processing", async ({ page }) => {
   await page.goto("/json-formatter");
   await expect(page).toHaveTitle(/JSON Formatter/);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/json-formatter$/);
   await expect(page.getByRole("heading", { name: "JSON Formatter Online." })).toBeVisible();
-  const input = page.locator(".editor-pane").first().locator(".cm-content");
-  await input.fill('{"id":9123372036854000123,"a":1,"a":2}');
+  await fillAndRun(page, '{"id":9123372036854000123,"a":1,"a":2}');
   await expect(page.getByText("Completed with warnings")).toBeVisible();
   await expect(page.getByText(/Duplicate key "a"/)).toBeVisible();
   await expect(page.locator(".output-pane .cm-content")).toContainText("9123372036854000123");
 });
 
-test("editing invalidates the previous result and minifier uses the worker", async ({ page }) => {
+test("editing clears output until the action button is clicked again", async ({ page }) => {
   await page.goto("/json-minifier");
-  const input = page.locator(".editor-pane").first().locator(".cm-content");
-  await input.fill('{ "old": 1 }');
+  await fillAndRun(page, '{ "old": 1 }');
   await expect(page.locator(".output-pane .cm-content")).toContainText('{"old":1}');
-  await input.fill('{ "new": 2 }');
-  await expect(page.locator(".output-pane .cm-content")).not.toContainText("old");
+  await fillToolInput(page, '{ "new": 2 }');
+  await expect(page.locator(".output-pane .cm-content")).toHaveCount(0);
+  await expect(page.locator(".status-message")).toContainText(/click the button to run/i);
+  await runTool(page);
   await expect(page.locator(".output-pane .cm-content")).toContainText('{"new":2}');
 });
 
@@ -26,7 +27,7 @@ test("theme persists and narrow layout has no horizontal overflow", async ({ pag
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   const theme = page.getByRole("button", { name: /Theme:/ });
-  await theme.click();
+  // light → dark (third click would be system, which may still render as light)
   await theme.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.reload();
@@ -40,7 +41,7 @@ test("tool input is absent from outgoing requests", async ({ page }) => {
   const requests: string[] = [];
   page.on("request", request => requests.push(`${request.url()} ${request.postData() || ""}`));
   await page.goto("/json-validator");
-  await page.locator(".editor-pane").first().locator(".cm-content").fill(`{"secret":"${sentinel}"}`);
+  await fillAndRun(page, `{"secret":"${sentinel}"}`);
   await expect(page.getByText("Valid input")).toBeVisible();
   expect(requests.some(request => request.includes(sentinel))).toBe(false);
 });
@@ -61,4 +62,13 @@ test("registry category navigation reaches all JSON tools", async ({ page }) => 
   for (const name of ["JSON Formatter", "JSON Validator", "JSON Minifier", "JSON Sorter"]) {
     await expect(page.getByRole("link", { name: new RegExp(name) })).toBeVisible();
   }
+});
+
+test("tools do not auto-process without the action button", async ({ page }) => {
+  await page.goto("/json-formatter");
+  await fillToolInput(page, '{"a":1}');
+  await expect(page.locator(".status-message")).toHaveText("Ready — click the button to run");
+  await expect(page.locator(".output-pane .cm-content")).toHaveCount(0);
+  await runTool(page);
+  await expect(page.locator(".output-pane .cm-content")).toContainText('"a": 1');
 });
