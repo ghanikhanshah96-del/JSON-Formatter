@@ -53,7 +53,7 @@ export function diagnosticTitle(diagnostic: Diagnostic): string {
     OUTPUT_TOO_LARGE: "Output too large",
     INPUT_TOO_LARGE: "Input too large",
     DUPLICATE_KEY: "Duplicate key",
-    YAML_COMMENT_PRESERVATION_LIMIT: "Comments block formatting",
+    YAML_COMMENT_PRESERVATION_LIMIT: "Comments detected",
     YAML_PARSE_ERROR: "YAML syntax error",
     YAML_SAFETY_LIMIT: "YAML safety limit",
     XML_DECLARATION_BLOCKED: "DOCTYPE blocked",

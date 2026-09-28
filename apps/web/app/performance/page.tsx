@@ -56,7 +56,14 @@ export default function PerformancePage() {
         <Link className="button primary" href="/json-formatter">Try JSON Formatter</Link>
         <Link className="button secondary" href="/learn/private-browser-developer-tools">Read the privacy guide</Link>
       </div>
-      <p className="learn-back" style={{ marginTop: 24 }}><Link href="/">← Home</Link> · Site: {siteOrigin().replace("https://", "")}</p>
+      <p className="learn-back" style={{ marginTop: 24 }}>
+        <Link href="/">← Home</Link>
+        {" · "}
+        Canonical site: <strong>{siteConfig.domain}</strong>
+        {siteOrigin() !== siteConfig.url ? (
+          <> (this deployment may use a preview host; production URLs resolve to {siteConfig.domain})</>
+        ) : null}
+      </p>
     </main>
   );
 }

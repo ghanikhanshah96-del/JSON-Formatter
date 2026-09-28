@@ -25,10 +25,16 @@ export default async function ToolPage({ params }: Props) {
   if (!tool) notFound();
   const related = tool.relatedTools.map(id => getTool(id)).filter(item => item !== undefined);
   const howToSection = tool.sections.find(section => section.heading.startsWith("How to "));
-  const contentSections = tool.sections.filter(section => {
+  const primarySections = tool.sections.filter(section => {
     if (section.heading.startsWith("How to ")) return false;
     if (section.heading.endsWith(" Example") || section.heading.endsWith(" Conversion Example")) return false;
+    if (/^(What Is|Features of|Why Use|Who Can|Common Uses|Is .+ Safe|Does .+ Change)/i.test(section.heading)) return false;
     return true;
+  });
+  const deepSections = tool.sections.filter(section => {
+    if (section.heading.startsWith("How to ")) return false;
+    if (section.heading.endsWith(" Example") || section.heading.endsWith(" Conversion Example")) return false;
+    return !primarySections.includes(section);
   });
   const summary = tool.intro[0] ?? tool.description;
 
@@ -37,7 +43,6 @@ export default async function ToolPage({ params }: Props) {
     {toolSchemas(tool).map((data, index) => <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />)}
     <section className="tool-intro container tool-intro-compact">
       <div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><Link href={`/tools/${tool.category}`}>{tool.category === "converters" ? "Converters" : `${tool.category.toUpperCase()} tools`}</Link><span>/</span><strong>{tool.name}</strong></div>
-      <div className="eyebrow"><span className="live-dot" /> {tool.eyebrow}</div>
       <h1>{tool.headline}<span className="title-accent">.</span></h1>
       <p className="tool-summary">{summary}</p>
       <div className="trust-line">
@@ -53,19 +58,6 @@ export default async function ToolPage({ params }: Props) {
     <AdSlotPlaceholder placement="after-tool" enabled />
     <section className={`content-section container${related.length ? "" : " single"}`}>
       <div className="content-main">
-        <div className="eyebrow">THE DETAILS</div>
-        {tool.intro.length > 1 ? (
-          <section className="seo-block">
-            <h2>About {tool.name}</h2>
-            {tool.intro.slice(1).map(paragraph => <p key={paragraph.slice(0, 64)}>{paragraph}</p>)}
-          </section>
-        ) : null}
-        <SeoSections sections={contentSections} related={related} />
-        <section className="seo-block">
-          <h2>{howToSection?.heading ?? `How to use ${tool.name}`}</h2>
-          {howToSection?.paragraphs?.map(paragraph => <p key={paragraph.slice(0, 48)}>{paragraph}</p>)}
-          <ol>{(howToSection?.steps?.length ? howToSection.steps : tool.howItWorks).map(item => <li key={item}>{item}</li>)}</ol>
-        </section>
         <section className="seo-block">
           <h2>Example {tool.input.language.toUpperCase()}</h2>
           <p>Try this sample in the workspace:</p>
@@ -79,6 +71,17 @@ export default async function ToolPage({ params }: Props) {
           <h2>Frequently asked questions</h2>
           <FaqAccordion items={tool.faq} />
         </section>
+        <section className="seo-block">
+          <h2>{howToSection?.heading ?? `How to use ${tool.name}`}</h2>
+          {howToSection?.paragraphs?.map(paragraph => <p key={paragraph.slice(0, 48)}>{paragraph}</p>)}
+          <ol>{(howToSection?.steps?.length ? howToSection.steps : tool.howItWorks).map(item => <li key={item}>{item}</li>)}</ol>
+        </section>
+        <section className="seo-block">
+          <h2>About {tool.name}</h2>
+          <p>{tool.about}</p>
+          {tool.intro.slice(1).map(paragraph => <p key={paragraph.slice(0, 64)}>{paragraph}</p>)}
+        </section>
+        <SeoSections sections={[...primarySections, ...deepSections]} related={related} />
         {tool.cta ? (
           <section className="seo-cta">
             <h2>{tool.cta.heading}</h2>

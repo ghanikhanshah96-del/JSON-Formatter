@@ -71,6 +71,61 @@ function hasYamlCommentSyntax(input: string): boolean {
   return false;
 }
 
+/** Strip YAML # comments while preserving hashes inside quoted scalars. */
+export function stripYamlComments(input: string): string {
+  let lineStart = true;
+  let previous = "\n";
+  let quote: "'" | "\"" | null = null;
+  let output = "";
+  for (let index = 0; index < input.length; index++) {
+    const character = input[index];
+    if (character === "\n" || character === "\r") {
+      output += character;
+      lineStart = true;
+      previous = character;
+      quote = null;
+      continue;
+    }
+    if (quote === "\"") {
+      output += character;
+      if (character === "\\" && index + 1 < input.length) {
+        output += input[++index];
+        previous = input[index];
+        continue;
+      }
+      if (character === "\"") quote = null;
+      previous = character;
+      continue;
+    }
+    if (quote === "'") {
+      output += character;
+      if (character === "'" && input[index + 1] === "'") {
+        output += input[++index];
+        previous = "'";
+        continue;
+      }
+      if (character === "'") quote = null;
+      previous = character;
+      continue;
+    }
+    if (character === "\"" || character === "'") {
+      quote = character;
+      output += character;
+      previous = character;
+      continue;
+    }
+    if (character === "#" && (lineStart || previous === " " || previous === "\t")) {
+      while (index < input.length && input[index] !== "\n" && input[index] !== "\r") index++;
+      index--;
+      continue;
+    }
+    output += character;
+    if (lineStart && character !== " " && character !== "\t") lineStart = false;
+    previous = character;
+  }
+  return output.replace(/[ \t]+$/gm, "");
+}
+
 export function runYaml(input: string, action: string, options: ToolOptions = {}): Result {
   if (action !== "format" && action !== "validate") return { ok: false, output: "", diagnostics: [{ severity: "error", code: "INVALID_ACTION", message: "Unknown YAML operation." }] };
   let lineStart = 0;
@@ -84,18 +139,24 @@ export function runYaml(input: string, action: string, options: ToolOptions = {}
     if (documents.length > YAML_LIMITS.documents) return { ok: false, output: "", diagnostics: [{ severity: "error", code: "YAML_DOCUMENT_LIMIT", message: `YAML streams are limited to ${YAML_LIMITS.documents} documents.` }] };
     guardNodes(documents);
     if (action === "validate") return { ok: true, output: "", diagnostics: [] };
-    if (hasYamlCommentSyntax(input)) return {
-      ok: false,
-      output: "",
-      diagnostics: [{
-        severity: "blocked",
-        code: "YAML_COMMENT_PRESERVATION_LIMIT",
-        title: "Comments block formatting",
-        category: "safety",
-        message: "This YAML contains comments. Formatting is blocked so operational comments are not silently dropped.",
-        suggestion: "Remove comments to format, or use YAML Validator to check syntax while keeping comments. Comment-preserving format is not available yet."
-      }]
-    };
+    if (hasYamlCommentSyntax(input)) {
+      const stripped = stripYamlComments(input);
+      return {
+        ok: false,
+        output: "",
+        diagnostics: [{
+          severity: "blocked",
+          code: "YAML_COMMENT_PRESERVATION_LIMIT",
+          title: "Comments detected",
+          category: "safety",
+          message: "Formatting this file could remove YAML comments. We have left your file unchanged.",
+          suggestion: "Validate syntax without changing layout, or confirm Format without comments to drop comments and continue.",
+          fix: stripped.trim()
+            ? { label: "Format without comments", startOffset: 0, endOffset: input.length, replacement: stripped }
+            : undefined
+        }]
+      };
+    }
     const indentation = options.indentation === 4 ? 4 : 2;
     const syntax = eventsToAst(parseEvents(input, { maxDepth: YAML_LIMITS.depth }), { source: input, schema });
     visit(syntax, node => { if (node.kind === "mapping" || node.kind === "sequence") node.style = COLLECTION_STYLE_BLOCK; });

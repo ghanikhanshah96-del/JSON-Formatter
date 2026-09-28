@@ -20,9 +20,19 @@ test("YAML formatter handles anchors, comments, and indentation", async ({ page 
 test("YAML formatter does not destructively remove comments", async ({ page }) => {
   await page.goto("/yaml-formatter");
   await fillAndRun(page, "# application config\nserver:\n  # production host\n  host: example.com\n");
-  await expect(page.locator(".result-report.blocked")).toContainText(/comment/i);
+  await expect(page.locator(".result-report.blocked")).toContainText(/Comments detected|comment/i);
+  await expect(page.getByRole("link", { name: /Validate instead/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Format without comments/i })).toBeVisible();
   await expect(page.locator(".output-pane .cm-content")).toHaveCount(0);
   await expect(page.locator(".output-pane .pane-footer")).toContainText(/No output/i);
+});
+
+test("YAML formatter can strip comments after explicit confirmation", async ({ page }) => {
+  await page.goto("/yaml-formatter");
+  await fillAndRun(page, "# production database\ndatabase:\n  host: db.example.com\n");
+  await page.getByRole("button", { name: /Format without comments/i }).click();
+  await expect(page.locator(".output-pane .cm-content")).toContainText("host: db.example.com");
+  await expect(page.locator(".output-pane .cm-content")).not.toContainText("# production");
 });
 
 test("YAML validator reports syntax and rejects recursive aliases", async ({ page }) => {

@@ -93,7 +93,7 @@ async function main() {
   }
 
   await page.goto(`${BASE}/`);
-  const theme = page.getByRole("button", { name: /Theme:/ });
+  const theme = page.getByRole("button", { name: /Switch to (dark|light) theme|Use system theme/i });
   await theme.click();
   await theme.click();
   const themeAttr = await page.locator("html").getAttribute("data-theme");

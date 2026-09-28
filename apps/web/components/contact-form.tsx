@@ -116,10 +116,11 @@ export function ContactForm() {
         />
       </label>
 
-      {/* Honeypot — visually hidden from users */}
-      <label className="contact-honeypot" aria-hidden="true">
-        <span>Company</span>
+      {/* Honeypot — off-screen for bots; hidden from assistive tech and keyboard */}
+      <div className="contact-honeypot" aria-hidden="true">
+        <label htmlFor="company-website">Company</label>
         <input
+          id="company-website"
           name="company"
           type="text"
           tabIndex={-1}
@@ -127,7 +128,7 @@ export function ContactForm() {
           value={company}
           onChange={e => setCompany(e.target.value)}
         />
-      </label>
+      </div>
 
       {error ? <p className="contact-form-error" role="alert">{error}</p> : null}
 

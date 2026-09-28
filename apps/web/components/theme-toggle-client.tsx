@@ -10,6 +10,12 @@ function apply(theme: Theme) {
   document.documentElement.dataset.theme = dark ? "dark" : "light";
 }
 
+function actionFor(theme: Theme) {
+  if (theme === "light") return { icon: "☾", label: "Dark", aria: "Switch to dark theme", pressed: false };
+  if (theme === "dark") return { icon: "◑", label: "System", aria: "Use system theme preference", pressed: true };
+  return { icon: "☼", label: "Light", aria: "Switch to light theme", pressed: false };
+}
+
 export function ThemeToggleClient() {
   const [theme, setTheme] = useState<Theme>("system");
   useEffect(() => {
@@ -31,10 +37,18 @@ export function ThemeToggleClient() {
     setStorageValue("theme", next);
     apply(next);
   };
+  const action = actionFor(theme);
   return (
-    <button className="theme-toggle" type="button" onClick={cycle} aria-label={`Theme: ${theme}. Change theme`} title={`Theme: ${theme}`}>
-      {theme === "dark" ? "◐" : theme === "light" ? "☼" : "◑"}
-      <span>{theme}</span>
+    <button
+      className="theme-toggle"
+      type="button"
+      onClick={cycle}
+      aria-label={action.aria}
+      title={action.aria}
+      aria-pressed={action.pressed}
+    >
+      <span className="theme-toggle-icon" aria-hidden="true">{action.icon}</span>
+      <span className="theme-toggle-label">{action.label}</span>
     </button>
   );
 }

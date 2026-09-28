@@ -33,12 +33,12 @@ export default function Home() {
   return <main>
     {homeSchemas().map((data, index) => <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />)}
     <section className="hero"><div className="container hero-grid"><div>
-      <div className="eyebrow"><span className="live-dot" /> FREE ONLINE DEVELOPER TOOLS</div>
+      <div className="eyebrow"><span className="live-dot" /> DEVELOPER TOOLS · LOCAL FIRST</div>
       <h1>{homeSeoCopy.headline}</h1>
       <p className="hero-copy hero-copy-full">{heroIntro}</p>
-      <p className="hero-copy hero-copy-short">Format, validate, and convert JSON, XML, YAML, SQL, and CSV privately in your browser.</p>
-      <div className="hero-actions"><a className="button primary" href="/json-formatter">Open JSON Formatter <span aria-hidden="true">→</span></a><a className="button secondary" href="#tools">Explore tools ↓</a></div>
-      <div className="hero-proof"><span>Runs in your browser</span><span>Never uploaded</span><span>No registration</span><span>Up to 5 MB</span></div>
+      <p className="hero-copy hero-copy-short">Format, validate and convert JSON, YAML, XML, SQL and CSV instantly. No uploads. No account.</p>
+      <div className="hero-actions"><a className="button primary" href="/json-formatter">Open JSON Formatter <span aria-hidden="true">→</span></a><a className="button secondary" href="#tools">Explore all tools</a></div>
+      <div className="hero-proof"><span>Local processing</span><span>No registration</span><span>5 MB files</span><span>Zero input uploads</span></div>
     </div><div className="hero-preview" aria-label="Example formatted JSON"><div className="preview-top"><span className="preview-dots"><i/><i/><i/></span><span>response.json</span><span className="preview-badge">VALID JSON</span></div><div className="preview-code"><div><b>1</b><span>{"{"}</span></div><div><b>2</b><span>  <i>"project"</i>: <strong>"codeformattertools"</strong>,</span></div><div><b>3</b><span>  <i>"private"</i>: <mark>true</mark>,</span></div><div><b>4</b><span>  <i>"tools"</i>: [</span></div><div><b>5</b><span>    <strong>"format"</strong>,</span></div><div><b>6</b><span>    <strong>"validate"</strong>,</span></div><div><b>7</b><span>    <strong>"minify"</strong></span></div><div><b>8</b><span>  ]</span></div><div><b>9</b><span>{"}"}</span></div></div><div className="preview-footer"><span className="green-dot" /> Processed locally in your browser <span>0.02s</span></div></div></div></section>
     <section className="tools-section container" id="tools"><div className="section-heading"><div><div className="eyebrow">THE TOOLBOX</div><h2>All-in-One Developer Utility Platform</h2></div><p>Format JSON, validate XML, organize YAML, clean SQL, or convert between formats — all locally in your browser.</p></div><ToolsGrid tools={tools} categories={categories} /></section>
     <section className="home-guides container">

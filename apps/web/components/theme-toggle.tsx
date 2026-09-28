@@ -1,6 +1,6 @@
 import { ThemeToggleScript } from "./theme-toggle-script";
 
-/** Zero-React theme control for Lighthouse TBT — uses a tiny inline script. */
+/** Zero-React theme control — cycles light → dark → system. */
 export function ThemeToggle() {
   return (
     <>
@@ -8,13 +8,14 @@ export function ThemeToggle() {
         id="theme-toggle"
         className="theme-toggle"
         type="button"
-        aria-label="Theme: light. Change theme"
-        title="Theme: light"
+        aria-label="Switch to dark theme"
+        title="Switch to dark theme"
+        aria-pressed="false"
         data-theme-toggle
         suppressHydrationWarning
       >
-        <span data-theme-icon aria-hidden="true" suppressHydrationWarning>☼</span>
-        <span data-theme-label suppressHydrationWarning>light</span>
+        <span className="theme-toggle-icon" data-theme-icon aria-hidden="true" suppressHydrationWarning>☾</span>
+        <span className="theme-toggle-label" data-theme-label suppressHydrationWarning>Dark</span>
       </button>
       <ThemeToggleScript />
     </>

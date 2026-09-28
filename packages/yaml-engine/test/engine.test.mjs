@@ -41,7 +41,23 @@ test("formatter refuses to remove YAML comments silently", () => {
     assert.equal(result.ok, false, name);
     assert.equal(result.output, "");
     assert.equal(result.diagnostics[0].code, "YAML_COMMENT_PRESERVATION_LIMIT");
+    assert.equal(result.diagnostics[0].title, "Comments detected");
+    assert.match(result.diagnostics[0].message, /left your file unchanged/i);
+    assert.ok(result.diagnostics[0].fix?.label === "Format without comments");
   }
+});
+
+test("format without comments fix strips comments then formats", () => {
+  const source = "# production database\ndatabase:\n  host: db.example.com\n# replicas\nreplicas: 3\n";
+  const blocked = runYaml(source, "format");
+  assert.equal(blocked.ok, false);
+  const stripped = blocked.diagnostics[0].fix?.replacement;
+  assert.ok(stripped);
+  assert.doesNotMatch(stripped, /#/);
+  const formatted = runYaml(stripped, "format");
+  assert.equal(formatted.ok, true, formatted.diagnostics[0]?.message);
+  assert.match(formatted.output, /host: db\.example\.com/);
+  assert.match(formatted.output, /replicas: 3/);
 });
 
 test("formatter allows hash characters that are scalar content", () => {

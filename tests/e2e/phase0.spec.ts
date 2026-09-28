@@ -26,9 +26,10 @@ test("editing clears output until the action button is clicked again", async ({ 
 test("theme persists and narrow layout has no horizontal overflow", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  const theme = page.getByRole("button", { name: /Theme:/ });
-  // light → dark (third click would be system, which may still render as light)
-  await theme.click();
+  await page.evaluate(() => localStorage.setItem("codeformattertools.theme", "light"));
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.getByRole("button", { name: /Switch to dark theme/i }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");

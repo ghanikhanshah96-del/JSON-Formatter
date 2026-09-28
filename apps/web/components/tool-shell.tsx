@@ -337,8 +337,14 @@ export function ToolShell({ tool }: { tool: Tool }) {
     </div></div>
     {modeHint ? (
       <p className="workspace-mode-hint">
-        {String(options.mode) === "lossless" && "Lossless rejects conversions that would drop or reshape data."}
-        {String(options.mode) === "best-effort" && "Best effort converts with warnings when some structure cannot map cleanly."}
+        {String(options.mode) === "lossless" && (tool.id.includes("xml")
+          ? "Lossless uses a reversible envelope so attributes, comments, CDATA, and order can round-trip."
+          : tool.category === "csv"
+            ? "Lossless keeps every cell as text — no type inference."
+            : "Lossless rejects conversions that would drop or reshape data.")}
+        {String(options.mode) === "best-effort" && (tool.id.includes("xml")
+          ? "Best effort produces a developer-friendly mapping; attributes, mixed content, and comments may be simplified."
+          : "Best effort converts with warnings when some structure cannot map cleanly.")}
         {String(options.mode) === "compatibility" && "Compatibility prefers spreadsheet-friendly cells (nested values may become JSON text)."}
       </p>
     ) : null}

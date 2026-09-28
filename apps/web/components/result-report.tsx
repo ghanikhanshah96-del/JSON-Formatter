@@ -105,12 +105,22 @@ export function TransformErrorReport({
 }) {
   const primary = diagnostics.find(d => d.severity === "error" || d.severity === "blocked") || diagnostics[0];
   if (!primary) return null;
+  const commentsBlocked = primary.code === "YAML_COMMENT_PRESERVATION_LIMIT";
   return (
     <div className={`result-report ${primary.severity === "blocked" ? "blocked" : "invalid"}`} role="alert">
       <div className="result-report-icon" aria-hidden="true">{primary.severity === "blocked" ? "▣" : "✕"}</div>
-      <h3>{toolLabel} could not finish</h3>
-      <p>Review the issue below, fix the input or options, then run again.</p>
+      <h3>{commentsBlocked ? "Comments detected" : `${toolLabel} could not finish`}</h3>
+      <p>
+        {commentsBlocked
+          ? "Formatting this file could remove YAML comments. We have left your file unchanged."
+          : "Review the issue below, fix the input or options, then run again."}
+      </p>
       <DiagnosticCard source={source} diagnostic={primary} onFix={onFix} onJump={onJump} primary />
+      {commentsBlocked ? (
+        <div className="diagnostic-card-actions" style={{ marginTop: 12 }}>
+          <a className="diagnostic-action" href="/yaml-validator">Validate instead</a>
+        </div>
+      ) : null}
       {diagnostics.length > 1 ? (
         <div className="result-report-list">
           {diagnostics.slice(1).map((d, i) => (

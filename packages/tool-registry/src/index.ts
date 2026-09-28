@@ -1,8 +1,36 @@
 import type { Action, EditorLanguage, EngineId, OptionValue, ToolId } from "@codeformattools/tool-core";
-import { toolSeoCopy, type SeoContentSection } from "./seo-copy.ts";
+import { toolSeoCopy, homeSeoCopy as rawHomeSeoCopy, type SeoContentSection, type HomeSeoCopy } from "./seo-copy.ts";
+import { polishCopyText, polishFaq, polishParagraphs } from "./polish-copy.ts";
 
 export type { HomeSeoCopy, SeoContentSection, ToolSeoCopy } from "./seo-copy.ts";
-export { homeSeoCopy, toolSeoCopy } from "./seo-copy.ts";
+export { toolSeoCopy } from "./seo-copy.ts";
+
+function polishSections(sections: SeoContentSection[]): SeoContentSection[] {
+  return sections.map(section => ({
+    ...section,
+    paragraphs: polishParagraphs(section.paragraphs),
+    steps: section.steps?.map(polishCopyText),
+    items: section.items?.map(item => ({
+      title: polishCopyText(item.title),
+      description: polishCopyText(item.description)
+    }))
+  }));
+}
+
+export const homeSeoCopy: HomeSeoCopy = {
+  ...rawHomeSeoCopy,
+  headline: "Developer tools that stay on your device.",
+  intro: [
+    "Format, validate and convert JSON, YAML, XML, SQL and CSV instantly. No uploads. No account.",
+    ...polishParagraphs(rawHomeSeoCopy.intro.slice(1))
+  ],
+  sections: polishSections(rawHomeSeoCopy.sections),
+  faq: polishFaq(rawHomeSeoCopy.faq),
+  cta: {
+    ...rawHomeSeoCopy.cta,
+    paragraphs: polishParagraphs(rawHomeSeoCopy.cta.paragraphs)
+  }
+};
 
 export type ToolOption = {
   id: string;
@@ -166,15 +194,20 @@ function applySeoCopy(tool: Tool): Tool {
     name: copy.name,
     headline: copy.headline,
     cardDescription: tool.cardDescription || tool.description,
-    description: copy.description,
-    intro: copy.intro,
-    about: copy.about,
-    howItWorks: copy.howItWorks,
-    sections: copy.sections,
-    faq: withPrivacyFaq(copy.faq),
+    description: polishCopyText(copy.description),
+    intro: polishParagraphs(copy.intro),
+    about: polishCopyText(copy.about),
+    howItWorks: copy.howItWorks.map(polishCopyText),
+    sections: polishSections(copy.sections),
+    faq: withPrivacyFaq(polishFaq(copy.faq)),
     relatedTools: copy.relatedTools,
-    seo: copy.seo,
+    seo: {
+      title: copy.seo.title,
+      description: polishCopyText(copy.seo.description)
+    },
     cta: copy.cta
+      ? { heading: copy.cta.heading, paragraphs: polishParagraphs(copy.cta.paragraphs) }
+      : undefined
   };
 }
 
@@ -424,19 +457,19 @@ const toolDefinitions: Tool[] = [
 function withYamlCommentFaq(tool: Tool): Tool {
   if (tool.id !== "yaml-formatter") return tool;
   const question = "Can I format YAML that contains comments?";
-  const answer = "Not yet. Documents with # comments are blocked from formatting so comments are not silently removed. Use YAML Validator to check syntax, or remove comments before formatting.";
+  const answer = "Formatting with comments is blocked by default so comments are never silently removed. Use YAML Validator to check syntax, or choose Format without comments after an explicit confirmation in the workspace.";
   const faq = [
     { question, answer },
     ...tool.faq.filter(item => !/comment/i.test(item.question))
   ];
   return {
     ...tool,
-    about: "YAML Formatter parses and rewrites YAML with consistent indentation. It supports streams, aliases, and merge keys within safety limits. Anchor names and numeric scalar text are preserved. Documents that contain # comments are blocked from formatting so comments are never silently stripped.",
+    about: "YAML Formatter parses and rewrites YAML with consistent indentation. It supports streams, aliases, and merge keys within safety limits. Anchor names and numeric scalar text are preserved. Documents that contain # comments are blocked from formatting so comments are never silently stripped — validate instead, or confirm Format without comments.",
     faq,
     howItWorks: [
       "Paste YAML or open a .yaml/.yml file.",
       "Choose 2- or 4-space indentation.",
-      "Format comment-free YAML. If comments are present, formatting is blocked so comments stay intact — validate instead, or remove comments first.",
+      "Format comment-free YAML. If comments are present, formatting is blocked so comments stay intact — validate instead, or confirm Format without comments.",
       "Copy or download the formatted result."
     ]
   };

@@ -1,9 +1,9 @@
 import { expect, type Page } from "@playwright/test";
 
-/** Open the deferred workspace gate if present, then wait for the run control. */
+/** Wait for the interactive workspace (tool pages auto-hydrate). */
 export async function openWorkspace(page: Page) {
   const open = page.getByRole("button", { name: /Open workspace/i });
-  if (await open.count()) {
+  if (await open.isVisible().catch(() => false)) {
     await open.click();
   }
   await expect(page.locator(".run-button")).toBeVisible({ timeout: 20_000 });
