@@ -307,11 +307,6 @@ export function ToolShell({ tool }: { tool: Tool }) {
   const modeHint = visibleOptions.find(o => o.id === "mode");
 
   return <section className="tool-workspace container" aria-label={`${tool.name} application`}>
-    <div className="workspace-privacy-bar" aria-label="Runs in your browser. Never uploaded.">
-      <span className="privacy-lock" aria-hidden="true">◉</span>
-      <span className="privacy-bar-full">Runs in your browser · Never uploaded · Max {MAX_EDITOR_INPUT_LABEL}</span>
-      <span className="privacy-bar-short">Local · Never uploaded · {MAX_EDITOR_INPUT_LABEL}</span>
-    </div>
     <div className="workspace-toolbar">
       <div className="workspace-label"><span className="workspace-icon">{`{ }`}</span><span>WORKSPACE</span><span className="workspace-sep">/</span><strong>{tool.name}</strong></div>
       <div className="toolbar-options">
@@ -396,7 +391,6 @@ export function ToolShell({ tool }: { tool: Tool }) {
         <span className="run-shortcut" title="Keyboard shortcut">Ctrl/⌘ + Enter</span>
       </div>
       <div className={`status-message ${status}`} role="status" aria-live="polite"><span className="status-dot" />{statusText}</div>
-      <span className="workspace-privacy">Private by design · Runs locally · Never uploaded · Max {MAX_EDITOR_INPUT_LABEL}</span>
     </div>
     {!isValidate && diagnostics.length > 0 && !(status === "error" || status === "blocked") ? (
       <DiagnosticPanel source={input} diagnostics={diagnostics} onFix={applyFix} onJump={onJump} />

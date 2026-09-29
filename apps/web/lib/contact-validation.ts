@@ -46,8 +46,8 @@ const TOPIC_IDS = new Set<string>(CONTACT_TOPICS.map(topic => topic.id));
 const EMAIL_PATTERN =
   /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i;
 
-/** Letters (any language) plus spaces, hyphen, apostrophe, period — no digits or symbols. */
-const NAME_ALLOWED = /^[\p{L}]+(?:[ ''.-][\p{L}]+)*(?:\.|\s+(?:Jr|Sr|II|III|IV)\.)?$/iu;
+/** Letters, spaces, hyphen, apostrophe, period only. */
+const NAME_CHAR_PATTERN = /^[\p{L} ''.\-]+$/u;
 
 function asString(value: unknown): string {
   return typeof value === "string" ? value : value == null ? "" : String(value);
@@ -61,7 +61,10 @@ function cleanText(value: unknown): string {
 }
 
 function normalizeName(value: string): string {
-  return value.replace(/\s+/g, " ").trim();
+  return value
+    .replace(/[\u2018\u2019\u02BC]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function normalizeMessage(value: string): string {
@@ -83,17 +86,50 @@ export function isValidEmail(value: string): boolean {
   return EMAIL_PATTERN.test(value);
 }
 
-export function isValidPersonName(value: string): boolean {
+/**
+ * Person names: Unicode letters with spaces between words.
+ * Hyphens/apostrophes only between letters (Mary-Jane, O'Brien).
+ * Periods only after letters (Dr. Smith, J.K. Rowling, John Jr.).
+ */
+export function personNameError(value: string): string | undefined {
   const name = normalizeName(value);
-  if (name.length < CONTACT_LIMITS.nameMin || name.length > CONTACT_LIMITS.nameMax) return false;
-  if (/\d/.test(name)) return false;
-  if (/[@#$%^&*_=+{}[\]|\\/<>?!~`:;,"()]/.test(name)) return false;
-  if (!/[\p{L}]/u.test(name)) return false;
-  const lettersOnly = name.replace(/[ ''.\-]/g, "").replace(/\./g, "");
-  if (lettersOnly.length < CONTACT_LIMITS.nameMin) return false;
-  if (!NAME_ALLOWED.test(name)) return false;
-  if (/([''.\-])\1/.test(name)) return false;
-  return true;
+
+  if (!name) return "Please enter your name.";
+  if (name.length < CONTACT_LIMITS.nameMin) {
+    return `Name must be at least ${CONTACT_LIMITS.nameMin} characters.`;
+  }
+  if (name.length > CONTACT_LIMITS.nameMax) {
+    return `Name must be ${CONTACT_LIMITS.nameMax} characters or fewer.`;
+  }
+  if (/\d/.test(name)) return "Name cannot include numbers.";
+  if (!NAME_CHAR_PATTERN.test(name)) {
+    return "Name can only include letters, spaces, hyphens, apostrophes, and periods.";
+  }
+
+  const letterCount = (name.match(/\p{L}/gu) ?? []).length;
+  if (letterCount < CONTACT_LIMITS.nameMin) {
+    return `Name must include at least ${CONTACT_LIMITS.nameMin} letters.`;
+  }
+  if (!/^\p{L}/u.test(name)) return "Name must start with a letter.";
+
+  if (/--|''|\.\./.test(name)) {
+    return "Name cannot include repeated punctuation.";
+  }
+  // Hyphen/apostrophe must sit between letters — rejects "test- k'" and "Mary- Jane".
+  if (/[\-']\s|\s[\-']|(?<!\p{L})[\-']|[\-'](?!\p{L})/u.test(name)) {
+    return "Use hyphens and apostrophes between letters (example: Mary-Jane, O'Brien).";
+  }
+  // Period only after a letter, and only before a letter, a space, or the end.
+  if (/(?<!\p{L})\./u.test(name) || /\.(?![\p{L}\s]|$)/u.test(name)) {
+    return "Periods can only follow letters (example: Dr. Smith, J.K. Rowling).";
+  }
+  if (!/\p{L}\.?$/u.test(name)) return "Name must end with a letter.";
+
+  return undefined;
+}
+
+export function isValidPersonName(value: string): boolean {
+  return personNameError(value) === undefined;
 }
 
 export function isValidMessage(value: string): boolean {
@@ -120,19 +156,8 @@ export function validateContactInput(input: ContactInput):
   const topic = cleanText(input.topic) || "other";
   const message = normalizeMessage(cleanText(input.message));
 
-  if (!name) {
-    errors.name = "Please enter your name.";
-  } else if (name.length < CONTACT_LIMITS.nameMin) {
-    errors.name = `Name must be at least ${CONTACT_LIMITS.nameMin} characters.`;
-  } else if (name.length > CONTACT_LIMITS.nameMax) {
-    errors.name = `Name must be ${CONTACT_LIMITS.nameMax} characters or fewer.`;
-  } else if (/\d/.test(name)) {
-    errors.name = "Name cannot include numbers.";
-  } else if (/[@#$%^&*_=+{}[\]|\\/<>?!~`:;,"()]/.test(name)) {
-    errors.name = "Name can only include letters, spaces, hyphens, apostrophes, and periods.";
-  } else if (!isValidPersonName(name)) {
-    errors.name = "Enter a valid name using letters only (spaces, hyphens, and apostrophes are allowed).";
-  }
+  const nameError = personNameError(name);
+  if (nameError) errors.name = nameError;
 
   if (!email) {
     errors.email = "Please enter your email address.";

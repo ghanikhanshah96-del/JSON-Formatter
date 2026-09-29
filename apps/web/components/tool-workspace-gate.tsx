@@ -9,11 +9,6 @@ export function ToolWorkspaceGate({ tool }: { tool: Tool }) {
   return (
     <div id="tool-workspace-root">
       <section className="tool-workspace container" id="tool-workspace-gate" aria-busy="true" aria-label={`${tool.name} workspace loading`}>
-        <div className="workspace-privacy-bar">
-          <span className="privacy-lock" aria-hidden="true">◉</span>
-          <span className="privacy-bar-full">Runs in your browser · Never uploaded · Max 5 MB</span>
-          <span className="privacy-bar-short">Local · Never uploaded · 5 MB</span>
-        </div>
         <div className="workspace-toolbar">
           <div className="workspace-label">
             <span className="workspace-icon" aria-hidden="true">{`{ }`}</span>

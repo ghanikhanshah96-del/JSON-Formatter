@@ -129,6 +129,12 @@ test("contact form shows field errors before submit", async ({ page }) => {
   await page.locator('input[name="email"]').fill("not-valid");
   await page.locator('input[name="email"]').blur();
   await expect(page.locator(".contact-field-error", { hasText: /valid email address/i })).toBeVisible();
+  await page.locator('input[name="name"]').fill("test- k'");
+  await page.locator('input[name="name"]').blur();
+  await expect(page.locator(".contact-field-error", { hasText: /hyphens and apostrophes between letters/i })).toBeVisible();
+  await page.locator('input[name="name"]').fill("O'Brien");
+  await page.locator('input[name="name"]').blur();
+  await expect(page.locator('label.contact-field:has(input[name="name"]) .contact-field-error')).toHaveCount(0);
   await page.locator('input[name="name"]').fill("12345");
   await page.locator('input[name="name"]').blur();
   await expect(page.locator(".contact-field-error", { hasText: /numbers|letters/i })).toBeVisible();

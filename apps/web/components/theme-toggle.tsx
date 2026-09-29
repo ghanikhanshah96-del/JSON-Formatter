@@ -1,12 +1,19 @@
 import { ThemeToggleScript } from "./theme-toggle-script";
 
+type Props = {
+  id?: string;
+  className?: string;
+  /** When false, skip injecting the theme script (use when another toggle already mounts it). */
+  withScript?: boolean;
+};
+
 /** Zero-React theme control — cycles light → dark → system. */
-export function ThemeToggle() {
+export function ThemeToggle({ id = "theme-toggle", className = "theme-toggle", withScript = true }: Props) {
   return (
     <>
       <button
-        id="theme-toggle"
-        className="theme-toggle"
+        id={id || undefined}
+        className={className}
         type="button"
         aria-label="Switch to dark theme"
         title="Switch to dark theme"
@@ -17,7 +24,7 @@ export function ThemeToggle() {
         <span className="theme-toggle-icon" data-theme-icon aria-hidden="true" suppressHydrationWarning>☾</span>
         <span className="theme-toggle-label" data-theme-label suppressHydrationWarning>Dark</span>
       </button>
-      <ThemeToggleScript />
+      {withScript ? <ThemeToggleScript /> : null}
     </>
   );
 }

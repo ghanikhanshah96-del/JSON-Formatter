@@ -49,9 +49,9 @@ export function ContactForm() {
     return !messageForField;
   }
 
-  function markTouched(field: Field) {
+  function markTouched(field: Field, nextValues?: Partial<{ name: string; email: string; topic: string; message: string }>) {
     setTouched(current => ({ ...current, [field]: true }));
-    validateField(field);
+    validateField(field, nextValues);
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -136,8 +136,7 @@ export function ContactForm() {
             required
             minLength={CONTACT_LIMITS.nameMin}
             maxLength={CONTACT_LIMITS.nameMax}
-            pattern="[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ '.\-]*"
-            title="Letters only. Spaces, hyphens, and apostrophes are allowed."
+            title="Letters only. Use hyphens and apostrophes between letters (Mary-Jane, O'Brien)."
             value={name}
             aria-invalid={Boolean(fieldErrors.name && touched.name)}
             aria-describedby={[
@@ -149,11 +148,11 @@ export function ContactForm() {
               clearFieldError("name");
               if (status === "error") setError("");
             }}
-            onBlur={() => markTouched("name")}
+            onBlur={e => markTouched("name", { name: e.target.value })}
             placeholder="Your name"
           />
           <span className="contact-field-hint" id={`${formId}-name-hint`}>
-            Letters only — no numbers or special characters
+            Letters only — hyphens and apostrophes between letters (Mary-Jane, O&apos;Brien)
           </span>
           {fieldErrors.name && touched.name ? (
             <span className="contact-field-error" id={nameErrorId} role="alert">{fieldErrors.name}</span>
@@ -176,7 +175,7 @@ export function ContactForm() {
               clearFieldError("email");
               if (status === "error") setError("");
             }}
-            onBlur={() => markTouched("email")}
+            onBlur={e => markTouched("email", { email: e.target.value })}
             placeholder="you@example.com"
           />
           {fieldErrors.email && touched.email ? (
@@ -198,7 +197,7 @@ export function ContactForm() {
             clearFieldError("topic");
             if (status === "error") setError("");
           }}
-          onBlur={() => markTouched("topic")}
+          onBlur={e => markTouched("topic", { topic: e.target.value })}
         >
           {CONTACT_TOPICS.map(item => (
             <option key={item.id} value={item.id}>{item.label}</option>
@@ -228,7 +227,7 @@ export function ContactForm() {
             clearFieldError("message");
             if (status === "error") setError("");
           }}
-          onBlur={() => markTouched("message")}
+          onBlur={e => markTouched("message", { message: e.target.value })}
           placeholder="What happened, which page URL, and what you expected…"
         />
         <span className={`contact-field-hint${messageTooShort ? " is-warning" : ""}`} id={`${formId}-message-hint`}>

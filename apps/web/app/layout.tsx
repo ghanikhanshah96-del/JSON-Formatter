@@ -3,7 +3,7 @@ import { IBM_Plex_Mono, Sora } from "next/font/google";
 import { siteConfig, siteOrigin } from "@codeformattools/seo";
 import { HomeBrandLink } from "@/components/home-brand-link";
 import { Observability } from "@/components/observability";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 import "./theme-refresh.css";
 
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   title: { default: "Free Online Developer Tools | Format, Validate & Convert", template: "%s" },
   description: siteConfig.description,
   applicationName: siteConfig.name,
-  icons: { icon: "/icon.svg", apple: "/apple-touch-icon.png" },
+  icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/icon-192.png", sizes: "192x192", type: "image/png" }], apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }, { url: "/apple-touch-icon.svg", type: "image/svg+xml" }] },
   manifest: "/manifest.webmanifest",
   openGraph: { title: siteConfig.name, description: siteConfig.description, url: siteOrigin(), siteName: siteConfig.name, type: "website", images: [{ url: "/og-image.png", width: 1200, height: 630, alt: siteConfig.name }] },
   twitter: { card: "summary_large_image", title: siteConfig.name, description: siteConfig.description, images: ["/og-image.png"] },
@@ -59,24 +59,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             __html: `:root{--font-sans:var(--font-sora),Segoe UI,sans-serif;--font-display:var(--font-sora),Segoe UI,sans-serif;--font-mono:var(--font-ibm-plex-mono),Consolas,monospace;--font-body:var(--font-sans)}`
           }}
         />
-        <header className="site-header"><div className="container header-inner">
-          <HomeBrandLink className="brand" aria-label={`CFT ${siteConfig.name} home`}>
-            <span className="brand-mark" aria-hidden="true">{`{ }`}</span>
-            <span className="brand-text">
-              <span className="brand-text-full">{siteConfig.name}</span>
-              <span className="brand-text-compact" aria-hidden="true">CFT</span>
-              <span className="brand-dot" aria-hidden="true">.</span>
-            </span>
-          </HomeBrandLink>
-          <nav className="top-nav" aria-label="Primary navigation">
-            <a href="/#tools">Tools</a>
-            <a href="/blog">Blog</a>
-            <a href="/about">About</a>
-            <a href="/privacy">Privacy</a>
-            <a href="/contact">Contact</a>
-            <ThemeToggle />
-          </nav>
-        </div></header>
+        <SiteHeader />
         <div id="main-content">{children}</div>
         <footer className="site-footer"><div className="container footer-inner">
           <div>
