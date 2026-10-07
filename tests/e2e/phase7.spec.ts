@@ -64,6 +64,12 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
   await expect(page.getByText("Tool input and generated results generally remain within your browser session.")).toBeVisible();
   await expect(page.getByText(/currently uses Vercel Web Analytics and Vercel Speed Insights/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Google AdSense and Advertising" })).toBeVisible();
+  const policyListColumns = await page.locator(".site-policy-page .site-page-sections ul").first().evaluate(el =>
+    getComputedStyle(el).gridTemplateColumns.split(" ").length
+  );
+  expect(policyListColumns).toBe(2);
+  const policyWidth = await page.locator(".site-policy-page").evaluate(el => el.getBoundingClientRect().width);
+  expect(policyWidth).toBeGreaterThan(1100);
 
   await page.goto("/disclaimer");
   await expect(page.getByRole("heading", { name: "Data Conversion Limitations" })).toBeVisible();

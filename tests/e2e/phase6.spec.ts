@@ -18,6 +18,10 @@ test("all tool pages expose unique SEO sections and structured data", async ({ p
     });
     expect(detailsBeforeFaq).toBe(true);
     await expect(page.locator(".seo-deep-details")).toHaveCSS("grid-column-end", "-1");
+    const faqGridColumns = await page.locator(".tool-faq .faq-list").evaluate(el =>
+      getComputedStyle(el).gridTemplateColumns.split(" ").length
+    );
+    expect(faqGridColumns).toBe(2);
     const itemGridColumns = await page.locator(".seo-deep-details .seo-item-grid").evaluateAll(grids =>
       grids.map(grid => getComputedStyle(grid).gridTemplateColumns.split(" ").length)
     );
@@ -37,6 +41,60 @@ test("all tool pages expose unique SEO sections and structured data", async ({ p
   }
   expect(titles.size).toBe(tools.length);
   expect(descriptions.size).toBe(tools.length);
+});
+
+test("tool FAQs and policy lists collapse to one column on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const homeFaqColumns = await page.locator(".home-seo .faq-list").evaluate(el =>
+    getComputedStyle(el).gridTemplateColumns.split(" ").length
+  );
+  expect(homeFaqColumns).toBe(1);
+
+  await page.goto("/json-validator");
+  const faqColumns = await page.locator(".tool-faq .faq-list").evaluate(el =>
+    getComputedStyle(el).gridTemplateColumns.split(" ").length
+  );
+  expect(faqColumns).toBe(1);
+
+  await page.goto("/privacy-policy");
+  const policyListColumns = await page.locator(".site-policy-page .site-page-sections ul").first().evaluate(el =>
+    getComputedStyle(el).gridTemplateColumns.split(" ").length
+  );
+  expect(policyListColumns).toBe(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
+});
+
+test("opening an FAQ does not stretch the item in the adjacent column", async ({ page }) => {
+  await page.goto("/csv-to-json");
+  const columns = page.locator(".tool-faq .faq-column");
+  const columnLayout = await columns.evaluateAll(elements => {
+    const boxes = elements.map(el => el.getBoundingClientRect());
+    return {
+      widthDifference: Math.abs(boxes[0].width - boxes[1].width),
+      gap: boxes[1].left - boxes[0].right,
+      firstItemWidth: elements[0].querySelector(".faq-item")?.getBoundingClientRect().width ?? 0,
+      secondItemWidth: elements[1].querySelector(".faq-item")?.getBoundingClientRect().width ?? 0
+    };
+  });
+  expect(columnLayout.widthDifference).toBeLessThanOrEqual(1);
+  expect(columnLayout.gap).toBeGreaterThanOrEqual(24);
+  expect(Math.abs(columnLayout.firstItemWidth - columnLayout.secondItemWidth)).toBeLessThanOrEqual(1);
+  const leftFirstItem = columns.nth(0).locator(".faq-item").first();
+  const rightFirstItem = columns.nth(1).locator(".faq-item").first();
+  const initialHeight = await rightFirstItem.evaluate(el => el.getBoundingClientRect().height);
+  await expect(rightFirstItem.locator(".faq-index")).toHaveText("06");
+
+  await leftFirstItem.locator(".faq-trigger").click();
+
+  await expect(leftFirstItem).toHaveAttribute("open", "");
+  await expect.poll(() => rightFirstItem.evaluate(el => el.getBoundingClientRect().height)).toBe(initialHeight);
+
+  await page.goto("/");
+  const homeFaqColumns = await page.locator(".home-seo .faq-list").evaluate(el =>
+    getComputedStyle(el).gridTemplateColumns.split(" ").length
+  );
+  expect(homeFaqColumns).toBe(2);
 });
 
 test("sitemap, robots, category navigation, and page budget are launch ready", async ({ page, request }) => {

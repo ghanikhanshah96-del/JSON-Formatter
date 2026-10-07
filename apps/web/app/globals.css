@@ -622,21 +622,35 @@
 
 .site-policy-page h1{font-size:48px;line-height:1.12;letter-spacing:0}
 .site-policy-page .site-page-updated{font-size:13px;color:var(--muted)}
+.container.simple-page.site-policy-page{width:min(1180px,calc(100% - 48px));max-width:none;padding:64px 0 88px}
+.site-policy-page>p,.site-policy-page .site-page-sections p{max-width:76ch}
+.site-page-sections section{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.site-page-sections section h2,.site-page-sections section h3{margin-top:0}
 .site-page-sections h3{font:700 18px/1.4 var(--font-display);margin:24px 0 8px}
-.site-page-sections ul{max-width:760px}
-@media(max-width:650px){.site-policy-page h1{font-size:38px}}
+.site-policy-page .site-page-sections ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:36px;row-gap:4px;width:100%;max-width:none;margin:10px 0 18px;padding-left:22px}
+@media(max-width:650px){
+  .site-policy-page h1{font-size:38px}
+  .container.simple-page.site-policy-page{width:min(100% - 28px,1180px);padding:48px 0 64px}
+  .site-policy-page .site-page-sections ul{grid-template-columns:1fr}
+}
 
 /* FAQ accordion */
 .home-faq{padding:72px 0 96px}
 .home-faq .section-heading{margin-bottom:28px}
 .faq-list{
-  display:flex;
-  flex-direction:column;
-  gap:0;
-  max-width:760px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:start;
+  column-gap:clamp(24px,3.5vw,56px);
+  width:100%;
+  max-width:none;
   border-top:1px solid var(--line);
 }
+.faq-column{display:flex;flex-direction:column;align-self:start;width:100%;min-width:0}
 .faq-list details.faq-item{
+  align-self:start;
+  width:100%;
+  min-width:0;
   border-bottom:1px solid var(--line);
   border-top:0;
   padding:0;
@@ -728,6 +742,7 @@
 }
 @media(max-width:650px){
   .home-faq{padding:56px 0 72px}
+  .faq-list{grid-template-columns:1fr}
   .faq-list summary.faq-trigger{padding:16px 2px;font-size:14px;gap:12px}
   .faq-panel{padding-left:2px;padding-bottom:16px}
   .faq-index{display:none}
