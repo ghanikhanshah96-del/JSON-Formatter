@@ -90,14 +90,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <h2>Explore</h2>
                 <a href="/blog">Blog</a>
                 <a href="/performance">Performance</a>
-                <a href="/about">About</a>
-                <a href="/contact">Contact</a>
+                <a href="/about-us">About Us</a>
+                <a href="/contact-us">Contact Us</a>
               </div>
               <div className="footer-column">
                 <h2>Policies</h2>
-                <a href="/privacy">Privacy</a>
+                <a href="/privacy-policy">Privacy Policy</a>
                 <a href="/disclaimer">Disclaimer</a>
-                <a href="/terms">Terms</a>
+                <a href="/terms-and-conditions">Terms and Conditions</a>
                 <a href="/editorial-policy">Editorial Policy</a>
               </div>
             </nav>

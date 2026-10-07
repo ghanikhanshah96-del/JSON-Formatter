@@ -6,7 +6,7 @@ import { sitePageCopy } from "@/lib/site-page-copy";
 export const metadata: Metadata = {
   title: sitePageCopy.contact.title,
   description: sitePageCopy.contact.description,
-  alternates: { canonical: "/contact" }
+  alternates: { canonical: "/contact-us" }
 };
 
 export default function ContactPage() {

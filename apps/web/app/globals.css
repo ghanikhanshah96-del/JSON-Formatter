@@ -525,7 +525,7 @@
   .workspace-privacy-bar{font-size:10px;padding:8px 10px;text-align:center}
   .privacy-bar-full{display:none}
   .privacy-bar-short{display:inline}
-  .top-nav a[href="/contact"]{display:none}
+  .top-nav a[href="/contact-us"]{display:none}
 }
 .brand-text{display:inline-flex;align-items:baseline}
 .brand-text-compact{display:none}
@@ -545,7 +545,7 @@
   .site-header .brand,.brand{font-size:18px;letter-spacing:-.6px;gap:7px}
   .brand-mark{width:28px;height:28px;font-size:12px}
   .top-nav{gap:10px;font-size:11px}
-  .top-nav a[href="/about"],.top-nav a[href="/contact"]{display:none}
+  .top-nav a[href="/about-us"],.top-nav a[href="/contact-us"]{display:none}
   .container{overflow-x:clip}
   .learn-card{min-height:0}
   .contact-email-hero{font-size:22px}

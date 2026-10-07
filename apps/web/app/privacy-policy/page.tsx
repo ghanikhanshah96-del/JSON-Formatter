@@ -8,4 +8,4 @@ export const metadata: Metadata = {
   alternates: { canonical: "/privacy-policy" }
 };
 
-export default function PrivacyPage() { return <SiteContentPage page={sitePageCopy.privacy} />; }
+export default function PrivacyPolicyPage() { return <SiteContentPage page={sitePageCopy.privacy} />; }

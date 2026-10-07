@@ -3,12 +3,12 @@ import { tools } from "@codeformattools/tool-registry";
 
 test("trust pages, contact form, and footer links are launch ready", async ({ page, request }) => {
   const policyPages = [
-    ["/about", "About Us | CodeFormatterTools"],
-    ["/privacy", "Privacy Policy | CodeFormatterTools"],
+    ["/about-us", "About Us | CodeFormatterTools"],
+    ["/privacy-policy", "Privacy Policy | CodeFormatterTools"],
     ["/disclaimer", "Disclaimer | CodeFormatterTools"],
-    ["/terms", "Terms and Conditions | CodeFormatterTools"],
+    ["/terms-and-conditions", "Terms and Conditions | CodeFormatterTools"],
     ["/editorial-policy", "Editorial Policy | CodeFormatterTools"],
-    ["/contact", "Contact Us | CodeFormatterTools"]
+    ["/contact-us", "Contact Us | CodeFormatterTools"]
   ] as const;
 
   for (const [path, title] of policyPages) {
@@ -17,7 +17,24 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
     await expect(page.locator("main")).toBeVisible();
     await expect(page.locator("h1")).toBeVisible();
     await expect(page.locator("link[rel='canonical']")).toHaveAttribute("href", new RegExp(`${path}$`));
-    await expect(page.locator("footer").getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/contact");
+    await expect(page.locator("footer").getByRole("link", { name: "Contact Us" })).toHaveAttribute("href", "/contact-us");
+  }
+
+  for (const [legacyPath, canonicalPath] of [
+    ["/about", "/about-us"],
+    ["/privacy", "/privacy-policy"],
+    ["/contact", "/contact-us"],
+    ["/terms", "/terms-and-conditions"]
+  ]) {
+    await page.goto(legacyPath);
+    await expect(page).toHaveURL(new RegExp(`${canonicalPath}$`));
+  }
+
+  for (const label of ["About Us", "Contact Us", "Privacy Policy", "Disclaimer", "Terms and Conditions", "Editorial Policy"]) {
+    await expect(page.locator("footer").getByRole("link", { name: label, exact: true })).toBeVisible();
+  }
+  for (const label of ["About Us", "Privacy Policy", "Contact Us"]) {
+    await expect(page.locator(".desktop-nav").getByRole("link", { name: label, exact: true })).toBeVisible();
   }
 
   for (const path of ["/blog", "/performance"]) {
@@ -33,16 +50,17 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
   await expect(page.locator(".tools-browser .tool-card")).toHaveCount(tools.length);
   await expect(page.locator(".tools-filter")).toBeVisible();
   await expect(page.locator(".mobile-drawer-nav a[href='/tools']")).toHaveCount(1);
-  await page.goto("/privacy");
+  await page.goto("/privacy-policy");
   await page.locator(".desktop-nav").getByRole("link", { name: "Tools" }).click();
   await expect(page).toHaveURL(/\/tools$/);
   await page.locator("footer").getByRole("link", { name: "All tools" }).click();
   await expect(page).toHaveURL(/\/tools$/);
-  await page.goto("/about");
+  await page.goto("/about-us");
+  await expect(page.getByRole("heading", { name: "About Us", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "What We Offer" })).toBeVisible();
   await expect(page.getByText("JSON to CSV Converter", { exact: true })).toBeVisible();
 
-  await page.goto("/privacy");
+  await page.goto("/privacy-policy");
   await expect(page.getByText("Tool input and generated results generally remain within your browser session.")).toBeVisible();
   await expect(page.getByText(/currently uses Vercel Web Analytics and Vercel Speed Insights/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Google AdSense and Advertising" })).toBeVisible();
@@ -52,7 +70,7 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
   await page.goto("/editorial-policy");
   await expect(page.getByRole("heading", { name: "Artificial Intelligence and Editorial Responsibility" })).toBeVisible();
 
-  await page.goto("/contact");
+  await page.goto("/contact-us");
   await expect(page).toHaveTitle("Contact Us | CodeFormatterTools");
   await expect(page.locator("form.contact-form")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Security Reports" })).toBeVisible();
@@ -70,7 +88,12 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
 
   const sitemap = await request.get("/sitemap.xml");
   const sitemapText = await sitemap.text();
-  expect(sitemapText).toContain("/contact");
+  for (const canonicalPath of ["/about-us", "/privacy-policy", "/contact-us", "/terms-and-conditions"]) {
+    expect(sitemapText).toContain(`${canonicalPath}</loc>`);
+  }
+  for (const legacyPath of ["/about", "/privacy", "/contact", "/terms"]) {
+    expect(sitemapText).not.toContain(`${legacyPath}</loc>`);
+  }
   expect(sitemapText).toContain("/tools</loc>");
   expect(sitemapText).toContain("/disclaimer");
   expect(sitemapText).toContain("/editorial-policy");
@@ -149,7 +172,7 @@ test("contact API accepts honeypot spam silently", async ({ request }) => {
 });
 
 test("contact form shows field errors before submit", async ({ page }) => {
-  await page.goto("/contact");
+  await page.goto("/contact-us");
   await expect(page.locator("form.contact-form")).toBeVisible();
   await page.waitForLoadState("domcontentloaded");
   // Allow client hydration (contact form scripts load immediately).

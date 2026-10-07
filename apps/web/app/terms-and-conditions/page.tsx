@@ -8,4 +8,4 @@ export const metadata: Metadata = {
   alternates: { canonical: "/terms-and-conditions" }
 };
 
-export default function TermsPage() { return <SiteContentPage page={sitePageCopy.terms} />; }
+export default function TermsAndConditionsPage() { return <SiteContentPage page={sitePageCopy.terms} />; }

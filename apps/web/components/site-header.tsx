@@ -3,15 +3,16 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { siteConfig } from "@codeformattools/seo";
+import { categories } from "@codeformattools/tool-registry";
 import { HomeBrandLink } from "@/components/home-brand-link";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const NAV_LINKS = [
   { href: "/tools", label: "Tools", hint: "Format, validate, convert", icon: "grid" },
   { href: "/blog", label: "Blog", hint: "Guides & long-tails", icon: "book" },
-  { href: "/about", label: "About", hint: "Why we stay local-first", icon: "info" },
-  { href: "/privacy", label: "Privacy", hint: "Your data never leaves", icon: "shield" },
-  { href: "/contact", label: "Contact", hint: "Questions & feedback", icon: "mail" }
+  { href: "/about-us", label: "About Us", hint: "Why we stay local-first", icon: "info" },
+  { href: "/privacy-policy", label: "Privacy Policy", hint: "Your data never leaves", icon: "shield" },
+  { href: "/contact-us", label: "Contact Us", hint: "Questions & feedback", icon: "mail" }
 ] as const;
 
 const QUICK_TOOLS = [
@@ -95,13 +96,16 @@ function isActive(pathname: string, href: string) {
 function titleFromPath(pathname: string) {
   if (pathname === "/") return null;
   if (TOOL_TITLES[pathname]) return TOOL_TITLES[pathname];
-  if (pathname === "/tools" || pathname.startsWith("/tools/")) return "Tools";
+  if (pathname === "/tools") return "All Developer Tools";
+  if (pathname.startsWith("/tools/")) {
+    return categories.find(category => pathname === `/tools/${category.id}`)?.name ?? "Developer Tools";
+  }
   if (pathname.startsWith("/blog")) return "Blog";
-  if (pathname === "/about") return "About";
-  if (pathname === "/privacy") return "Privacy";
+  if (pathname === "/about-us") return "About Us";
+  if (pathname === "/privacy-policy") return "Privacy Policy";
   if (pathname === "/disclaimer") return "Disclaimer";
-  if (pathname === "/contact") return "Contact";
-  if (pathname === "/terms") return "Terms";
+  if (pathname === "/contact-us") return "Contact Us";
+  if (pathname === "/terms-and-conditions") return "Terms and Conditions";
   if (pathname === "/editorial-policy") return "Editorial Policy";
   return null;
 }

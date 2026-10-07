@@ -66,8 +66,8 @@ export default async function CategoryPage({ params }: Props) {
     ))}</div>
     <div className="category-footer-links">
       <Link href="/tools">All developer tools</Link>
-      <Link href="/privacy">Privacy</Link>
-      <Link href="/about">About</Link>
+      <Link href="/privacy-policy">Privacy Policy</Link>
+      <Link href="/about-us">About Us</Link>
     </div>
   </main>;
 }

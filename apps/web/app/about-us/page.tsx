@@ -8,4 +8,4 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about-us" }
 };
 
-export default function AboutPage() { return <SiteContentPage page={sitePageCopy.about} />; }
+export default function AboutUsPage() { return <SiteContentPage page={sitePageCopy.about} />; }

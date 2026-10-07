@@ -33,7 +33,7 @@ test("core formatter flow works across browsers", async ({ page }) => {
   await fillAndRun(page, '{"service":"api"}');
   await expect(page.locator(".output-pane .cm-content")).toContainText("service");
   await expect(page.locator(".output-pane .cm-content")).toContainText("api");
-  for (const route of ["/about", "/privacy", "/contact"]) {
+  for (const route of ["/about-us", "/privacy-policy", "/contact-us"]) {
     await page.goto(route);
     await expect(page.locator("main h1")).toBeVisible();
   }
@@ -46,7 +46,7 @@ test("mobile layout has no horizontal overflow", async ({ page }) => {
   await expect(page.locator(".output-pane .cm-content")).toContainText('"ok": true');
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
   await page.setViewportSize({ width: 768, height: 1024 });
-  await page.goto("/privacy");
+  await page.goto("/privacy-policy");
   await expect(page.locator("footer")).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
 });

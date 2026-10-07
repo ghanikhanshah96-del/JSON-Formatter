@@ -12,7 +12,7 @@ export const sitePageCopy = {
   about: {
     title: "About Us | CodeFormatterTools",
     description: "Learn about CodeFormatterTools, a free local-first developer tools platform for formatting, validating, minifying, sorting, and converting JSON, YAML, XML, SQL, and CSV.",
-    heading: "About CodeFormatterTools",
+    heading: "About Us",
     eyebrow: "ABOUT US",
     intro: [
       "Welcome to CodeFormatterTools, a free online developer utility platform designed to make everyday formatting, validation, minification, sorting, and data-conversion tasks faster and easier.",
@@ -62,7 +62,7 @@ Formatting, validation, minification, sorting, and supported conversion operatio
 
 This approach is particularly useful for developers working with API responses, configuration files, sample data, development payloads, and other information they may prefer to keep on their own device.
 
-However, users should still avoid pasting passwords, API keys, authentication tokens, private production credentials, or other secrets into any online tool unless they understand the risks and consider it appropriate. For complete details, please read our [Privacy Policy](/privacy).
+However, users should still avoid pasting passwords, API keys, authentication tokens, private production credentials, or other secrets into any online tool unless they understand the risks and consider it appropriate. For complete details, please read our [Privacy Policy](/privacy-policy).
 
 ## No Account Required
 CodeFormatterTools does not currently require an account to use its standard developer utilities. There is no need to register simply to format JSON, validate XML, organize YAML, format SQL, or use our supported data converters.
@@ -144,7 +144,7 @@ We aim to continually improve:
 - Documentation
 - Educational content
 
-If you notice an issue, inaccurate explanation, unexpected tool result, or accessibility problem, please contact us through our [Contact Us page](/contact).
+If you notice an issue, inaccurate explanation, unexpected tool result, or accessibility problem, please contact us through our [Contact Us page](/contact-us).
 
 Thank you for using CodeFormatterTools.`
   },
@@ -226,7 +226,7 @@ If your message concerns:
 - Privacy rights
 - Takedown requests
 
-Please provide enough information for us to understand the request without pasting private tool input. You can also review our [Privacy Policy](/privacy) for information about how the website handles data.
+Please provide enough information for us to understand the request without pasting private tool input. You can also review our [Privacy Policy](/privacy-policy) for information about how the website handles data.
 
 ## Content Corrections
 If you find a factual or technical error in an article, tool description, FAQ, or documentation page, please let us know. When possible, include:
@@ -253,7 +253,7 @@ Information voluntarily submitted through our contact form may be used to:
 - Prevent abuse
 - Address security issues
 
-Please read our [Privacy Policy](/privacy) for additional information.
+Please read our [Privacy Policy](/privacy-policy) for additional information.
 
 Thank you for helping us improve CodeFormatterTools.`
   },
@@ -450,7 +450,7 @@ However, no browser, device, network, website, or electronic system can be guara
 ## 16. Children's Privacy
 CodeFormatterTools is a general developer utility website and is not specifically directed toward children. We do not knowingly seek personal information from children in violation of applicable privacy laws.
 
-If you believe that a child has improperly submitted personal information directly to us, please contact us through our [Contact Us page](/contact).
+If you believe that a child has improperly submitted personal information directly to us, please contact us through our [Contact Us page](/contact-us).
 
 ## 17. Privacy Rights
 Depending on your location, applicable privacy laws may provide certain rights regarding personal information. These rights can include rights relating to:
@@ -463,7 +463,7 @@ Depending on your location, applicable privacy laws may provide certain rights r
 - Consent withdrawal
 - Other privacy choices
 
-The availability and scope of these rights depend on applicable law and the information involved. You may submit a privacy-related inquiry through our [Contact Us page](/contact).
+The availability and scope of these rights depend on applicable law and the information involved. You may submit a privacy-related inquiry through our [Contact Us page](/contact-us).
 
 ## 18. Advertising and Consent Controls
 If advertising is enabled, visitors in applicable jurisdictions may be presented with privacy or consent choices relating to advertising cookies, personalized advertising, or other technologies. You may also be able to control certain technologies through:
@@ -486,7 +486,7 @@ We may update this Privacy Policy when:
 When the policy changes, we may revise the Last Updated date at the top of this page. We encourage users to review this page periodically.
 
 ## 20. Contact Us
-If you have questions about this Privacy Policy, please contact us through the [Contact Us page](/contact).`
+If you have questions about this Privacy Policy, please contact us through the [Contact Us page](/contact-us).`
   },
   disclaimer: {
     title: "Disclaimer | CodeFormatterTools",
@@ -667,7 +667,7 @@ To the fullest extent permitted by applicable law, CodeFormatterTools and its ow
 Always review important output before using it.
 
 ## Contact Us
-If you identify a technical or factual issue, please report it through our [Contact Us page](/contact).`
+If you identify a technical or factual issue, please report it through our [Contact Us page](/contact-us).`
   },
   terms: {
     title: "Terms and Conditions | CodeFormatterTools",
@@ -706,7 +706,7 @@ Because standard input and output are processed locally and are not saved by us 
 ## 4. Local-First Tool Processing
 Our standard formatter, validator, minifier, sorter, and converter tools are designed to process supported input locally in your browser.
 
-Please review our [Privacy Policy](/privacy) for details about local processing, preferences, analytics, advertising, and other website technologies.
+Please review our [Privacy Policy](/privacy-policy) for details about local processing, preferences, analytics, advertising, and other website technologies.
 
 ## 5. Your Data
 You remain responsible for the information that you enter into our tools. You should only process data that you have the right or authorization to use.
@@ -868,7 +868,7 @@ This can include losses relating to:
 Nothing in these Terms excludes liability that cannot legally be excluded.
 
 ## 21. Privacy
-Your use of CodeFormatterTools is also subject to our [Privacy Policy](/privacy). Please review that policy for information concerning local processing, browser preferences, analytics, advertising, and contact information.
+Your use of CodeFormatterTools is also subject to our [Privacy Policy](/privacy-policy). Please review that policy for information concerning local processing, browser preferences, analytics, advertising, and contact information.
 
 ## 22. Changes to These Terms
 We may revise these Terms as CodeFormatterTools changes. When updates are made, we may revise the Last Updated date at the top of the page.
@@ -879,7 +879,7 @@ Continued use of the website after updated Terms are published constitutes accep
 If any provision of these Terms is determined to be invalid or unenforceable, the remaining provisions will continue to apply to the extent permitted by applicable law.
 
 ## 24. Contact
-Questions relating to these Terms can be submitted through our [Contact Us page](/contact).`
+Questions relating to these Terms can be submitted through our [Contact Us page](/contact-us).`
   },
   editorial: {
     title: "Editorial Policy | CodeFormatterTools",
@@ -1037,7 +1037,7 @@ We welcome legitimate correction reports. If we identify an error, we may update
 - Formatting
 - Typographical errors
 
-Users can report possible errors through our [Contact Us page](/contact). Please include the affected page and enough information for us to understand the issue.
+Users can report possible errors through our [Contact Us page](/contact-us). Please include the affected page and enough information for us to understand the issue.
 
 ## Artificial Intelligence and Editorial Responsibility
 AI-assisted technology may be used to support parts of the editorial workflow, including:
@@ -1120,7 +1120,7 @@ Our goal is to make editorial decisions based on usefulness, technical accuracy,
 Advertisers should not control factual corrections or the technical conclusions of our content.
 
 ## Contact the Editorial Team
-To report a factual or technical issue, request a correction, or suggest an improvement, please use our [Contact Us page](/contact).
+To report a factual or technical issue, request a correction, or suggest an improvement, please use our [Contact Us page](/contact-us).
 
 We appreciate feedback that helps make CodeFormatterTools more useful, accurate, and reliable.`
   }
