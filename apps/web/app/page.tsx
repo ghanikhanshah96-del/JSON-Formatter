@@ -41,7 +41,7 @@ export default function Home() {
   return <main>
     {homeSchemas().map((data, index) => <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />)}
     <section className="hero"><div className="container hero-grid"><div>
-      <div className="eyebrow"><span className="live-dot" /> DEVELOPER TOOLS · LOCAL FIRST</div>
+      <div className="eyebrow"><span className="live-dot" /> FREE DEVELOPER TOOLS · LOCAL FIRST</div>
       <h1>{homeSeoCopy.headline}</h1>
       <p className="hero-copy">{heroIntro}</p>
       <div className="hero-actions"><a className="button primary" href="/json-formatter">Open JSON Formatter <span aria-hidden="true">→</span></a><a className="button secondary" href="#tools">Explore all tools</a></div>

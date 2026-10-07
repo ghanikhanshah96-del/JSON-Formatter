@@ -61,8 +61,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
         <SiteHeader />
         <div id="main-content">{children}</div>
-        <footer className="site-footer"><div className="container footer-inner">
-          <div>
+        <footer className="site-footer">
+          <div className="container footer-inner">
+            <div className="footer-branding">
             <HomeBrandLink className="brand footer-brand" aria-label={`CFT ${siteConfig.name} home`}>
               <span className="brand-mark" aria-hidden="true">{`{ }`}</span>
               <span className="brand-text">
@@ -71,18 +72,41 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <span className="brand-dot" aria-hidden="true">.</span>
               </span>
             </HomeBrandLink>
-            <p>Useful tools. Runs in your browser. Never uploaded.</p>
+              <p>Useful developer tools, processed in your browser.</p>
+              <span className="footer-privacy-note">No account required. Your tool input stays on your device.</span>
+            </div>
+            <nav className="footer-navigation" aria-label="Footer">
+              <div className="footer-column">
+                <h2>Browse</h2>
+                <a href="/tools">All tools</a>
+                <a href="/tools/json">JSON tools</a>
+                <a href="/tools/sql">SQL tools</a>
+                <a href="/tools/yaml">YAML tools</a>
+                <a href="/tools/xml">XML tools</a>
+                <a href="/tools/csv">CSV tools</a>
+                <a href="/tools/converters">Converters</a>
+              </div>
+              <div className="footer-column">
+                <h2>Explore</h2>
+                <a href="/blog">Blog</a>
+                <a href="/performance">Performance</a>
+                <a href="/about">About</a>
+                <a href="/contact">Contact</a>
+              </div>
+              <div className="footer-column">
+                <h2>Policies</h2>
+                <a href="/privacy">Privacy</a>
+                <a href="/disclaimer">Disclaimer</a>
+                <a href="/terms">Terms</a>
+                <a href="/editorial-policy">Editorial Policy</a>
+              </div>
+            </nav>
           </div>
-          <div className="footer-links">
-            <a href="/#tools">Tools</a>
-            <a href="/blog">Blog</a>
-            <a href="/performance">Performance</a>
-            <a href="/about">About</a>
-            <a href="/privacy">Privacy</a>
-            <a href="/terms">Terms</a>
-            <a href="/contact">Contact</a>
+          <div className="container footer-bottom">
+            <span>© {siteConfig.name}</span>
+            <a href="/tools">Browse all developer tools <span aria-hidden="true">→</span></a>
           </div>
-        </div></footer>
+        </footer>
         <Observability />
       </body>
     </html>

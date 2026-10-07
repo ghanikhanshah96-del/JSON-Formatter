@@ -7,7 +7,7 @@ import { HomeBrandLink } from "@/components/home-brand-link";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const NAV_LINKS = [
-  { href: "/#tools", label: "Tools", hint: "Format, validate, convert", icon: "grid" },
+  { href: "/tools", label: "Tools", hint: "Format, validate, convert", icon: "grid" },
   { href: "/blog", label: "Blog", hint: "Guides & long-tails", icon: "book" },
   { href: "/about", label: "About", hint: "Why we stay local-first", icon: "info" },
   { href: "/privacy", label: "Privacy", hint: "Your data never leaves", icon: "shield" },
@@ -95,11 +95,14 @@ function isActive(pathname: string, href: string) {
 function titleFromPath(pathname: string) {
   if (pathname === "/") return null;
   if (TOOL_TITLES[pathname]) return TOOL_TITLES[pathname];
+  if (pathname === "/tools" || pathname.startsWith("/tools/")) return "Tools";
   if (pathname.startsWith("/blog")) return "Blog";
   if (pathname === "/about") return "About";
   if (pathname === "/privacy") return "Privacy";
+  if (pathname === "/disclaimer") return "Disclaimer";
   if (pathname === "/contact") return "Contact";
   if (pathname === "/terms") return "Terms";
+  if (pathname === "/editorial-policy") return "Editorial Policy";
   return null;
 }
 
@@ -274,7 +277,7 @@ export function SiteHeader() {
             </div>
           ) : null}
 
-          <a href="/#tools" className="mobile-drawer-cta" onClick={close}>
+          <a href="/tools" className="mobile-drawer-cta" onClick={close}>
             <span className="mobile-drawer-cta-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="20" height="20">
                 <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.8" />

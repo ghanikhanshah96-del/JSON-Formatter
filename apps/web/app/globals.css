@@ -620,6 +620,12 @@
 .contact-honeypot{position:absolute!important;left:-10000px!important;top:auto!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;padding:0!important;margin:-1px!important;opacity:0!important;pointer-events:none}
 .contact-honeypot input{position:absolute;left:-10000px;width:1px;height:1px;opacity:0}
 
+.site-policy-page h1{font-size:48px;line-height:1.12;letter-spacing:0}
+.site-policy-page .site-page-updated{font-size:13px;color:var(--muted)}
+.site-page-sections h3{font:700 18px/1.4 var(--font-display);margin:24px 0 8px}
+.site-page-sections ul{max-width:760px}
+@media(max-width:650px){.site-policy-page h1{font-size:38px}}
+
 /* FAQ accordion */
 .home-faq{padding:72px 0 96px}
 .home-faq .section-heading{margin-bottom:28px}

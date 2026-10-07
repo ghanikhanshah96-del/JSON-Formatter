@@ -8,7 +8,7 @@ function priorityFor(path: string): number {
   if (path === "/blog" || path === "/performance") return 0.7;
   if (path.startsWith("/blog/")) return 0.65;
   if (path.startsWith("/tools/")) return 0.6;
-  if (["/about", "/privacy", "/terms", "/contact"].includes(path)) return 0.3;
+  if (["/about", "/privacy", "/disclaimer", "/terms", "/editorial-policy", "/contact"].includes(path)) return 0.3;
   if (
     path.includes("formatter") ||
     path.includes("validator") ||
@@ -25,8 +25,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "",
     "/about",
     "/privacy",
+    "/disclaimer",
     "/terms",
+    "/editorial-policy",
     "/contact",
+    "/tools",
     "/blog",
     "/performance",
     ...blogPosts.map(post => `/blog/${post.slug}`),

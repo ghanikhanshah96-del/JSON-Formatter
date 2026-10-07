@@ -7,7 +7,7 @@ export { toolSeoCopy } from "./seo-copy.ts";
 
 export const homeSeoCopy: HomeSeoCopy = {
   ...rawHomeSeoCopy,
-  headline: "Developer tools that stay on your device.",
+  headline: "Free developer tools that stay on your device.",
   intro: [
     "Format, validate and convert JSON, YAML, XML, SQL and CSV instantly. No uploads. No account.",
     ...polishParagraphs(rawHomeSeoCopy.intro.slice(1))

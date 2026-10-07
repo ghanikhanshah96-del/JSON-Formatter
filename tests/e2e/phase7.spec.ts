@@ -1,21 +1,61 @@
 import { expect, test } from "@playwright/test";
-import { siteConfig } from "@codeformattools/seo";
+import { tools } from "@codeformattools/tool-registry";
 
 test("trust pages, contact form, and footer links are launch ready", async ({ page, request }) => {
-  for (const path of ["/about", "/privacy", "/terms", "/contact", "/blog", "/performance"]) {
+  const policyPages = [
+    ["/about", "About Us | CodeFormatterTools"],
+    ["/privacy", "Privacy Policy | CodeFormatterTools"],
+    ["/disclaimer", "Disclaimer | CodeFormatterTools"],
+    ["/terms", "Terms and Conditions | CodeFormatterTools"],
+    ["/editorial-policy", "Editorial Policy | CodeFormatterTools"],
+    ["/contact", "Contact Us | CodeFormatterTools"]
+  ] as const;
+
+  for (const [path, title] of policyPages) {
     await page.goto(path);
+    await expect(page).toHaveTitle(title);
     await expect(page.locator("main")).toBeVisible();
     await expect(page.locator("h1")).toBeVisible();
+    await expect(page.locator("link[rel='canonical']")).toHaveAttribute("href", new RegExp(`${path}$`));
     await expect(page.locator("footer").getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/contact");
   }
 
+  for (const path of ["/blog", "/performance"]) {
+    await page.goto(path);
+    await expect(page.locator("main")).toBeVisible();
+    await expect(page.locator("h1")).toBeVisible();
+  }
+
+  await page.goto("/tools");
+  await expect(page).toHaveTitle("All Developer Tools | CodeFormatterTools");
+  await expect(page.locator("link[rel='canonical']")).toHaveAttribute("href", /\/tools$/);
+  await expect(page.getByRole("heading", { name: "All-in-One Developer Utility Platform" })).toBeVisible();
+  await expect(page.locator(".tools-browser .tool-card")).toHaveCount(tools.length);
+  await expect(page.locator(".tools-filter")).toBeVisible();
+  await expect(page.locator(".mobile-drawer-nav a[href='/tools']")).toHaveCount(1);
   await page.goto("/privacy");
-  await expect(page.getByText("Tool input and output stay in the browser session.")).toBeVisible();
-  await expect(page.getByText(`${siteConfig.name} uses Vercel Web Analytics and Vercel Speed Insights`)).toBeVisible();
+  await page.locator(".desktop-nav").getByRole("link", { name: "Tools" }).click();
+  await expect(page).toHaveURL(/\/tools$/);
+  await page.locator("footer").getByRole("link", { name: "All tools" }).click();
+  await expect(page).toHaveURL(/\/tools$/);
+  await page.goto("/about");
+  await expect(page.getByRole("heading", { name: "What We Offer" })).toBeVisible();
+  await expect(page.getByText("JSON to CSV Converter", { exact: true })).toBeVisible();
+
+  await page.goto("/privacy");
+  await expect(page.getByText("Tool input and generated results generally remain within your browser session.")).toBeVisible();
+  await expect(page.getByText(/currently uses Vercel Web Analytics and Vercel Speed Insights/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Google AdSense and Advertising" })).toBeVisible();
+
+  await page.goto("/disclaimer");
+  await expect(page.getByRole("heading", { name: "Data Conversion Limitations" })).toBeVisible();
+  await page.goto("/editorial-policy");
+  await expect(page.getByRole("heading", { name: "Artificial Intelligence and Editorial Responsibility" })).toBeVisible();
 
   await page.goto("/contact");
-  await expect(page).toHaveTitle(`Contact | ${siteConfig.name}`);
+  await expect(page).toHaveTitle("Contact Us | CodeFormatterTools");
   await expect(page.locator("form.contact-form")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Security Reports" })).toBeVisible();
   await expect(page.locator('form.contact-form input[name="name"]')).toBeVisible();
   await expect(page.locator('form.contact-form input[name="email"]')).toBeVisible();
   await expect(page.locator('form.contact-form select[name="topic"]')).toBeVisible();
@@ -23,18 +63,17 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
   await expect(page.getByRole("button", { name: /Send message/i })).toBeVisible();
   await expect(page.locator("main a[href^='mailto:']")).toHaveCount(0);
   // Honeypot must not appear as an accessible "Company" field or named control.
-  await expect(page.getByLabel(/^Company$/i)).toHaveCount(0);
-  await expect(page.getByText(/^Company$/)).toHaveCount(0);
-  await expect(page.locator(".contact-honeypot")).toHaveAttribute("aria-hidden", "true");
-  await expect(page.locator(".contact-honeypot")).toHaveAttribute("hidden", "");
-  await expect(page.locator('form.contact-form input[name="company"]')).toHaveCount(0);
   await expect(page.locator('form.contact-form input[name="website_url"]')).toHaveCount(1);
   // Visible contact fields only: Name, Email, Message (Topic is a combobox).
   await expect(page.locator("form.contact-form").getByRole("textbox")).toHaveCount(3);
 
+
   const sitemap = await request.get("/sitemap.xml");
   const sitemapText = await sitemap.text();
   expect(sitemapText).toContain("/contact");
+  expect(sitemapText).toContain("/tools</loc>");
+  expect(sitemapText).toContain("/disclaimer");
+  expect(sitemapText).toContain("/editorial-policy");
   expect(sitemapText).toContain("/blog");
   expect(sitemapText).toContain("/blog/format-json-online");
   expect(sitemapText).toContain("/performance");

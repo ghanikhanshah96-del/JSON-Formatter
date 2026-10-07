@@ -5,7 +5,7 @@ import { fillAndRun, openWorkspace } from "./tool-helpers";
 test("core formatter flow works across browsers", async ({ page }) => {
   test.setTimeout(120_000);
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /Developer tools that stay on your device/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Free developer tools that stay on your device/i })).toBeVisible();
   await page.goto("/json-formatter");
   await fillAndRun(page, '{"id":9123372036854000123}');
   await expect(page.locator(".output-pane .cm-content")).toContainText("9123372036854000123");
