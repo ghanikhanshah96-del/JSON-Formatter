@@ -605,12 +605,16 @@
 .tool-intro-compact .tool-summary{font-size:var(--text-md);max-width:42rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .tool-workspace{margin-bottom:36px}
 .tool-utility-content{padding-top:4px;padding-bottom:72px}
-.seo-deep-details{margin-top:28px;border-top:1px solid var(--line);padding-top:18px}
+.seo-deep-details{grid-column:1 / -1;margin-top:28px;border-top:1px solid var(--line);padding-top:18px}
+.tool-faq{grid-column:1 / -1}
+.tool-utility-content .seo-item-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 .seo-deep-details>summary{cursor:pointer;font:700 15px/1.4 var(--font-display);color:var(--ink);list-style:none}
 .seo-deep-details>summary::-webkit-details-marker{display:none}
 .seo-deep-details>summary::after{content:" ▾";color:var(--muted)}
 .seo-deep-details[open]>summary::after{content:" ▴"}
 .seo-deep-details .seo-block{margin-top:22px}
+@media(max-width:900px){.tool-utility-content .seo-item-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.tool-utility-content .seo-item-grid{grid-template-columns:1fr}}
 .gate-editor-grid .editor-area,.gate-editor-grid .gate-fallback{min-height:280px}
 .gate-run-placeholder{opacity:.55;cursor:default;min-height:44px;min-width:142px}
 .contact-honeypot{position:absolute!important;left:-10000px!important;top:auto!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;padding:0!important;margin:-1px!important;opacity:0!important;pointer-events:none}

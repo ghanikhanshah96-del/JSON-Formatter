@@ -61,36 +61,36 @@ export default async function ToolPage({ params }: Props) {
           <h2>Common {tool.input.language.toUpperCase()} issues</h2>
           <div className="error-grid">{tool.commonErrors.map(item => <div key={item.title}><strong>{item.title}</strong><p>{item.description}</p></div>)}</div>
         </section>
-        <section className="seo-block">
-          <h2>Frequently asked questions</h2>
-          <FaqAccordion items={tool.faq} group={`faq-${tool.slug}`} />
-        </section>
-        <details className="seo-deep-details">
-          <summary>More about {tool.name}</summary>
-          <section className="seo-block">
-            <h2>{howToSection?.heading ?? `How to use ${tool.name}`}</h2>
-            {howToSection?.paragraphs?.map(paragraph => <p key={paragraph.slice(0, 48)}>{paragraph}</p>)}
-            <ol>{(howToSection?.steps?.length ? howToSection.steps : tool.howItWorks).map(item => <li key={item}>{item}</li>)}</ol>
-          </section>
-          <section className="seo-block">
-            <h2>About {tool.name}</h2>
-            <p>{tool.about}</p>
-            {tool.intro.slice(1).map(paragraph => <p key={paragraph.slice(0, 64)}>{paragraph}</p>)}
-          </section>
-          <SeoSections sections={deepSections} related={related} />
-          {tool.cta ? (
-            <section className="seo-cta">
-              <h2>{tool.cta.heading}</h2>
-              {tool.cta.paragraphs.map(paragraph => <p key={paragraph.slice(0, 48)}>{paragraph}</p>)}
-              <div className="seo-cta-actions">
-                <a className="button primary" href="#workspace">Use {tool.name} <span aria-hidden="true">↑</span></a>
-                {related[0] ? <Link className="button secondary" href={`/${related[0].slug}`}>Try {related[0].name}</Link> : null}
-              </div>
-            </section>
-          ) : null}
-        </details>
       </div>
       {related.length > 0 && <RelatedTools related={related} />}
+      <details className="seo-deep-details">
+        <summary>More about {tool.name}</summary>
+        <section className="seo-block">
+          <h2>{howToSection?.heading ?? `How to use ${tool.name}`}</h2>
+          {howToSection?.paragraphs?.map(paragraph => <p key={paragraph.slice(0, 48)}>{paragraph}</p>)}
+          <ol>{(howToSection?.steps?.length ? howToSection.steps : tool.howItWorks).map(item => <li key={item}>{item}</li>)}</ol>
+        </section>
+        <section className="seo-block">
+          <h2>About {tool.name}</h2>
+          <p>{tool.about}</p>
+          {tool.intro.slice(1).map(paragraph => <p key={paragraph.slice(0, 64)}>{paragraph}</p>)}
+        </section>
+        <SeoSections sections={deepSections} related={related} />
+        {tool.cta ? (
+          <section className="seo-cta">
+            <h2>{tool.cta.heading}</h2>
+            {tool.cta.paragraphs.map(paragraph => <p key={paragraph.slice(0, 48)}>{paragraph}</p>)}
+            <div className="seo-cta-actions">
+              <a className="button primary" href="#workspace">Use {tool.name} <span aria-hidden="true">↑</span></a>
+              {related[0] ? <Link className="button secondary" href={`/${related[0].slug}`}>Try {related[0].name}</Link> : null}
+            </div>
+          </section>
+        ) : null}
+      </details>
+      <section className="seo-block tool-faq">
+        <h2>Frequently asked questions</h2>
+        <FaqAccordion items={tool.faq} group={`faq-${tool.slug}`} />
+      </section>
     </section>
   </main>;
 }

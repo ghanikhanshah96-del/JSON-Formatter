@@ -11,6 +11,17 @@ test("all tool pages expose unique SEO sections and structured data", async ({ p
     await expect(page.locator("link[rel='canonical']")).toHaveAttribute("href", new RegExp(`/${tool.slug}$`));
     await expect(page.getByRole("heading", { name: `${tool.headline}.` })).toBeVisible();
     await page.locator(".seo-deep-details").evaluate((el: HTMLDetailsElement) => { el.open = true; });
+    const detailsBeforeFaq = await page.evaluate(() => {
+      const details = document.querySelector(".seo-deep-details");
+      const faq = document.querySelector(".tool-faq");
+      return Boolean(details && faq && details.compareDocumentPosition(faq) & Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+    expect(detailsBeforeFaq).toBe(true);
+    await expect(page.locator(".seo-deep-details")).toHaveCSS("grid-column-end", "-1");
+    const itemGridColumns = await page.locator(".seo-deep-details .seo-item-grid").evaluateAll(grids =>
+      grids.map(grid => getComputedStyle(grid).gridTemplateColumns.split(" ").length)
+    );
+    for (const columns of itemGridColumns) expect(columns).toBe(3);
     await expect(page.getByText(tool.about).first()).toBeVisible();
     await expect(page.locator(".example-code")).toContainText(tool.example.split("\n")[0]);
     for (const item of tool.commonErrors) await expect(page.locator(".error-grid strong").getByText(item.title, { exact: true })).toBeVisible();
