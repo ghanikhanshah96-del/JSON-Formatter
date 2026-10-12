@@ -383,6 +383,12 @@
 .learn-card p{font-size:13px;line-height:1.6;color:var(--muted);margin:0 0 18px}
 .blog-card-body .card-link{margin-top:auto}
 .learn-body{max-width:760px}
+.blog-grid:has(> :only-child),.home-guide-grid:has(> :only-child){grid-template-columns:minmax(0,520px)}
+.blog-intro{margin-bottom:34px}
+.blog-intro p{color:var(--muted);font-size:15px;line-height:1.8;margin:0 0 14px}
+.learn-body .seo-block h3{font:700 18px/1.35 var(--font-display);letter-spacing:-.25px;color:var(--ink);margin:26px 0 10px}
+.blog-code{margin:14px 0 20px;padding:18px 20px;overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#0b1020;color:#e8edf7;box-shadow:inset 0 1px 0 #ffffff0d;font:500 13px/1.65 var(--font-mono,ui-monospace,SFMono-Regular,Consolas,monospace);tab-size:2}
+.blog-code code{font:inherit;color:inherit;white-space:pre}
 .learn-tools{margin-top:36px}
 .learn-tool-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .learn-back{margin-top:36px;font-size:13px;font-weight:700}

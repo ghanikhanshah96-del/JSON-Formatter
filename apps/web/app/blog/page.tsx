@@ -5,11 +5,11 @@ import { blogPosts } from "@/lib/learn-guides";
 
 export const metadata: Metadata = {
   title: `Blog | ${siteConfig.name}`,
-  description: "Practical articles for formatting, validating, and converting JSON, YAML, SQL, XML, and CSV with private browser tools.",
+  description: "A practical guide to creating, validating, and formatting JSON files with private browser tools.",
   alternates: { canonical: "/blog" },
   openGraph: {
     title: `Blog | ${siteConfig.name}`,
-    description: "Short developer articles that link into real tools — private by default.",
+    description: "A step-by-step JSON guide that links into real tools — private by default.",
     url: `${siteOrigin()}/blog`,
     siteName: siteConfig.name,
     type: "website",
@@ -21,10 +21,10 @@ export default function BlogIndexPage() {
   return (
     <main className="learn-page blog-page container">
       <div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><strong>Blog</strong></div>
-      <div className="eyebrow">BLOG · GUIDES</div>
-      <h1>Developer articles that open into tools<span className="title-accent">.</span></h1>
+      <div className="eyebrow">BLOG · GUIDE</div>
+      <h1>Learn JSON, then open the tools<span className="title-accent">.</span></h1>
       <p className="learn-lead">
-        Short, practical write-ups for common developer tasks. Each post links into a live CodeFormatterTools workspace — no accounts, no uploads.
+        A practical, beginner-friendly walkthrough for creating a JSON file, understanding its syntax, and checking your work.
       </p>
       <div className="learn-grid blog-grid">
         {blogPosts.map(post => (

@@ -28,9 +28,7 @@ export const metadata: Metadata = {
 };
 
 const featuredBlogSlugs = [
-  "format-json-api-response",
-  "yaml-kubernetes-config",
-  "private-browser-developer-tools"
+  "how-to-create-json-file"
 ] as const;
 
 export default function Home() {
@@ -51,7 +49,7 @@ export default function Home() {
     <section className="home-guides container">
       <div className="section-heading">
         <div><div className="eyebrow">BLOG</div><h2>Short guides into live tools</h2></div>
-        <p>Practical long-tails — API responses, Kubernetes YAML, private processing — each linked into a workspace.</p>
+        <p>A practical guide to creating, checking, and formatting your first JSON file.</p>
       </div>
       <div className="home-guide-grid">
         {featuredPosts.map(post => post ? (

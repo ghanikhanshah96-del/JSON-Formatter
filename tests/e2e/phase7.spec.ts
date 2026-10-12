@@ -104,17 +104,17 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
   expect(sitemapText).toContain("/disclaimer");
   expect(sitemapText).toContain("/editorial-policy");
   expect(sitemapText).toContain("/blog");
-  expect(sitemapText).toContain("/blog/format-json-online");
+  expect(sitemapText).toContain("/blog/how-to-create-json-file");
   expect(sitemapText).toContain("/performance");
 });
 
 test("blog index cards and article hero share cover images", async ({ page }) => {
   await page.goto("/blog");
-  await expect(page.getByRole("heading", { name: /Developer articles/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Learn JSON/i })).toBeVisible();
   const firstCard = page.locator(".blog-card").first();
   await expect(firstCard.locator(".blog-card-media img")).toBeVisible();
   const cardSrc = await firstCard.locator(".blog-card-media img").getAttribute("src");
-  expect(cardSrc).toMatch(/^\/blog\/.+\.svg$/);
+  expect(cardSrc).toMatch(/^\/blog\/.+\.(?:png|jpe?g|webp|svg)$/);
   await firstCard.click();
   await expect(page).toHaveURL(/\/blog\//);
   await expect(page.locator(".blog-hero-media img")).toHaveAttribute("src", cardSrc!);

@@ -15,11 +15,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = getBlogPost((await params).slug);
   if (!post) return {};
   return {
-    title: `${post.title} | ${siteConfig.name}`,
+    title: `${post.metaTitle ?? post.title} | ${siteConfig.name}`,
     description: post.description,
     alternates: { canonical: `/blog/${post.slug}` },
     openGraph: {
-      title: `${post.title} | ${siteConfig.name}`,
+      title: `${post.metaTitle ?? post.title} | ${siteConfig.name}`,
       description: post.description,
       url: `${siteOrigin()}/blog/${post.slug}`,
       siteName: siteConfig.name,
@@ -62,11 +62,23 @@ export default async function BlogPostPage({ params }: Props) {
       </figure>
 
       <article className="learn-body">
+        <div className="blog-intro">
+          {post.intro.map(paragraph => <p key={paragraph.slice(0, 48)}>{paragraph}</p>)}
+        </div>
         {post.sections.map(section => (
           <section key={section.heading} className="seo-block">
             <h2>{section.heading}</h2>
-            {section.paragraphs.map(paragraph => <p key={paragraph.slice(0, 48)}>{paragraph}</p>)}
-            {section.bullets?.length ? <ul className="seo-list">{section.bullets.map(item => <li key={item}>{item}</li>)}</ul> : null}
+            {section.blocks.map((block, index) => {
+              if (block.type === "paragraph") return <p key={`${section.heading}-p-${index}`}>{block.text}</p>;
+              if (block.type === "subheading") return <h3 key={`${section.heading}-h3-${index}`}>{block.text}</h3>;
+              if (block.type === "code") {
+                return <pre className="blog-code" key={`${section.heading}-code-${index}`}><code>{block.code}</code></pre>;
+              }
+              const List = block.ordered ? "ol" : "ul";
+              return <List className="seo-list" key={`${section.heading}-list-${index}`}>
+                {block.items.map(item => <li key={item}>{item}</li>)}
+              </List>;
+            })}
           </section>
         ))}
       </article>
