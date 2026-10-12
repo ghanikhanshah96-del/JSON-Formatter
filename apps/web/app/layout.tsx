@@ -6,6 +6,7 @@ import { Observability } from "@/components/observability";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 import "./theme-refresh.css";
+import "./editorial-pages.css";
 
 const sora = Sora({
   subsets: ["latin"],

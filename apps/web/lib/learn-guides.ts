@@ -21,6 +21,8 @@ export type BlogPost = {
 /** @deprecated Prefer BlogPost */
 export type LearnGuide = BlogPost;
 
+export const BLOG_PAGE_SIZE = 9;
+
 export const blogPosts: BlogPost[] = [
   {
     slug: "how-to-create-json-file",

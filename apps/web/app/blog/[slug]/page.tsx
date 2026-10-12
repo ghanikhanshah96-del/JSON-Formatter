@@ -3,12 +3,66 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTool } from "@codeformattools/tool-registry";
 import { siteConfig, siteOrigin } from "@codeformattools/seo";
-import { getBlogPost, blogPosts } from "@/lib/learn-guides";
+import { FaqAccordion } from "@/components/faq-accordion";
+import { getBlogPost, blogPosts, type BlogContentBlock } from "@/lib/learn-guides";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export function generateStaticParams() {
   return blogPosts.map(post => ({ slug: post.slug }));
+}
+
+function renderBlogBlocks(blocks: BlogContentBlock[], keyPrefix: string) {
+  return blocks.map((block, index) => {
+    if (block.type === "paragraph") return <p key={`${keyPrefix}-p-${index}`}>{block.text}</p>;
+    if (block.type === "subheading") return <h3 key={`${keyPrefix}-h-${index}`}>{block.text}</h3>;
+    if (block.type === "code") {
+      return <pre className="blog-code" key={`${keyPrefix}-code-${index}`}><code>{block.code}</code></pre>;
+    }
+    const List = block.ordered ? "ol" : "ul";
+    const isCompact = block.items.length >= 4 && block.items.every(item => item.length <= 72);
+    return <List className={`seo-list${isCompact ? " seo-list-compact" : ""}`} key={`${keyPrefix}-list-${index}`}>
+      {block.items.map(item => <li key={item}>{item}</li>)}
+    </List>;
+  });
+}
+
+function splitBlogSubsections(blocks: BlogContentBlock[]) {
+  const firstSubheading = blocks.findIndex(block => block.type === "subheading");
+  if (firstSubheading < 0) return { prelude: blocks, subsections: [] };
+
+  const prelude = blocks.slice(0, firstSubheading);
+  const subsections: { heading: string; blocks: BlogContentBlock[] }[] = [];
+  blocks.slice(firstSubheading).forEach(block => {
+    if (block.type === "subheading") {
+      subsections.push({ heading: block.text, blocks: [] });
+      return;
+    }
+    subsections.at(-1)?.blocks.push(block);
+  });
+  return { prelude, subsections };
+}
+
+function getFaqItems(blocks: BlogContentBlock[]) {
+  const items: { question: string; answer: string }[] = [];
+  let question = "";
+  let answers: string[] = [];
+
+  function flush() {
+    if (question && answers.length > 0) items.push({ question, answer: answers.join(" ") });
+  }
+
+  blocks.forEach(block => {
+    if (block.type === "subheading") {
+      flush();
+      question = block.text;
+      answers = [];
+    } else if (block.type === "paragraph") {
+      answers.push(block.text);
+    }
+  });
+  flush();
+  return items;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -47,40 +101,49 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <main className="learn-article blog-article container">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
-      <div className="breadcrumbs">
-        <Link href="/">Home</Link><span>/</span>
-        <Link href="/blog">Blog</Link><span>/</span>
-        <strong>{post.title}</strong>
-      </div>
-      <div className="eyebrow">{post.eyebrow}</div>
-      <h1>{post.title}<span className="title-accent">.</span></h1>
-      <p className="learn-lead">{post.description}</p>
-      <p className="learn-minutes-line">{post.readMinutes} min read · Private browser tools</p>
-
-      <figure className="blog-hero-media">
-        <img src={post.image} alt={post.imageAlt} width={1200} height={675} decoding="async" />
-      </figure>
+      <header className="blog-article-hero">
+        <div className="breadcrumbs">
+          <Link href="/">Home</Link><span>/</span>
+          <Link href="/blog">Blog</Link><span>/</span>
+          <strong>{post.title}</strong>
+        </div>
+        <div className="blog-article-hero-grid">
+          <div className="blog-article-hero-copy">
+            <div className="eyebrow">{post.eyebrow}</div>
+            <h1>{post.title}<span className="title-accent">.</span></h1>
+            <p className="learn-lead">{post.description}</p>
+            <p className="learn-minutes-line">{post.readMinutes} min read · Private browser tools</p>
+          </div>
+          <figure className="blog-hero-media">
+            <img src={post.image} alt={post.imageAlt} width={1200} height={675} decoding="async" />
+          </figure>
+        </div>
+      </header>
 
       <article className="learn-body">
         <div className="blog-intro">
           {post.intro.map(paragraph => <p key={paragraph.slice(0, 48)}>{paragraph}</p>)}
         </div>
-        {post.sections.map(section => (
-          <section key={section.heading} className="seo-block">
+        {post.sections.map(section => {
+          if (section.heading === "Frequently Asked Questions") {
+            return <section key={section.heading} className="seo-block blog-faq">
+              <h2>{section.heading}</h2>
+              <FaqAccordion items={getFaqItems(section.blocks)} group={`blog-faq-${post.slug}`} />
+            </section>;
+          }
+
+          const { prelude, subsections } = splitBlogSubsections(section.blocks);
+          return <section key={section.heading} className="seo-block">
             <h2>{section.heading}</h2>
-            {section.blocks.map((block, index) => {
-              if (block.type === "paragraph") return <p key={`${section.heading}-p-${index}`}>{block.text}</p>;
-              if (block.type === "subheading") return <h3 key={`${section.heading}-h3-${index}`}>{block.text}</h3>;
-              if (block.type === "code") {
-                return <pre className="blog-code" key={`${section.heading}-code-${index}`}><code>{block.code}</code></pre>;
-              }
-              const List = block.ordered ? "ol" : "ul";
-              return <List className="seo-list" key={`${section.heading}-list-${index}`}>
-                {block.items.map(item => <li key={item}>{item}</li>)}
-              </List>;
-            })}
-          </section>
-        ))}
+            {renderBlogBlocks(prelude, `${section.heading}-prelude`)}
+            {subsections.length > 0 ? <div className="blog-subheading-grid">
+              {subsections.map((subsection, subsectionIndex) => <div className="blog-subsection" key={subsection.heading}>
+                <h3>{subsection.heading}</h3>
+                {renderBlogBlocks(subsection.blocks, `${section.heading}-${subsectionIndex}`)}
+              </div>)}
+            </div> : null}
+          </section>;
+        })}
       </article>
 
       {related.length > 0 ? (

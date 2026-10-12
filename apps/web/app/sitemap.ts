@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { categories, tools } from "@codeformattools/tool-registry";
 import { siteOrigin } from "@codeformattools/seo";
-import { blogPosts } from "@/lib/learn-guides";
+import { BLOG_PAGE_SIZE, blogPosts } from "@/lib/learn-guides";
 
 function priorityFor(path: string): number {
   if (path === "") return 1;
@@ -21,6 +21,7 @@ function priorityFor(path: string): number {
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteOrigin();
+  const blogPageCount = Math.max(1, Math.ceil(blogPosts.length / BLOG_PAGE_SIZE));
   const paths = [
     "",
     "/about-us",
@@ -31,6 +32,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/contact-us",
     "/tools",
     "/blog",
+    ...Array.from({ length: Math.max(0, blogPageCount - 1) }, (_, index) => `/blog/page/${index + 2}`),
     "/performance",
     ...blogPosts.map(post => `/blog/${post.slug}`),
     ...categories.map(category => `/tools/${category.id}`),
