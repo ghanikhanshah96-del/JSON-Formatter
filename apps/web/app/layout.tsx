@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Sora } from "next/font/google";
 import { siteConfig, siteOrigin } from "@codeformattools/seo";
 import { HomeBrandLink } from "@/components/home-brand-link";
+import { GoogleAnalytics } from "@/components/google-analytics";
 import { Observability } from "@/components/observability";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
@@ -48,6 +49,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${sora.variable} ${ibmPlexMono.variable}`}>
+      <head>
+        <GoogleAnalytics />
+      </head>
       <body style={{ fontFamily: "var(--font-sora), var(--font-sans)" }} suppressHydrationWarning>
         <a className="skip-link" href="#main-content">Skip to content</a>
         <script

@@ -4,7 +4,8 @@ const scriptSources = [
   "'unsafe-inline'",
   ...(process.env.NODE_ENV === "production" ? [] : ["'unsafe-eval'"]),
   "https://va.vercel-scripts.com",
-  "https://*.vercel-scripts.com"
+  "https://*.vercel-scripts.com",
+  "https://www.googletagmanager.com"
 ].join(" ");
 
 const contentSecurityPolicy = [
@@ -12,13 +13,13 @@ const contentSecurityPolicy = [
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
-  "img-src 'self' data:",
+  "img-src 'self' data: https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com",
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
   `script-src ${scriptSources}`,
   "script-src-attr 'none'",
   "form-action 'self'",
-  "connect-src 'self' https://vitals.vercel-insights.com https://*.vercel-insights.com",
+  "connect-src 'self' https://vitals.vercel-insights.com https://*.vercel-insights.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'"
 ].join("; ");

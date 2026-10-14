@@ -330,7 +330,7 @@ We may receive personal information when you submit our contact form or otherwis
 We use this information primarily to process and respond to your communication and for related operational, legal, or security purposes. Please do not send secrets or full confidential production payloads through the contact form.
 
 ## 6. Website Analytics and Performance Measurement
-CodeFormatterTools currently uses Vercel Web Analytics and Vercel Speed Insights to help measure website usage and performance. Analytics or performance events may include information relating to:
+CodeFormatterTools currently uses Vercel Web Analytics, Vercel Speed Insights, and Google Analytics to help measure website usage and performance. Analytics or performance events may include information relating to:
 
 - Page views
 - Tool visits
@@ -362,6 +362,7 @@ When you visit CodeFormatterTools, your browser may make network requests necess
 - Fonts or other static assets
 - Vercel analytics scripts
 - Vercel performance scripts
+- Google Analytics scripts and measurement endpoints
 - Advertising resources if advertising is enabled
 
 These requests may involve standard technical information such as IP address, browser type, request time, and requested resource. This is separate from the local processing of tool input.
@@ -370,6 +371,8 @@ These requests may involve standard technical information such as IP address, br
 At the time of this Privacy Policy update, CodeFormatterTools does not require advertising cookies or account-tracking cookies simply to use its core developer tools.
 
 Some preferences may be stored locally using browser storage rather than traditional cookies. If advertising or additional third-party technologies are introduced, cookies or similar identifiers may be used where necessary. Where applicable, we intend to provide appropriate privacy or consent controls.
+
+Google Analytics may use cookies or similar identifiers to distinguish visits and measure general website usage. It is configured without Google Signals or advertising-personalization signals. These measurements remain separate from the local processing of pasted code, uploaded files, and generated tool output.
 
 ## 9. Google AdSense and Advertising
 CodeFormatterTools may use Google AdSense or another third-party advertising provider to support the operation of the website. If Google AdSense is enabled, Google and its advertising partners may use cookies or similar technologies to:

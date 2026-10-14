@@ -62,7 +62,7 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
 
   await page.goto("/privacy-policy");
   await expect(page.getByText("Tool input and generated results generally remain within your browser session.")).toBeVisible();
-  await expect(page.getByText(/currently uses Vercel Web Analytics and Vercel Speed Insights/)).toBeVisible();
+  await expect(page.getByText(/currently uses Vercel Web Analytics, Vercel Speed Insights, and Google Analytics/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Google AdSense and Advertising" })).toBeVisible();
   const policyListColumns = await page.locator(".site-policy-page .site-page-sections ul").first().evaluate(el =>
     getComputedStyle(el).gridTemplateColumns.split(" ").length
@@ -241,5 +241,5 @@ test("ad regions only mount when AdSense is configured", async ({ page }) => {
     await expect(slot).toHaveAttribute("data-ads-provider", "google");
     expect(await slot.evaluate(element => (element as HTMLElement).offsetHeight)).toBeGreaterThanOrEqual(90);
   }
-  expect(requested.some(url => /googlesyndication|doubleclick|googleadservices|googletagmanager|google-analytics|adsystem/i.test(url))).toBe(false);
+  expect(requested.some(url => /googlesyndication|doubleclick|googleadservices|adsystem/i.test(url))).toBe(false);
 });
