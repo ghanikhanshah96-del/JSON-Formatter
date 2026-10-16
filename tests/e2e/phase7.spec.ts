@@ -115,6 +115,8 @@ test("blog index cards and article hero share cover images", async ({ page }) =>
   await expect(page.getByRole("heading", { name: /Learn JSON/i })).toBeVisible();
   const firstCard = page.locator(".blog-card").first();
   await expect(firstCard.locator(".blog-card-media img")).toBeVisible();
+  await expect(firstCard.locator(".blog-card-media img")).toHaveCSS("object-fit", "cover");
+  await expect(firstCard.locator(".blog-card-media img")).toHaveCSS("object-position", "0% 50%");
   const cardSrc = await firstCard.locator(".blog-card-media img").getAttribute("src");
   expect(cardSrc).toMatch(/^\/blog\/.+\.(?:png|jpe?g|webp|svg)$/);
   await firstCard.click();
