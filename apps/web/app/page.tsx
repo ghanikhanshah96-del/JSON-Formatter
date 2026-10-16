@@ -28,6 +28,8 @@ export const metadata: Metadata = {
 };
 
 const featuredBlogSlugs = [
+  "how-to-download-a-json-file",
+  "how-to-view-a-json-file",
   "how-to-create-json-file"
 ] as const;
 
@@ -49,7 +51,7 @@ export default function Home() {
     <section className="home-guides container">
       <div className="section-heading">
         <div><div className="eyebrow">BLOG</div><h2>Short guides into live tools</h2></div>
-        <p>A practical guide to creating, checking, and formatting your first JSON file.</p>
+        <p>Practical guides for creating, viewing, downloading, checking, and formatting JSON files.</p>
       </div>
       <div className="home-guide-grid">
         {featuredPosts.map(post => post ? (

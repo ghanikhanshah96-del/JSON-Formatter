@@ -104,6 +104,8 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
   expect(sitemapText).toContain("/disclaimer");
   expect(sitemapText).toContain("/editorial-policy");
   expect(sitemapText).toContain("/blog");
+  expect(sitemapText).toContain("/blog/how-to-download-a-json-file");
+  expect(sitemapText).toContain("/blog/how-to-view-a-json-file");
   expect(sitemapText).toContain("/blog/how-to-create-json-file");
   expect(sitemapText).toContain("/performance");
 });
@@ -118,6 +120,47 @@ test("blog index cards and article hero share cover images", async ({ page }) =>
   await firstCard.click();
   await expect(page).toHaveURL(/\/blog\//);
   await expect(page.locator(".blog-hero-media img")).toHaveAttribute("src", cardSrc!);
+});
+
+test("new JSON guides expose complete metadata, cover images, and FAQs", async ({ page }) => {
+  const guides = [
+    {
+      slug: "how-to-download-a-json-file",
+      title: "How to Download a JSON File: A Simple Step-by-Step Guide",
+      description: "Learn how to download a JSON file from a website, save JSON data in your browser, or create a downloadable JSON file online in simple steps.",
+      image: "/blog/how-to-download-a-json-file.jpg",
+      faqCount: 3,
+    },
+    {
+      slug: "how-to-view-a-json-file",
+      title: "How to View a JSON File on Windows, Mac, and Online",
+      description: "Learn how to view a JSON file on Windows, Mac, or in a browser. Follow simple steps to open, read, and format JSON files online for free.",
+      image: "/blog/how-to-view-a-json-file.jpg",
+      faqCount: 6,
+    },
+  ];
+
+  for (const guide of guides) {
+    await page.goto(`/blog/${guide.slug}`);
+    await expect(page.getByRole("heading", { level: 1, name: guide.title })).toBeVisible();
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", guide.description);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new RegExp(`/blog/${guide.slug}$`));
+    await expect(page.locator(".blog-hero-media img")).toHaveAttribute("src", guide.image);
+    await expect(page.locator(".blog-hero-media img")).toBeVisible();
+    await expect(page.locator(".blog-faq details")).toHaveCount(guide.faqCount);
+    await expect(page.locator('main a[href="/json-formatter"]')).not.toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      await page.evaluate(() => document.documentElement.clientWidth),
+    );
+  }
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ["/", "/blog", ...guides.map(guide => `/blog/${guide.slug}`)]) {
+    await page.goto(path);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      await page.evaluate(() => document.documentElement.clientWidth),
+    );
+  }
 });
 
 test("contact API validates required fields", async ({ request }) => {

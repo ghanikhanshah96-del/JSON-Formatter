@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTool } from "@codeformattools/tool-registry";
@@ -12,9 +13,25 @@ export function generateStaticParams() {
   return blogPosts.map(post => ({ slug: post.slug }));
 }
 
+function renderLinkedText(text: string, links: { text: string; href: string }[] = []): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  let cursor = 0;
+
+  links.forEach((link, index) => {
+    const linkStart = text.indexOf(link.text, cursor);
+    if (linkStart < 0) return;
+    if (linkStart > cursor) nodes.push(text.slice(cursor, linkStart));
+    nodes.push(<Link href={link.href} key={`${link.href}-${index}`}>{link.text}</Link>);
+    cursor = linkStart + link.text.length;
+  });
+
+  if (cursor < text.length) nodes.push(text.slice(cursor));
+  return nodes;
+}
+
 function renderBlogBlocks(blocks: BlogContentBlock[], keyPrefix: string) {
   return blocks.map((block, index) => {
-    if (block.type === "paragraph") return <p key={`${keyPrefix}-p-${index}`}>{block.text}</p>;
+    if (block.type === "paragraph") return <p key={`${keyPrefix}-p-${index}`}>{renderLinkedText(block.text, block.links)}</p>;
     if (block.type === "subheading") return <h3 key={`${keyPrefix}-h-${index}`}>{block.text}</h3>;
     if (block.type === "code") {
       return <pre className="blog-code" key={`${keyPrefix}-code-${index}`}><code>{block.code}</code></pre>;
