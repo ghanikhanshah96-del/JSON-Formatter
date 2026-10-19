@@ -112,18 +112,56 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
   expect(sitemapText).toContain("/performance");
 });
 
-test("blog index cards and article hero share cover images", async ({ page }) => {
+test("blog index keeps one featured story and a responsive three-card grid", async ({ page, request }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/blog");
   await expect(page.getByRole("heading", { name: /Learn JSON/i })).toBeVisible();
+  await expect(page.locator("main#main-content")).toBeVisible();
+  await expect(page.locator(".blog-card-featured")).toHaveCount(1);
+  await expect(page.locator(".blog-card-regular")).toHaveCount(3);
+  expect(await page.locator(".blog-card-list").evaluate(element => getComputedStyle(element).gridTemplateColumns.split(" ").length)).toBe(3);
+
   const firstCard = page.locator(".blog-card").first();
-  await expect(firstCard.locator(".blog-card-media img")).toBeVisible();
-  await expect(firstCard.locator(".blog-card-media img")).toHaveCSS("object-fit", "cover");
-  await expect(firstCard.locator(".blog-card-media img")).toHaveCSS("object-position", "0% 50%");
-  const cardSrc = await firstCard.locator(".blog-card-media img").getAttribute("src");
-  expect(cardSrc).toMatch(/^\/blog\/.+\.(?:png|jpe?g|webp|svg)$/);
+  const cardImage = firstCard.locator(".blog-card-media img");
+  await expect(cardImage).toBeVisible();
+  await expect(cardImage).toHaveCSS("object-fit", "cover");
+  await expect(cardImage).toHaveCSS("object-position", "50% 50%");
+  await expect(cardImage).toHaveAttribute("alt", "");
+  const cardSrc = await cardImage.getAttribute("src");
+  expect(cardSrc).toContain("/_next/image");
+  expect(new URL(cardSrc!, page.url()).searchParams.get("url")).toBe("/blog/how-to-sort-json-file.jpg");
+  await expect(firstCard.locator("time[datetime='2026-10-20']")).toBeVisible();
+
+  const schema = await page.locator('script[type="application/ld+json"]').evaluateAll(scripts =>
+    scripts.map(script => JSON.parse(script.textContent || "{}"))
+      .find(value => Array.isArray(value["@graph"]))
+  );
+  expect(schema["@graph"].map((entry: { "@type": string }) => entry["@type"])).toEqual(
+    expect.arrayContaining(["Blog", "ItemList", "BreadcrumbList"]),
+  );
+
+  const rss = await request.get("/blog/rss.xml");
+  expect(rss.status()).toBe(200);
+  expect(rss.headers()["content-type"]).toContain("application/rss+xml");
+  expect(await rss.text()).toContain("/blog/how-to-sort-json-file");
+
   await firstCard.click();
   await expect(page).toHaveURL(/\/blog\//);
-  await expect(page.locator(".blog-hero-media img")).toHaveAttribute("src", cardSrc!);
+  const articleSrc = await page.locator(".blog-hero-media img").getAttribute("src");
+  expect(articleSrc).toContain("/_next/image");
+  expect(new URL(articleSrc!, page.url()).searchParams.get("url")).toBe("/blog/how-to-sort-json-file.jpg");
+
+  await page.setViewportSize({ width: 900, height: 900 });
+  await page.goto("/blog");
+  expect(await page.locator(".blog-card-featured").evaluate(element => getComputedStyle(element).gridTemplateColumns.split(" ").length)).toBe(1);
+  expect(await page.locator(".blog-card-list").evaluate(element => getComputedStyle(element).gridTemplateColumns.split(" ").length)).toBe(2);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/blog");
+  expect(await page.locator(".blog-card-list").evaluate(element => getComputedStyle(element).gridTemplateColumns.split(" ").length)).toBe(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+    await page.evaluate(() => document.documentElement.clientWidth),
+  );
 });
 
 test("new JSON guides expose complete metadata, cover images, and FAQs", async ({ page }) => {
@@ -159,8 +197,11 @@ test("new JSON guides expose complete metadata, cover images, and FAQs", async (
     await expect(page.getByRole("heading", { level: 1, name: guide.title })).toBeVisible();
     await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", guide.description);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new RegExp(`/blog/${guide.slug}$`));
-    await expect(page.locator(".blog-hero-media img")).toHaveAttribute("src", guide.image);
-    await expect(page.locator(".blog-hero-media img")).toBeVisible();
+    const heroImage = page.locator(".blog-hero-media img");
+    await expect(heroImage).toBeVisible();
+    const heroSrc = await heroImage.getAttribute("src");
+    expect(heroSrc).toContain("/_next/image");
+    expect(new URL(heroSrc!, page.url()).searchParams.get("url")).toBe(guide.image);
     await expect(page.locator(".blog-faq details")).toHaveCount(guide.faqCount);
     await expect(page.locator(`main a[href="${guide.tool}"]`)).not.toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(

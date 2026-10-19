@@ -15,14 +15,14 @@ export function ThemeToggle({ id = "theme-toggle", className = "theme-toggle", w
         id={id || undefined}
         className={className}
         type="button"
-        aria-label="Switch to dark theme"
-        title="Switch to dark theme"
+        aria-label="Theme: Light. Switch to dark theme"
+        title="Theme: Light. Switch to dark theme"
         aria-pressed="false"
         data-theme-toggle
         suppressHydrationWarning
       >
-        <span className="theme-toggle-icon" data-theme-icon aria-hidden="true" suppressHydrationWarning>☾</span>
-        <span className="theme-toggle-label" data-theme-label suppressHydrationWarning>Dark</span>
+        <span className="theme-toggle-icon" data-theme-icon aria-hidden="true" suppressHydrationWarning>☼</span>
+        <span className="theme-toggle-label" data-theme-label suppressHydrationWarning>Light</span>
       </button>
       {withScript ? <ThemeToggleScript /> : null}
     </>

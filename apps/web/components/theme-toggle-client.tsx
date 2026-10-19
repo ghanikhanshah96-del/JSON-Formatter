@@ -10,10 +10,10 @@ function apply(theme: Theme) {
   document.documentElement.dataset.theme = dark ? "dark" : "light";
 }
 
-function actionFor(theme: Theme) {
-  if (theme === "light") return { icon: "☾", label: "Dark", aria: "Switch to dark theme", pressed: false };
-  if (theme === "dark") return { icon: "◑", label: "System", aria: "Use system theme preference", pressed: true };
-  return { icon: "☼", label: "Light", aria: "Switch to light theme", pressed: false };
+function stateFor(theme: Theme) {
+  if (theme === "light") return { icon: "☼", label: "Light", aria: "Theme: Light. Switch to dark theme", pressed: false };
+  if (theme === "dark") return { icon: "☾", label: "Dark", aria: "Theme: Dark. Use system theme preference", pressed: true };
+  return { icon: "◑", label: "System", aria: "Theme: System. Switch to light theme", pressed: false };
 }
 
 export function ThemeToggleClient() {
@@ -37,7 +37,7 @@ export function ThemeToggleClient() {
     setStorageValue("theme", next);
     apply(next);
   };
-  const action = actionFor(theme);
+  const action = stateFor(theme);
   return (
     <button
       className="theme-toggle"

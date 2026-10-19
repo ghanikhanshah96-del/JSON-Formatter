@@ -18,6 +18,7 @@ export type BlogPost = {
   readMinutes: number;
   image: string;
   imageAlt: string;
+  imagePosition?: string;
   intro: string[];
   sections: { heading: string; blocks: BlogContentBlock[] }[];
 };
@@ -27,7 +28,7 @@ export type LearnGuide = BlogPost;
 
 export const BLOG_PAGE_SIZE = 9;
 
-export const blogPosts: BlogPost[] = [
+const blogPostEntries: BlogPost[] = [
   {
     slug: "how-to-sort-json-file",
     title: "How to Sort JSON File Online: A Simple Step-by-Step Guide",
@@ -43,6 +44,7 @@ export const blogPosts: BlogPost[] = [
     readMinutes: 5,
     image: "/blog/how-to-sort-json-file.jpg",
     imageAlt: "Illustration showing unsorted JSON keys being alphabetically sorted, including keys in nested objects",
+    imagePosition: "center center",
     intro: [
       "Wondering how to sort JSON file keys alphabetically without manually editing your data? You can use an online JSON sorter to arrange object keys in a consistent order while keeping their values unchanged.",
       "This is useful when comparing JSON files, organizing configuration data, or reviewing API responses. Here's how to do it in a few simple steps."
@@ -652,6 +654,10 @@ console.log(jsonData);` },
     ]
   }
 ];
+
+export const blogPosts: BlogPost[] = [...blogPostEntries].sort((left, right) =>
+  right.datePublished.localeCompare(left.datePublished) || right.dateModified.localeCompare(left.dateModified)
+);
 
 /** @deprecated Prefer blogPosts */
 export const learnGuides = blogPosts;

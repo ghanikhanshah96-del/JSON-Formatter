@@ -36,13 +36,13 @@ export function ThemeToggleScript() {
   function apply(t){
     document.documentElement.dataset.theme=resolved(t);
   }
-  function actionLabel(t){
-    if(t==="light") return {icon:"☾",label:"Dark",aria:"Switch to dark theme",pressed:"false"};
-    if(t==="dark") return {icon:"◑",label:"System",aria:"Use system theme preference",pressed:"true"};
-    return {icon:"☼",label:"Light",aria:"Switch to light theme",pressed:"false"};
+  function themeState(t){
+    if(t==="light") return {icon:"☼",label:"Light",aria:"Theme: Light. Switch to dark theme",pressed:"false"};
+    if(t==="dark") return {icon:"☾",label:"Dark",aria:"Theme: Dark. Use system theme preference",pressed:"true"};
+    return {icon:"◑",label:"System",aria:"Theme: System. Switch to light theme",pressed:"false"};
   }
   function paint(t){
-    var next=actionLabel(t);
+    var next=themeState(t);
     var buttons=document.querySelectorAll("[data-theme-toggle]");
     for (var i=0;i<buttons.length;i++){
       var btn=buttons[i];

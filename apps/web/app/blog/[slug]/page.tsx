@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTool } from "@codeformattools/tool-registry";
@@ -167,7 +168,14 @@ export default async function BlogPostPage({ params }: Props) {
             </div>
           </div>
           <figure className="blog-hero-media">
-            <img src={post.image} alt={post.imageAlt} width={1200} height={675} decoding="async" />
+            <Image
+              src={post.image}
+              alt={post.imageAlt}
+              fill
+              priority
+              sizes="(max-width: 650px) calc(100vw - 28px), 640px"
+              style={{ objectPosition: post.imagePosition ?? "center center" }}
+            />
           </figure>
         </div>
       </header>

@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
+import { formatEditorialShortDate } from "@/lib/editorial-team";
 import { BLOG_PAGE_SIZE, blogPosts, type BlogPost } from "@/lib/learn-guides";
 
 export const blogPageCount = Math.max(1, Math.ceil(blogPosts.length / BLOG_PAGE_SIZE));
@@ -13,20 +15,25 @@ function BlogCard({ post, featured = false }: { post: BlogPost; featured?: boole
     href={`/blog/${post.slug}`}
   >
     <div className="blog-card-media">
-      <img
+      <Image
         src={post.image}
-        alt={post.imageAlt}
-        width={1200}
-        height={675}
-        loading={featured ? "eager" : "lazy"}
-        fetchPriority={featured ? "high" : "auto"}
-        decoding="async"
+        alt=""
+        aria-hidden="true"
+        fill
+        priority={featured}
+        sizes={featured
+          ? "(max-width: 1100px) calc(100vw - 28px), 56vw"
+          : "(max-width: 680px) calc(100vw - 28px), (max-width: 1100px) 50vw, 33vw"}
+        style={{ objectPosition: post.imagePosition ?? "center center" }}
       />
     </div>
     <div className="blog-card-body">
       <div className="learn-card-meta">
         <span className="card-eyebrow">{post.eyebrow}</span>
-        <span className="learn-minutes">{post.readMinutes} min</span>
+        <span className="learn-minutes">
+          <time dateTime={post.datePublished}>{formatEditorialShortDate(post.datePublished)}</time>
+          <span aria-hidden="true"> · </span>{post.readMinutes} min
+        </span>
       </div>
       <h2>{post.title}</h2>
       <p>{post.description}</p>
@@ -41,12 +48,12 @@ export function BlogIndex({ page = 1 }: { page?: number }) {
   const featuredPost = page === 1 ? pagePosts[0] : undefined;
   const regularPosts = featuredPost ? pagePosts.slice(1) : pagePosts;
 
-  return <main className="learn-page blog-page container">
+  return <main className="learn-page blog-page container" id="main-content">
     <header className="blog-index-hero">
       <div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><strong>Blog</strong></div>
       <div className="blog-index-hero-grid">
         <div>
-          <div className="eyebrow">BLOG · GUIDE</div>
+          <div className="eyebrow">BLOG · {blogPosts.length} GUIDES</div>
           <h1>Learn JSON, then open the tools<span className="title-accent">.</span></h1>
         </div>
         <p className="learn-lead">
