@@ -50,7 +50,7 @@ export function BlogIndex({ page = 1 }: { page?: number }) {
           <h1>Learn JSON, then open the tools<span className="title-accent">.</span></h1>
         </div>
         <p className="learn-lead">
-          Practical, beginner-friendly guides for creating, viewing, downloading, and checking JSON files.
+          Practical, beginner-friendly guides for creating, viewing, downloading, sorting, and checking JSON files.
         </p>
       </div>
     </header>

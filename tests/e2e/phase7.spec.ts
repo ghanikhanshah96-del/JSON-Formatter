@@ -105,6 +105,7 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
   expect(sitemapText).toContain("/editorial-policy");
   expect(sitemapText).toContain("/team/codeformattertools-editorial");
   expect(sitemapText).toContain("/blog");
+  expect(sitemapText).toContain("/blog/how-to-sort-json-file");
   expect(sitemapText).toContain("/blog/how-to-download-a-json-file");
   expect(sitemapText).toContain("/blog/how-to-view-a-json-file");
   expect(sitemapText).toContain("/blog/how-to-create-json-file");
@@ -128,11 +129,20 @@ test("blog index cards and article hero share cover images", async ({ page }) =>
 test("new JSON guides expose complete metadata, cover images, and FAQs", async ({ page }) => {
   const guides = [
     {
+      slug: "how-to-sort-json-file",
+      title: "How to Sort JSON File Online: A Simple Step-by-Step Guide",
+      description: "Learn how to sort JSON file keys alphabetically using a free online JSON sorter. Follow simple steps to organize, sort, and download JSON data.",
+      image: "/blog/how-to-sort-json-file.jpg",
+      faqCount: 4,
+      tool: "/json-sorter",
+    },
+    {
       slug: "how-to-download-a-json-file",
       title: "How to Download a JSON File: A Simple Step-by-Step Guide",
       description: "Learn how to download a JSON file from a website, save JSON data in your browser, or create a downloadable JSON file online in simple steps.",
       image: "/blog/how-to-download-a-json-file.jpg",
       faqCount: 3,
+      tool: "/json-formatter",
     },
     {
       slug: "how-to-view-a-json-file",
@@ -140,6 +150,7 @@ test("new JSON guides expose complete metadata, cover images, and FAQs", async (
       description: "Learn how to view a JSON file on Windows, Mac, or in a browser. Follow simple steps to open, read, and format JSON files online for free.",
       image: "/blog/how-to-view-a-json-file.jpg",
       faqCount: 6,
+      tool: "/json-formatter",
     },
   ];
 
@@ -151,7 +162,7 @@ test("new JSON guides expose complete metadata, cover images, and FAQs", async (
     await expect(page.locator(".blog-hero-media img")).toHaveAttribute("src", guide.image);
     await expect(page.locator(".blog-hero-media img")).toBeVisible();
     await expect(page.locator(".blog-faq details")).toHaveCount(guide.faqCount);
-    await expect(page.locator('main a[href="/json-formatter"]')).not.toHaveCount(0);
+    await expect(page.locator(`main a[href="${guide.tool}"]`)).not.toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       await page.evaluate(() => document.documentElement.clientWidth),
     );
@@ -169,6 +180,7 @@ test("new JSON guides expose complete metadata, cover images, and FAQs", async (
 test("editorial profile, article bylines, and structured data use one identity", async ({ page }) => {
   const profilePath = "/team/codeformattertools-editorial";
   const articles = [
+    ["how-to-sort-json-file", "2026-10-20"],
     ["how-to-download-a-json-file", "2026-10-17"],
     ["how-to-view-a-json-file", "2026-10-17"],
     ["how-to-create-json-file", "2026-10-12"],

@@ -4,7 +4,7 @@ import { BlogIndex } from "@/components/blog-index";
 
 export const metadata: Metadata = {
   title: `Blog | ${siteConfig.name}`,
-  description: "A practical guide to creating, validating, and formatting JSON files with private browser tools.",
+  description: "Practical guides to creating, viewing, downloading, sorting, validating, and formatting JSON files with private browser tools.",
   alternates: { canonical: "/blog" },
   openGraph: {
     title: `Blog | ${siteConfig.name}`,

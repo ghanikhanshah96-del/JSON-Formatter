@@ -29,6 +29,130 @@ export const BLOG_PAGE_SIZE = 9;
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "how-to-sort-json-file",
+    title: "How to Sort JSON File Online: A Simple Step-by-Step Guide",
+    metaTitle: "How to Sort JSON File Online - Easy Step-by-Step Guide",
+    description:
+      "Learn how to sort JSON file keys alphabetically using a free online JSON sorter. Follow simple steps to organize, sort, and download JSON data.",
+    eyebrow: "JSON · SORTING GUIDE",
+    category: "JSON",
+    authorId: "codeformattertools-editorial",
+    datePublished: "2026-10-20",
+    dateModified: "2026-10-20",
+    relatedTools: ["json-sorter", "json-validator"],
+    readMinutes: 5,
+    image: "/blog/how-to-sort-json-file.jpg",
+    imageAlt: "Illustration showing unsorted JSON keys being alphabetically sorted, including keys in nested objects",
+    intro: [
+      "Wondering how to sort JSON file keys alphabetically without manually editing your data? You can use an online JSON sorter to arrange object keys in a consistent order while keeping their values unchanged.",
+      "This is useful when comparing JSON files, organizing configuration data, or reviewing API responses. Here's how to do it in a few simple steps."
+    ],
+    sections: [
+      {
+        heading: "How to Sort JSON File Online for Free",
+        blocks: [
+          { type: "paragraph", text: "The easiest way to sort JSON keys is to use a browser-based tool." },
+          { type: "subheading", text: "Step 1: Open the JSON Sorter" },
+          { type: "paragraph", text: "Visit the free JSON Sorter.", links: [{ text: "free JSON Sorter", href: "/json-sorter" }] },
+          { type: "paragraph", text: "You can use the tool directly in your browser without installing software or creating an account." },
+          { type: "subheading", text: "Step 2: Add Your JSON Data" },
+          { type: "paragraph", text: "Paste your JSON into the input field or upload a .json file from your device." },
+          { type: "paragraph", text: "Make sure the content contains valid JSON before sorting." },
+          { type: "subheading", text: "Step 3: Sort JSON Keys" },
+          { type: "paragraph", text: "Click Sort JSON Keys." },
+          { type: "paragraph", text: "The tool organizes object keys alphabetically, including keys inside nested objects, while preserving the original order of array elements." },
+          { type: "subheading", text: "Step 4: Copy or Download the Sorted JSON" },
+          { type: "paragraph", text: "Review the output to confirm the key order." },
+          { type: "paragraph", text: "You can then copy the sorted JSON or download the result for use in your project." }
+        ]
+      },
+      {
+        heading: "How to Sort JSON Keys Alphabetically",
+        blocks: [
+          { type: "paragraph", text: "Alphabetical sorting arranges object properties by their key names rather than their values." },
+          { type: "paragraph", text: "For example, consider this unsorted JSON:" },
+          { type: "code", language: "json", code: `{
+  "name": "Alex",
+  "age": 28,
+  "city": "London"
+}` },
+          { type: "paragraph", text: "After sorting the keys alphabetically, it becomes:" },
+          { type: "code", language: "json", code: `{
+  "age": 28,
+  "city": "London",
+  "name": "Alex"
+}` },
+          { type: "paragraph", text: "Notice that the values remain the same. Only the order of the properties changes." }
+        ]
+      },
+      {
+        heading: "Can You Sort Nested JSON Objects?",
+        blocks: [
+          { type: "paragraph", text: "Yes. A JSON sorter can organize keys inside nested objects, not just the main object." },
+          { type: "paragraph", text: "For example:" },
+          { type: "paragraph", text: "Before sorting:" },
+          { type: "code", language: "json", code: `{
+  "user": {
+    "name": "Alex",
+    "age": 28
+  },
+  "active": true
+}` },
+          { type: "paragraph", text: "After sorting:" },
+          { type: "code", language: "json", code: `{
+  "active": true,
+  "user": {
+    "age": 28,
+    "name": "Alex"
+  }
+}` },
+          { type: "paragraph", text: "Both the outer object and the nested user object now have alphabetically arranged keys." },
+          { type: "paragraph", text: "Important: Sorting object keys is different from sorting array values. A JSON key sorter does not automatically rearrange numbers, names, or objects inside an array." }
+        ]
+      },
+      {
+        heading: "Why Is My JSON File Not Sorting?",
+        blocks: [
+          { type: "paragraph", text: "If your JSON file doesn't sort correctly, check these common issues." },
+          { type: "subheading", text: "Invalid JSON Syntax" },
+          { type: "paragraph", text: "Missing commas, quotation marks, or closing brackets can prevent sorting." },
+          { type: "paragraph", text: "For example, this is invalid:" },
+          { type: "code", language: "json", code: `{
+  "name": "Alex"
+  "age": 28
+}` },
+          { type: "paragraph", text: "Add the missing comma before trying again." },
+          { type: "subheading", text: "Duplicate JSON Keys" },
+          { type: "paragraph", text: "JSON objects should use unique property names. Duplicate keys can create ambiguity when parsing or sorting." },
+          { type: "paragraph", text: "Review duplicate-key warnings and correct the source data before relying on the result." },
+          { type: "subheading", text: "Expecting Array Values to Change Order" },
+          { type: "paragraph", text: "If your JSON contains an array such as [30, 10, 20], sorting object keys will not automatically change it to [10, 20, 30]." },
+          { type: "paragraph", text: "That requires a separate array-sorting operation." }
+        ]
+      },
+      {
+        heading: "Frequently Asked Questions",
+        blocks: [
+          { type: "subheading", text: "Can I sort a JSON file alphabetically?" },
+          { type: "paragraph", text: "Yes. You can use an online JSON sorter to arrange object keys alphabetically without manually editing each property." },
+          { type: "subheading", text: "Does sorting JSON change the data?" },
+          { type: "paragraph", text: "Sorting object keys normally preserves their values and data types. However, any application that depends on a particular property order should be checked before replacing its original file." },
+          { type: "subheading", text: "Can I sort JSON files for free?" },
+          { type: "paragraph", text: "Yes. You can use the CodeFormatterTools JSON Sorter to organize JSON keys for free.", links: [{ text: "CodeFormatterTools JSON Sorter", href: "/json-sorter" }] },
+          { type: "subheading", text: "Can I sort JSON arrays using a JSON key sorter?" },
+          { type: "paragraph", text: "A JSON key sorter can sort the keys of objects inside arrays while preserving the order of the array elements themselves. To rearrange array values, you need a separate sorting method." }
+        ]
+      },
+      {
+        heading: "Conclusion",
+        blocks: [
+          { type: "paragraph", text: "Learning how to sort JSON file keys is straightforward with an online JSON sorter. Paste or upload your JSON, sort the object keys, and save the organized result." },
+          { type: "paragraph", text: "If you want to arrange JSON keys alphabetically without editing them manually, use the CodeFormatterTools JSON Sorter to complete the task in your browser.", links: [{ text: "CodeFormatterTools JSON Sorter", href: "/json-sorter" }] }
+        ]
+      }
+    ]
+  },
+  {
     slug: "how-to-download-a-json-file",
     title: "How to Download a JSON File: A Simple Step-by-Step Guide",
     metaTitle: "How to Download a JSON File: Easy Step-by-Step Guide",
