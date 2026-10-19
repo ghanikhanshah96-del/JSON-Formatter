@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { getTool } from "@codeformattools/tool-registry";
 import { siteConfig, siteOrigin } from "@codeformattools/seo";
 import { FaqAccordion } from "@/components/faq-accordion";
+import { formatEditorialDate, getEditorialProfile } from "@/lib/editorial-team";
 import { getBlogPost, blogPosts, type BlogContentBlock } from "@/lib/learn-guides";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -85,6 +86,8 @@ function getFaqItems(blocks: BlogContentBlock[]) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = getBlogPost((await params).slug);
   if (!post) return {};
+  const editorialProfile = getEditorialProfile(post.authorId);
+  const editorialProfileUrl = `${siteOrigin()}${editorialProfile.path}`;
   return {
     title: `${post.metaTitle ?? post.title} | ${siteConfig.name}`,
     description: post.description,
@@ -95,6 +98,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `${siteOrigin()}/blog/${post.slug}`,
       siteName: siteConfig.name,
       type: "article",
+      publishedTime: post.datePublished,
+      modifiedTime: post.dateModified,
+      authors: [editorialProfileUrl],
+      section: post.category,
       images: [{ url: post.image, width: 1200, height: 675, alt: post.imageAlt }]
     }
   };
@@ -103,6 +110,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Props) {
   const post = getBlogPost((await params).slug);
   if (!post) notFound();
+  const editorialProfile = getEditorialProfile(post.authorId);
+  const editorialProfileUrl = `${siteOrigin()}${editorialProfile.path}`;
   const related = post.relatedTools.map(id => getTool(id)).filter(Boolean);
   const schema = {
     "@context": "https://schema.org",
@@ -110,8 +119,24 @@ export default async function BlogPostPage({ params }: Props) {
     headline: post.title,
     description: post.description,
     image: [`${siteOrigin()}${post.image}`],
-    author: { "@type": "Organization", name: siteConfig.name, url: siteOrigin() },
-    publisher: { "@type": "Organization", name: siteConfig.name, url: siteOrigin() },
+    datePublished: post.datePublished,
+    dateModified: post.dateModified,
+    articleSection: post.category,
+    inLanguage: "en",
+    author: {
+      "@type": "Organization",
+      "@id": `${editorialProfileUrl}#editorial-team`,
+      name: editorialProfile.name,
+      url: editorialProfileUrl,
+      description: editorialProfile.role
+    },
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      url: siteOrigin(),
+      logo: { "@type": "ImageObject", url: `${siteOrigin()}/icon-192.png` }
+    },
+    publishingPrinciples: `${siteOrigin()}/editorial-policy`,
     mainEntityOfPage: `${siteOrigin()}/blog/${post.slug}`
   };
 
@@ -129,7 +154,17 @@ export default async function BlogPostPage({ params }: Props) {
             <div className="eyebrow">{post.eyebrow}</div>
             <h1>{post.title}<span className="title-accent">.</span></h1>
             <p className="learn-lead">{post.description}</p>
-            <p className="learn-minutes-line">{post.readMinutes} min read · Private browser tools</p>
+            <p className="learn-minutes-line">
+              {post.readMinutes} min read · Published <time dateTime={post.datePublished}>{formatEditorialDate(post.datePublished)}</time>
+            </p>
+            <div className="blog-byline">
+              <span className="blog-byline-mark" aria-hidden="true">{"{ }"}</span>
+              <div className="blog-byline-copy">
+                <strong>Written and reviewed by {editorialProfile.name}</strong>
+                <span>{editorialProfile.role}</span>
+                <Link href={editorialProfile.path}>About the editorial team <span aria-hidden="true">→</span></Link>
+              </div>
+            </div>
           </div>
           <figure className="blog-hero-media">
             <img src={post.image} alt={post.imageAlt} width={1200} height={675} decoding="async" />

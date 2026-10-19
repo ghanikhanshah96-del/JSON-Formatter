@@ -107,6 +107,7 @@ function titleFromPath(pathname: string) {
   if (pathname === "/contact-us") return "Contact Us";
   if (pathname === "/terms-and-conditions") return "Terms and Conditions";
   if (pathname === "/editorial-policy") return "Editorial Policy";
+  if (pathname === "/team/codeformattertools-editorial") return "Editorial Team";
   return null;
 }
 
@@ -126,11 +127,8 @@ export function SiteHeader() {
   const toggle = useCallback(() => setOpen(value => !value), []);
 
   useEffect(() => {
-    close();
-  }, [pathname, close]);
-
-  useEffect(() => {
     if (!open) return;
+    const toggleButton = toggleRef.current;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         close();
@@ -161,7 +159,7 @@ export function SiteHeader() {
       document.body.style.overflow = previous;
       document.documentElement.classList.remove("nav-open");
       window.clearTimeout(focusTimer);
-      toggleRef.current?.focus();
+      toggleButton?.focus();
     };
   }, [open, close]);
 

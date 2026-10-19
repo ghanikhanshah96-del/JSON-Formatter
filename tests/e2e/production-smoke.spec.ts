@@ -11,7 +11,12 @@ test("production metadata, assets, sitemap, robots, and manifest are coherent", 
   page.on("pageerror", error => consoleProblems.push(error.message));
   page.on("requestfailed", request => {
     const url = request.url();
-    if (!url.includes("vitals.vercel-insights.com")) consoleProblems.push(`request failed: ${url}`);
+    if (
+      !url.includes("vitals.vercel-insights.com")
+      && !url.includes("www.google-analytics.com/g/collect")
+    ) {
+      consoleProblems.push(`request failed: ${url}`);
+    }
   });
 
   const response = await page.goto("/json-formatter");
@@ -53,6 +58,7 @@ test("production metadata, assets, sitemap, robots, and manifest are coherent", 
   await expect.poll(() => consoleProblems.filter(item => {
     if (/Failed to load resource: the server responded with a status of 404/.test(item)) return false;
     if (/127\.0\.0\.1:3101\/_vercel\/(?:insights|speed-insights)\/script\.js/.test(item)) return false;
+    if (/www\.google-analytics\.com\/g\/collect/.test(item)) return false;
     return true;
   })).toEqual([]);
 });

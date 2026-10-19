@@ -10,6 +10,10 @@ export type BlogPost = {
   metaTitle?: string;
   description: string;
   eyebrow: string;
+  category: string;
+  authorId: "codeformattertools-editorial";
+  datePublished: string;
+  dateModified: string;
   relatedTools: string[];
   readMinutes: number;
   image: string;
@@ -31,6 +35,10 @@ export const blogPosts: BlogPost[] = [
     description:
       "Learn how to download a JSON file from a website, save JSON data in your browser, or create a downloadable JSON file online in simple steps.",
     eyebrow: "JSON · DOWNLOAD GUIDE",
+    category: "JSON",
+    authorId: "codeformattertools-editorial",
+    datePublished: "2026-10-17",
+    dateModified: "2026-10-17",
     relatedTools: ["json-formatter", "json-validator"],
     readMinutes: 5,
     image: "/blog/how-to-download-a-json-file.jpg",
@@ -110,6 +118,10 @@ export const blogPosts: BlogPost[] = [
     description:
       "Learn how to view a JSON file on Windows, Mac, or in a browser. Follow simple steps to open, read, and format JSON files online for free.",
     eyebrow: "JSON · VIEWING GUIDE",
+    category: "JSON",
+    authorId: "codeformattertools-editorial",
+    datePublished: "2026-10-17",
+    dateModified: "2026-10-17",
     relatedTools: ["json-formatter", "json-validator"],
     readMinutes: 10,
     image: "/blog/how-to-view-a-json-file.jpg",
@@ -292,6 +304,10 @@ export const blogPosts: BlogPost[] = [
     description:
       "Learn how to create JSON files using Notepad or a code editor. Explore JSON syntax, examples, saving methods, and tips to check and format JSON files.",
     eyebrow: "JSON · BEGINNER GUIDE",
+    category: "JSON",
+    authorId: "codeformattertools-editorial",
+    datePublished: "2026-10-12",
+    dateModified: "2026-10-12",
     relatedTools: ["json-formatter", "json-validator"],
     readMinutes: 12,
     image: "/blog/how-to-create-json-file.png",

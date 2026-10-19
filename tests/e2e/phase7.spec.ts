@@ -30,7 +30,7 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
     await expect(page).toHaveURL(new RegExp(`${canonicalPath}$`));
   }
 
-  for (const label of ["About Us", "Contact Us", "Privacy Policy", "Disclaimer", "Terms and Conditions", "Editorial Policy"]) {
+  for (const label of ["About Us", "Editorial Team", "Contact Us", "Privacy Policy", "Disclaimer", "Terms and Conditions", "Editorial Policy"]) {
     await expect(page.locator("footer").getByRole("link", { name: label, exact: true })).toBeVisible();
   }
   for (const label of ["About Us", "Privacy Policy", "Contact Us"]) {
@@ -103,6 +103,7 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
   expect(sitemapText).toContain("/tools</loc>");
   expect(sitemapText).toContain("/disclaimer");
   expect(sitemapText).toContain("/editorial-policy");
+  expect(sitemapText).toContain("/team/codeformattertools-editorial");
   expect(sitemapText).toContain("/blog");
   expect(sitemapText).toContain("/blog/how-to-download-a-json-file");
   expect(sitemapText).toContain("/blog/how-to-view-a-json-file");
@@ -163,6 +164,58 @@ test("new JSON guides expose complete metadata, cover images, and FAQs", async (
       await page.evaluate(() => document.documentElement.clientWidth),
     );
   }
+});
+
+test("editorial profile, article bylines, and structured data use one identity", async ({ page }) => {
+  const profilePath = "/team/codeformattertools-editorial";
+  const articles = [
+    ["how-to-download-a-json-file", "2026-10-17"],
+    ["how-to-view-a-json-file", "2026-10-17"],
+    ["how-to-create-json-file", "2026-10-12"],
+  ] as const;
+
+  for (const [slug, published] of articles) {
+    await page.goto(`/blog/${slug}`);
+    const byline = page.locator(".blog-byline");
+    await expect(byline).toBeVisible();
+    await expect(byline).toContainText("Written and reviewed by CodeFormatterTools Editorial Team");
+    await expect(byline.getByRole("link", { name: /About the editorial team/i })).toHaveAttribute("href", profilePath);
+    await expect(page.locator(`time[datetime="${published}"]`)).toBeVisible();
+
+    const articleSchema = await page.locator('script[type="application/ld+json"]').evaluateAll(scripts =>
+      scripts.map(script => JSON.parse(script.textContent || "{}"))
+        .find(schema => schema["@type"] === "BlogPosting")
+    );
+    expect(articleSchema.author["@type"]).toBe("Organization");
+    expect(articleSchema.author.name).toBe("CodeFormatterTools Editorial Team");
+    expect(articleSchema.author.url).toMatch(/\/team\/codeformattertools-editorial$/);
+    expect(articleSchema.datePublished).toBe(published);
+    expect(articleSchema.dateModified).toBe(published);
+    expect(articleSchema.publishingPrinciples).toMatch(/\/editorial-policy$/);
+  }
+
+  await page.goto(profilePath);
+  await expect(page).toHaveTitle("CodeFormatterTools Editorial Team | CodeFormatterTools");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new RegExp(`${profilePath}$`));
+  await expect(page.getByRole("heading", { level: 1, name: "CodeFormatterTools Editorial Team" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Editorial expertise" })).toBeVisible();
+  await expect(page.locator(".editorial-expertise-list li")).toHaveCount(6);
+  await expect(page.locator(".editorial-article-card")).toHaveCount(articles.length);
+
+  const profileSchema = await page.locator('script[type="application/ld+json"]').evaluateAll(scripts =>
+    scripts.map(script => JSON.parse(script.textContent || "{}"))
+      .find(schema => schema["@type"] === "ProfilePage")
+  );
+  expect(profileSchema.mainEntity["@type"]).toBe("Organization");
+  expect(profileSchema.mainEntity.name).toBe("CodeFormatterTools Editorial Team");
+  expect(profileSchema.mainEntity.url).toMatch(/\/team\/codeformattertools-editorial$/);
+  expect(profileSchema.hasPart).toHaveLength(articles.length);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(profilePath);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+    await page.evaluate(() => document.documentElement.clientWidth),
+  );
 });
 
 test("contact API validates required fields", async ({ request }) => {

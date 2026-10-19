@@ -96,6 +96,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <a href="/blog">Blog</a>
                 <a href="/performance">Performance</a>
                 <a href="/about-us">About Us</a>
+                <a href="/team/codeformattertools-editorial">Editorial Team</a>
                 <a href="/contact-us">Contact Us</a>
               </div>
               <div className="footer-column">
