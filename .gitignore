@@ -5,8 +5,10 @@ dist
 *.tsbuildinfo
 test-results
 playwright-report
+supabase/.temp/
 .env*
 !.env.example
 
 verification-logs/
 Untitled
+.vercel

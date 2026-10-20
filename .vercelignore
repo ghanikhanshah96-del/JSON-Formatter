@@ -1,0 +1,16 @@
+.git
+.next
+**/.next
+.turbo
+**/.turbo
+node_modules
+**/node_modules
+supabase/.temp
+test-results
+playwright-report
+lighthouse-reports
+verification-logs
+*.tsbuildinfo
+.env
+.env.*
+!.env.example

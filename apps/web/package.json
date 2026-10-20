@@ -8,7 +8,10 @@
     "build": "next build --webpack && node ../../scripts/defer-next-scripts.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test"
+    "test": "node --experimental-strip-types --test",
+    "cms:bootstrap": "node scripts/bootstrap-cms.mjs",
+    "cms:migrate": "node --experimental-strip-types scripts/migrate-blog-to-supabase.mjs",
+    "cms:verify": "node --experimental-strip-types scripts/verify-blog-migration.mjs"
   },
   "dependencies": {
     "@codeformattools/analytics": "workspace:*",
@@ -17,13 +20,17 @@
     "@codeformattools/tool-core": "workspace:*",
     "@codeformattools/tool-registry": "workspace:*",
     "@codeformattools/worker-runtime": "workspace:*",
+    "@supabase/ssr": "0.7.0",
+    "@supabase/supabase-js": "2.76.1",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "critters": "^0.0.25",
     "next": "16.3.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "resend": "^6.30.0"
+    "resend": "^6.30.0",
+    "sharp": "0.34.4",
+    "zod": "4.1.12"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

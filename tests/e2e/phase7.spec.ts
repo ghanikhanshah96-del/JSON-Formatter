@@ -1,6 +1,17 @@
 import { expect, test } from "@playwright/test";
 import { tools } from "@codeformattools/tool-registry";
 
+function expectBlogImageSource(source: string | null, pageUrl: string, slug: string) {
+  expect(source).toContain("/_next/image");
+  const originalSource = new URL(source!, pageUrl).searchParams.get("url");
+  expect(originalSource).not.toBeNull();
+
+  const pathname = originalSource!.startsWith("http")
+    ? new URL(originalSource!).pathname
+    : originalSource!;
+  expect(pathname).toMatch(new RegExp(`(?:/blog/${slug}\\.jpg|/blog-media/legacy/${slug}\\.webp)$`));
+}
+
 test("trust pages, contact form, and footer links are launch ready", async ({ page, request }) => {
   const policyPages = [
     ["/about-us", "About Us | CodeFormatterTools"],
@@ -128,8 +139,7 @@ test("blog index keeps one featured story and a responsive three-card grid", asy
   await expect(cardImage).toHaveCSS("object-position", "50% 50%");
   await expect(cardImage).toHaveAttribute("alt", "");
   const cardSrc = await cardImage.getAttribute("src");
-  expect(cardSrc).toContain("/_next/image");
-  expect(new URL(cardSrc!, page.url()).searchParams.get("url")).toBe("/blog/how-to-sort-json-file.jpg");
+  expectBlogImageSource(cardSrc, page.url(), "how-to-sort-json-file");
   await expect(firstCard.locator("time[datetime='2026-10-20']")).toBeVisible();
 
   const schema = await page.locator('script[type="application/ld+json"]').evaluateAll(scripts =>
@@ -148,8 +158,7 @@ test("blog index keeps one featured story and a responsive three-card grid", asy
   await firstCard.click();
   await expect(page).toHaveURL(/\/blog\//);
   const articleSrc = await page.locator(".blog-hero-media img").getAttribute("src");
-  expect(articleSrc).toContain("/_next/image");
-  expect(new URL(articleSrc!, page.url()).searchParams.get("url")).toBe("/blog/how-to-sort-json-file.jpg");
+  expectBlogImageSource(articleSrc, page.url(), "how-to-sort-json-file");
 
   await page.setViewportSize({ width: 900, height: 900 });
   await page.goto("/blog");
@@ -170,7 +179,6 @@ test("new JSON guides expose complete metadata, cover images, and FAQs", async (
       slug: "how-to-sort-json-file",
       title: "How to Sort JSON File Online: A Simple Step-by-Step Guide",
       description: "Learn how to sort JSON file keys alphabetically using a free online JSON sorter. Follow simple steps to organize, sort, and download JSON data.",
-      image: "/blog/how-to-sort-json-file.jpg",
       faqCount: 4,
       tool: "/json-sorter",
     },
@@ -178,7 +186,6 @@ test("new JSON guides expose complete metadata, cover images, and FAQs", async (
       slug: "how-to-download-a-json-file",
       title: "How to Download a JSON File: A Simple Step-by-Step Guide",
       description: "Learn how to download a JSON file from a website, save JSON data in your browser, or create a downloadable JSON file online in simple steps.",
-      image: "/blog/how-to-download-a-json-file.jpg",
       faqCount: 3,
       tool: "/json-formatter",
     },
@@ -186,7 +193,6 @@ test("new JSON guides expose complete metadata, cover images, and FAQs", async (
       slug: "how-to-view-a-json-file",
       title: "How to View a JSON File on Windows, Mac, and Online",
       description: "Learn how to view a JSON file on Windows, Mac, or in a browser. Follow simple steps to open, read, and format JSON files online for free.",
-      image: "/blog/how-to-view-a-json-file.jpg",
       faqCount: 6,
       tool: "/json-formatter",
     },
@@ -200,8 +206,7 @@ test("new JSON guides expose complete metadata, cover images, and FAQs", async (
     const heroImage = page.locator(".blog-hero-media img");
     await expect(heroImage).toBeVisible();
     const heroSrc = await heroImage.getAttribute("src");
-    expect(heroSrc).toContain("/_next/image");
-    expect(new URL(heroSrc!, page.url()).searchParams.get("url")).toBe(guide.image);
+    expectBlogImageSource(heroSrc, page.url(), guide.slug);
     await expect(page.locator(".blog-faq details")).toHaveCount(guide.faqCount);
     await expect(page.locator(`main a[href="${guide.tool}"]`)).not.toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(

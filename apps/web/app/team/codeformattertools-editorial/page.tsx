@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { siteConfig, siteOrigin } from "@codeformattools/seo";
 import { defaultEditorialProfile, formatEditorialDate } from "@/lib/editorial-team";
-import { blogPosts } from "@/lib/learn-guides";
+import { getPublishedBlogPosts } from "@/lib/blog-repository";
 
 const profile = defaultEditorialProfile;
 const profileUrl = `${siteOrigin()}${profile.path}`;
@@ -22,7 +22,8 @@ export const metadata: Metadata = {
   }
 };
 
-export default function EditorialTeamPage() {
+export default async function EditorialTeamPage() {
+  const blogPosts = await getPublishedBlogPosts();
   const editorialEntityId = `${profileUrl}#editorial-team`;
   const schema = {
     "@context": "https://schema.org",

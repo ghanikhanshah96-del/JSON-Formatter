@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { siteConfig, siteOrigin } from "@codeformattools/seo";
-import { BlogIndex, blogPageCount } from "@/components/blog-index";
+import { BlogIndex } from "@/components/blog-index";
+import { getBlogPageCount, getPublishedBlogPosts } from "@/lib/blog-repository";
 
 type Props = { params: Promise<{ page: string }> };
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return Array.from({ length: Math.max(0, blogPageCount - 1) }, (_, index) => ({ page: String(index + 2) }));
-}
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const page = Number((await params).page);
@@ -31,6 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PaginatedBlogPage({ params }: Props) {
   const page = Number((await params).page);
-  if (!Number.isInteger(page) || page < 2 || page > blogPageCount) notFound();
-  return <BlogIndex page={page} />;
+  const [posts, pageCount] = await Promise.all([getPublishedBlogPosts(), getBlogPageCount()]);
+  if (!Number.isInteger(page) || page < 2 || page > pageCount) notFound();
+  return <BlogIndex posts={posts} page={page} pageCount={pageCount} />;
 }

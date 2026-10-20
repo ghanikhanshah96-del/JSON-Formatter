@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { categories, tools } from "@codeformattools/tool-registry";
 import { siteOrigin } from "@codeformattools/seo";
-import { BLOG_PAGE_SIZE, blogPosts } from "@/lib/learn-guides";
+import { BLOG_PAGE_SIZE, getPublishedBlogPosts } from "@/lib/blog-repository";
 
 function priorityFor(path: string): number {
   if (path === "") return 1;
@@ -20,8 +20,9 @@ function priorityFor(path: string): number {
   return 0.5;
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteOrigin();
+  const blogPosts = (await getPublishedBlogPosts()).filter(post => !post.noindex);
   const blogPageCount = Math.max(1, Math.ceil(blogPosts.length / BLOG_PAGE_SIZE));
   const paths = [
     "",

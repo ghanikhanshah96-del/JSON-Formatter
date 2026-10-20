@@ -1,9 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatEditorialShortDate } from "@/lib/editorial-team";
-import { BLOG_PAGE_SIZE, blogPosts, type BlogPost } from "@/lib/learn-guides";
-
-export const blogPageCount = Math.max(1, Math.ceil(blogPosts.length / BLOG_PAGE_SIZE));
+import { BLOG_PAGE_SIZE } from "@/lib/blog-repository";
+import type { BlogPost } from "@/lib/learn-guides";
 
 function pageHref(page: number) {
   return page === 1 ? "/blog" : `/blog/page/${page}`;
@@ -42,9 +41,9 @@ function BlogCard({ post, featured = false }: { post: BlogPost; featured?: boole
   </Link>;
 }
 
-export function BlogIndex({ page = 1 }: { page?: number }) {
+export function BlogIndex({ posts, page = 1, pageCount }: { posts: BlogPost[]; page?: number; pageCount: number }) {
   const start = (page - 1) * BLOG_PAGE_SIZE;
-  const pagePosts = blogPosts.slice(start, start + BLOG_PAGE_SIZE);
+  const pagePosts = posts.slice(start, start + BLOG_PAGE_SIZE);
   const featuredPost = page === 1 ? pagePosts[0] : undefined;
   const regularPosts = featuredPost ? pagePosts.slice(1) : pagePosts;
 
@@ -53,7 +52,7 @@ export function BlogIndex({ page = 1 }: { page?: number }) {
       <div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><strong>Blog</strong></div>
       <div className="blog-index-hero-grid">
         <div>
-          <div className="eyebrow">BLOG · {blogPosts.length} GUIDES</div>
+          <div className="eyebrow">BLOG · {posts.length} GUIDES</div>
           <h1>Learn JSON, then open the tools<span className="title-accent">.</span></h1>
         </div>
         <p className="learn-lead">
@@ -69,17 +68,17 @@ export function BlogIndex({ page = 1 }: { page?: number }) {
       </div> : null}
     </div>
 
-    {blogPageCount > 1 ? <nav className="blog-pagination" aria-label="Blog pages">
+    {pageCount > 1 ? <nav className="blog-pagination" aria-label="Blog pages">
       {page > 1 ? <Link className="blog-pagination-direction" href={pageHref(page - 1)}>← Previous</Link> : <span />}
       <div className="blog-pagination-pages">
-        {Array.from({ length: blogPageCount }, (_, index) => index + 1).map(pageNumber => <Link
+        {Array.from({ length: pageCount }, (_, index) => index + 1).map(pageNumber => <Link
           aria-current={pageNumber === page ? "page" : undefined}
           className={pageNumber === page ? "is-active" : undefined}
           href={pageHref(pageNumber)}
           key={pageNumber}
         >{pageNumber}</Link>)}
       </div>
-      {page < blogPageCount ? <Link className="blog-pagination-direction" href={pageHref(page + 1)}>Next →</Link> : <span />}
+      {page < pageCount ? <Link className="blog-pagination-direction" href={pageHref(page + 1)}>Next →</Link> : <span />}
     </nav> : null}
   </main>;
 }

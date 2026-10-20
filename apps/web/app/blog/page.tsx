@@ -2,30 +2,31 @@ import type { Metadata } from "next";
 import { siteConfig, siteOrigin } from "@codeformattools/seo";
 import { BlogIndex } from "@/components/blog-index";
 import { defaultEditorialProfile } from "@/lib/editorial-team";
-import { blogPosts } from "@/lib/learn-guides";
+import { getBlogPageCount, getPublishedBlogPosts } from "@/lib/blog-repository";
 
 const blogTitle = `JSON Guides and Tutorials | ${siteConfig.name}`;
 const blogDescription = "Practical guides to creating, viewing, downloading, sorting, validating, and formatting JSON files with private browser tools.";
 const blogUrl = `${siteOrigin()}/blog`;
 
-export const metadata: Metadata = {
-  title: blogTitle,
-  description: blogDescription,
-  alternates: {
-    canonical: "/blog",
-    types: { "application/rss+xml": "/blog/rss.xml" }
-  },
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  const posts = await getPublishedBlogPosts();
+  return {
     title: blogTitle,
-    description: "Step-by-step developer guides that link into real tools — private by default.",
-    url: blogUrl,
-    siteName: siteConfig.name,
-    type: "website",
-    images: [{ url: blogPosts[0]?.image ?? "/og-image.png", width: 1200, height: 630, alt: "CodeFormatterTools JSON guides" }]
-  }
-};
+    description: blogDescription,
+    alternates: { canonical: "/blog", types: { "application/rss+xml": "/blog/rss.xml" } },
+    openGraph: {
+      title: blogTitle,
+      description: "Step-by-step developer guides that link into real tools — private by default.",
+      url: blogUrl,
+      siteName: siteConfig.name,
+      type: "website",
+      images: [{ url: posts[0]?.image ?? "/og-image.png", width: 1200, height: 630, alt: "CodeFormatterTools JSON guides" }]
+    }
+  };
+}
 
-export default function BlogIndexPage() {
+export default async function BlogIndexPage() {
+  const [blogPosts, pageCount] = await Promise.all([getPublishedBlogPosts(), getBlogPageCount()]);
   const editorialProfileUrl = `${siteOrigin()}${defaultEditorialProfile.path}`;
   const schema = {
     "@context": "https://schema.org",
@@ -81,6 +82,6 @@ export default function BlogIndexPage() {
 
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
-    <BlogIndex />
+    <BlogIndex posts={blogPosts} pageCount={pageCount} />
   </>;
 }

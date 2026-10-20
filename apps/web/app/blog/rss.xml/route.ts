@@ -1,5 +1,5 @@
 import { siteConfig, siteOrigin } from "@codeformattools/seo";
-import { blogPosts } from "@/lib/learn-guides";
+import { getPublishedBlogPosts } from "@/lib/blog-repository";
 
 function escapeXml(value: string): string {
   return value
@@ -10,7 +10,8 @@ function escapeXml(value: string): string {
     .replace(/'/g, "&apos;");
 }
 
-export function GET() {
+export async function GET() {
+  const blogPosts = (await getPublishedBlogPosts()).filter(post => !post.noindex);
   const origin = siteOrigin();
   const blogUrl = `${origin}/blog`;
   const latestDate = blogPosts[0]?.dateModified ?? "2026-10-20";

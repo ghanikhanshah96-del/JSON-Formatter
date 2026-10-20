@@ -19,6 +19,7 @@ export type BlogPost = {
   image: string;
   imageAlt: string;
   imagePosition?: string;
+  noindex?: boolean;
   intro: string[];
   sections: { heading: string; blocks: BlogContentBlock[] }[];
 };

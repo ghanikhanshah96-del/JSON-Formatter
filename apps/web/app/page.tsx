@@ -5,7 +5,7 @@ import { categories, homeSeoCopy, tools } from "@codeformattools/tool-registry";
 import { FaqAccordion } from "@/components/faq-accordion";
 import { SeoSections } from "@/components/seo-sections";
 import { ToolsGrid } from "@/components/tools-grid";
-import { getBlogPost } from "@/lib/learn-guides";
+import { getPublishedBlogPosts } from "@/lib/blog-repository";
 
 export const metadata: Metadata = {
   title: homeSeoCopy.seo.title,
@@ -33,10 +33,11 @@ const featuredBlogSlugs = [
   "how-to-create-json-file"
 ] as const;
 
-export default function Home() {
+export default async function Home() {
   const heroIntro = homeSeoCopy.intro[0];
   const remainingIntro = homeSeoCopy.intro.slice(1);
-  const featuredPosts = featuredBlogSlugs.map(slug => getBlogPost(slug)).filter(Boolean);
+  const allPosts = await getPublishedBlogPosts();
+  const featuredPosts = featuredBlogSlugs.map(slug => allPosts.find(post => post.slug === slug)).filter(Boolean);
 
   return <main>
     {homeSchemas().map((data, index) => <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />)}
