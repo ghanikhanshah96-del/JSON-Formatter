@@ -251,6 +251,9 @@ test.describe("blog dashboard", () => {
     await expect(page.locator(".admin-live-preview").getByText(/SELECT\s+id,\s+name,\s+email/)).toBeVisible();
     await expect(page.getByRole("heading", { name: "Frequently Asked Questions" })).toBeVisible();
     await expect(page.locator('.admin-live-preview a[href="/sql-formatter"]')).toHaveCount(2);
+    const previewToolLink = page.locator('.admin-live-preview a[href="/sql-formatter"]').first();
+    await expect(previewToolLink).toHaveCSS("text-decoration-line", "underline");
+    await expect(previewToolLink).not.toHaveCSS("color", await previewToolLink.locator("xpath=parent::*").evaluate(element => getComputedStyle(element).color));
     await expect(page.locator(".admin-warning-list")).not.toContainText("unsafe link destination");
     await expect(page.locator(".admin-live-preview li").filter({ hasText: "Use consistent keyword capitalization" })).toHaveText(/^Use consistent keyword capitalization:/);
     await expect(page.getByText(/Links in the FAQ answer/)).toBeVisible();
