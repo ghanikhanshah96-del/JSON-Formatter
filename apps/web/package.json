@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test",
     "cms:bootstrap": "node scripts/bootstrap-cms.mjs",
+    "cms:send-owner-link": "node scripts/send-owner-magic-link.mjs",
     "cms:migrate": "node --experimental-strip-types scripts/migrate-blog-to-supabase.mjs",
     "cms:verify": "node --experimental-strip-types scripts/verify-blog-migration.mjs"
   },

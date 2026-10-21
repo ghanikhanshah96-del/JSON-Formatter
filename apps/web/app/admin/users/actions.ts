@@ -11,7 +11,7 @@ export async function inviteUserAction(formData: FormData) {
   const role = formData.get("role") === "owner" ? "owner" : "editor";
   if (!email || displayName.length < 2) throw new Error("Enter a valid email and display name.");
   const admin = createSupabaseAdminClient();
-  const invite = await admin.auth.admin.inviteUserByEmail(email, { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/auth/callback` });
+  const invite = await admin.auth.admin.inviteUserByEmail(email, { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/auth/session` });
   if (invite.error || !invite.data.user) throw new Error(invite.error?.message ?? "Invite failed.");
   const profile = await admin.from("profiles").upsert({ user_id: invite.data.user.id, email, display_name: displayName, role, active: true });
   if (profile.error) throw new Error(profile.error.message);

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Sora } from "next/font/google";
 import { siteConfig, siteOrigin } from "@codeformattools/seo";
 import { HomeBrandLink } from "@/components/home-brand-link";
+import { AuthFragmentBridge } from "@/components/auth-fragment-bridge";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { Observability } from "@/components/observability";
 import { SiteHeader } from "@/components/site-header";
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <GoogleAnalytics />
       </head>
       <body style={{ fontFamily: "var(--font-sora), var(--font-sans)" }} suppressHydrationWarning>
+        <AuthFragmentBridge />
         <a className="skip-link" href="#main-content">Skip to content</a>
         <script
           dangerouslySetInnerHTML={{

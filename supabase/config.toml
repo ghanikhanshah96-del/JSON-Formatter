@@ -8,6 +8,18 @@ extra_search_path = ["public", "extensions"]
 [auth]
 enabled = true
 enable_signup = false
+site_url = "https://codeformattertools.com"
+additional_redirect_urls = [
+  "https://codeformattertools.com/auth/callback",
+  "https://codeformattertools.com/auth/confirm",
+  "https://codeformattertools.com/auth/session",
+  "https://www.codeformattertools.com/auth/callback",
+  "https://www.codeformattertools.com/auth/confirm",
+  "https://www.codeformattertools.com/auth/session",
+  "http://localhost:3000/auth/callback",
+  "http://localhost:3000/auth/confirm",
+  "http://localhost:3000/auth/session"
+]
 
 [auth.mfa.totp]
 enroll_enabled = true

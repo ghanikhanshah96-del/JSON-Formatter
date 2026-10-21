@@ -11,7 +11,7 @@ if (!url || !serviceKey || !email) {
 }
 
 const supabase = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-const invite = await supabase.auth.admin.inviteUserByEmail(email, { redirectTo: `${siteUrl}/auth/callback` });
+const invite = await supabase.auth.admin.inviteUserByEmail(email, { redirectTo: `${siteUrl}/auth/session` });
 if (invite.error && !/already.*registered/i.test(invite.error.message)) throw invite.error;
 
 let user = invite.data.user;
