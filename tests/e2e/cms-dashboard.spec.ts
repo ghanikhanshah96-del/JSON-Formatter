@@ -6,6 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 const enabled = process.env.CMS_E2E === "1";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+const siteUrl = (process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 const testEmail = `cms-e2e-${Date.now()}@example.com`;
 const testPassword = "Local-CMS-test-password-2026";
 const updatedTestPassword = "Updated-local-CMS-password-2026";
@@ -49,8 +50,8 @@ test.describe("blog dashboard", () => {
   });
 
   test.afterAll(async () => {
-    if (slug) {
-      const postLookup = await fetch(`${supabaseUrl}/rest/v1/blog_posts?slug=eq.${encodeURIComponent(slug)}&select=id`, { headers: serviceHeaders() });
+    if (userId) {
+      const postLookup = await fetch(`${supabaseUrl}/rest/v1/blog_posts?created_by=eq.${userId}&select=id`, { headers: serviceHeaders() });
       if (!postLookup.ok) throw new Error(`Unable to find CMS test post for cleanup: ${await postLookup.text()}`);
       const posts = await postLookup.json() as Array<{ id: string }>;
       for (const post of posts) {
@@ -82,16 +83,16 @@ test.describe("blog dashboard", () => {
     }
   });
 
-  test("editor enrolls MFA, imports a Word article, previews, publishes, uploads media, and archives", async ({ page }, testInfo) => {
+  test("editor enrolls MFA, imports a Word article, previews, publishes, uploads media, and archives", async ({ page, request }, testInfo) => {
     await page.goto("/auth/session?code=invalid-regression-code");
     await expect(page).toHaveURL(/\/admin\/login\?error=invalid_or_expired_link$/);
-    await expect(page.getByRole("alert")).toContainText("invalid or has expired");
+    await expect(page.locator(".admin-error")).toContainText("invalid or has expired");
 
     const admin = createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
     const link = await admin.auth.admin.generateLink({
       type: "magiclink",
       email: testEmail,
-      options: { redirectTo: "http://localhost:3000/auth/session" },
+      options: { redirectTo: `${siteUrl}/auth/session` },
     });
     if (link.error || !link.data.properties?.action_link) throw new Error(link.error?.message ?? "Unable to create CMS sign-in link.");
     await page.goto(link.data.properties.action_link);
@@ -107,6 +108,25 @@ test.describe("blog dashboard", () => {
     await page.getByRole("button", { name: "Verify" }).click();
     await expect(page).toHaveURL(/\/admin$/, { timeout: 20_000 });
     await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+
+    // A draft must be recoverable before it is complete enough to publish.
+    await page.goto("/admin/posts/new");
+    await page.getByRole("button", { name: "SEO" }).click();
+    await page.getByLabel("Article title").fill("Incomplete CMS regression draft");
+    await page.getByRole("button", { name: "Save draft" }).click();
+    await expect(page).toHaveURL(/\/admin\/posts\/[0-9a-f-]+\/edit\?saved=1$/, { timeout: 20_000 });
+    await page.getByRole("button", { name: "SEO" }).click();
+    await expect(page.getByLabel("Article title")).toHaveValue("Incomplete CMS regression draft");
+    await page.reload();
+    await page.getByRole("button", { name: "SEO" }).click();
+    await expect(page.getByLabel("Article title")).toHaveValue("Incomplete CMS regression draft");
+    await page.getByLabel("Article title").fill("Incomplete CMS regression draft updated");
+    await expect(page.getByText("Draft autosaved.")).toBeVisible({ timeout: 15_000 });
+    await page.reload();
+    await page.getByRole("button", { name: "SEO" }).click();
+    await expect(page.getByLabel("Article title")).toHaveValue("Incomplete CMS regression draft updated");
+    await page.goto("/admin/posts?status=draft");
+    await expect(page.getByRole("row").filter({ hasText: "Incomplete CMS regression draft updated" })).toBeVisible();
 
     const richImportCases = [
       {
@@ -159,6 +179,7 @@ test.describe("blog dashboard", () => {
         element.dispatchEvent(new ClipboardEvent("paste", { bubbles: true, cancelable: true, clipboardData: transfer }));
       }, { title: item.title, html: richCaseHtml });
       await expect(page.getByText("Rich document formatting detected.")).toBeVisible();
+      await expect(page.locator("#article-source")).toHaveValue(item.title);
       await page.getByRole("button", { name: "Format article" }).click();
       await expect(page.getByRole("heading", { name: item.title })).toBeVisible();
       await expect(page.locator(".admin-live-preview pre.blog-code")).toHaveCount(item.codeCount);
@@ -217,6 +238,7 @@ test.describe("blog dashboard", () => {
       element.dispatchEvent(new ClipboardEvent("paste", { bubbles: true, cancelable: true, clipboardData: transfer }));
     }, { richHtml, plainText });
     await expect(page.getByText("Rich document formatting detected.")).toBeVisible();
+    await expect(page.locator("#article-source")).toHaveValue(plainText);
     await expect.poll(() => page.evaluate(() => window.localStorage.getItem("codeformattertools:blog-import:new") ?? "")).toContain("How to Format an SQL Query Online");
     await page.reload();
     await expect(page.locator("#article-source")).toHaveValue(/How to Format an SQL Query Online/);
@@ -254,6 +276,8 @@ test.describe("blog dashboard", () => {
     await page.getByRole("button", { name: "Save draft" }).click();
     await expect(page).toHaveURL(/\/admin\/posts\/[0-9a-f-]+\/edit\?saved=1$/, { timeout: 20_000 });
     await expect(page.getByText(/Draft saved|Draft autosaved/)).toBeVisible();
+    const postId = page.url().match(/\/admin\/posts\/([0-9a-f-]+)\/edit/)?.[1];
+    expect(postId).toBeTruthy();
 
     const preview = page.getByRole("link", { name: "Open private preview" });
     const previewPagePromise = page.context().waitForEvent("page");
@@ -265,13 +289,38 @@ test.describe("blog dashboard", () => {
     await expect(previewPage.locator("pre.blog-code")).toHaveCount(3);
     await previewPage.close();
 
+    await page.getByLabel("Publication date").fill("2099-12-31");
+    await page.getByRole("button", { name: "Publish" }).click();
+    await expect(page.locator(".admin-error")).toContainText("Publication date cannot be in the future");
+    await page.getByLabel("Publication date").fill(new Date().toISOString().slice(0, 10));
+    await expect(page.locator(".admin-error")).toHaveCount(0);
     await page.getByRole("button", { name: "Publish" }).click();
     await expect(page.getByText("Published successfully.")).toBeVisible();
     await page.goto(`/blog/${slug}`);
     await expect(page.getByRole("heading", { name: "How to Format an SQL Query Online: Easy Step-by-Step Guide" })).toBeVisible();
+    await expect(page).toHaveTitle("How to Format an SQL Query Online: Step-by-Step Guide");
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /Learn how to format an SQL query online for free/);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new RegExp(`/blog/${slug}$`));
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
+    const structuredData = JSON.parse(await page.locator('script[type="application/ld+json"]').textContent() ?? "{}") as { image?: string[] };
+    expect(structuredData.image?.[0]).toMatch(/^https:\/\//);
+    expect(structuredData.image?.[0]).not.toContain("codeformattertools.comhttps://");
     await expect(page.locator("pre.blog-code")).toHaveCount(3);
     await expect(page.getByText("Can I format an SQL query online for free?")).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath("blog5-published-page.png"), fullPage: true });
+    await page.goto("/blog");
+    await expect(page.getByRole("link").filter({ hasText: "How to Format an SQL Query Online: Easy Step-by-Step Guide" })).toBeVisible();
+    await expect.poll(async () => (await request.get("/sitemap.xml")).text()).toContain(`/blog/${slug}`);
+    await expect.poll(async () => (await request.get("/blog/rss.xml")).text()).toContain(`/blog/${slug}`);
+
+    await page.goto(`/admin/posts/${postId}/edit`);
+    await page.getByRole("button", { name: "SEO" }).click();
+    const updatedDescription = "Learn how to format an SQL query online for free with verified steps, readable clauses, and a production-tested editing workflow.";
+    await page.locator("#seo-description-main").fill(updatedDescription);
+    await page.getByRole("button", { name: "Save changes" }).click();
+    await expect(page.getByText("Published successfully.")).toBeVisible();
+    await page.goto(`/blog/${slug}`);
+    await expect(page.getByText(updatedDescription)).toBeVisible();
 
     await page.goto("/admin/media");
     await expect(page.getByText(process.env.CMS_E2E_BLOG_IMAGE ? /blog5-image\.jpg/ : /how-to-download-a-json-file\.jpg/).first()).toBeVisible();
@@ -284,5 +333,21 @@ test.describe("blog dashboard", () => {
     await expect(page).toHaveURL(/\/admin\/posts\?archived=1$/);
     await page.goto(`/blog/${slug}`);
     await expect(page).toHaveTitle(/404|not found/i);
+
+    await page.goto(`/admin/posts/${postId}/edit`);
+    await expect(page.getByRole("button", { name: "Restore as draft" })).toBeVisible();
+    await page.getByRole("button", { name: "Restore as draft" }).click();
+    await expect(page.getByText("Draft saved.")).toBeVisible();
+    await expect(page.locator(".admin-badge.draft")).toBeVisible();
+    await page.goto(`/blog/${slug}`);
+    await expect(page).toHaveTitle(/404|not found/i);
+    await page.goto(`/admin/posts/${postId}/edit`);
+    await page.getByRole("button", { name: "Publish", exact: true }).click();
+    await expect(page.getByText("Published successfully.")).toBeVisible();
+    await page.goto(`/blog/${slug}`);
+    await expect(page.getByRole("heading", { name: "How to Format an SQL Query Online: Easy Step-by-Step Guide" })).toBeVisible();
+    await page.goto("/admin/posts");
+    await page.getByRole("row").filter({ hasText: slug }).getByRole("button", { name: "Archive" }).click();
+    await expect(page).toHaveURL(/\/admin\/posts\?archived=1$/);
   });
 });

@@ -8,6 +8,10 @@ const blogTitle = `JSON Guides and Tutorials | ${siteConfig.name}`;
 const blogDescription = "Practical guides to creating, viewing, downloading, sorting, validating, and formatting JSON files with private browser tools.";
 const blogUrl = `${siteOrigin()}/blog`;
 
+function absoluteImageUrl(image: string) {
+  return new URL(image, siteOrigin()).toString();
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const posts = await getPublishedBlogPosts();
   return {
@@ -54,7 +58,7 @@ export default async function BlogIndexPage() {
           "@type": "BlogPosting",
           headline: post.title,
           url: `${siteOrigin()}/blog/${post.slug}`,
-          image: `${siteOrigin()}${post.image}`,
+          image: absoluteImageUrl(post.image),
           datePublished: post.datePublished,
           dateModified: post.dateModified
         }))

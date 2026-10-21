@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { BlogArticleBody } from "@/components/blog-article-body";
 import type { BlogContentBlock } from "@/lib/learn-guides";
-import { blogPostInputSchema, estimateReadMinutes, type BlogPostInput } from "@/lib/blog-schema";
+import { blogPostDraftInputSchema, blogPostInputSchema, estimateReadMinutes, type BlogPostInput } from "@/lib/blog-schema";
 import { parseBlogDocument, suggestCategoryId, suggestRelatedToolIds, type BlogImportMode, type BlogImportWarning } from "@/lib/blog-import";
 import { savePostAction, type SavePostState } from "@/app/admin/posts/actions";
 
@@ -94,23 +94,27 @@ export function BlogPostEditor({ initialValue, toolOptions, categoryOptions }: {
   const [value, setValue] = useState(initialValue);
   const [view, setView] = useState<EditorView>("compose");
   const [notice, setNotice] = useState("");
+  const [dismissedErrorState, setDismissedErrorState] = useState<SavePostState | null>(null);
   const [uploading, setUploading] = useState(false);
   const [sourceText, setSourceText] = useState("");
   const [sourceHtml, setSourceHtml] = useState("");
   const [importMode, setImportMode] = useState<BlogImportMode>("auto");
   const [importWarnings, setImportWarnings] = useState<BlogImportWarning[]>([]);
   const [sourceLoaded, setSourceLoaded] = useState(false);
+  const sourceTouched = useRef(false);
   const [state, formAction, pending] = useActionState(savePostAction, { ok: false, error: "" } as SavePostState);
   const lastSaved = useRef(JSON.stringify(initialValue));
   const serialized = useMemo(() => JSON.stringify(value), [value]);
   const validation = useMemo(() => blogPostInputSchema.safeParse(value), [value]);
+  const draftValidation = useMemo(() => blogPostDraftInputSchema.safeParse(value), [value]);
   const validationMessages = useMemo(() => validation.success ? [] : Array.from(new Set(validation.error.issues.map(issue => `${issue.path.join(".") || "Article"}: ${issue.message}`))).slice(0, 8), [validation]);
+  const actionError = state.error && dismissedErrorState !== state ? state.error : "";
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       try {
         const saved = window.localStorage.getItem(importStorageKey(initialValue.id));
-        if (saved) {
+        if (saved && !sourceTouched.current) {
           const parsed = JSON.parse(saved) as { text?: string; html?: string; mode?: BlogImportMode };
           setSourceText(parsed.text ?? ""); setSourceHtml(parsed.html ?? ""); setImportMode(parsed.mode ?? "auto");
         }
@@ -144,7 +148,7 @@ export function BlogPostEditor({ initialValue, toolOptions, categoryOptions }: {
   }, [state, initialValue.id, router]);
 
   useEffect(() => {
-    if (!initialValue.id || value.status !== "draft" || serialized === lastSaved.current || pending || !validation.success) return;
+    if (!initialValue.id || value.status !== "draft" || serialized === lastSaved.current || pending || !draftValidation.success) return;
     const timer = window.setTimeout(async () => {
       setNotice("Autosaving…");
       try {
@@ -156,9 +160,9 @@ export function BlogPostEditor({ initialValue, toolOptions, categoryOptions }: {
       } catch { setNotice("Autosave failed. Your changes remain in this browser."); }
     }, 2500);
     return () => window.clearTimeout(timer);
-  }, [initialValue.id, pending, serialized, validation.success, value]);
+  }, [draftValidation.success, initialValue.id, pending, serialized, value]);
 
-  function patch<K extends keyof EditorValue>(key: K, next: EditorValue[K]) { setValue(current => ({ ...current, [key]: next })); setNotice(""); }
+  function patch<K extends keyof EditorValue>(key: K, next: EditorValue[K]) { setValue(current => ({ ...current, [key]: next })); setNotice(""); setDismissedErrorState(state); }
   function patchSection(sectionIndex: number, update: (section: EditorValue["sections"][number]) => EditorValue["sections"][number]) { patch("sections", value.sections.map((section, index) => index === sectionIndex ? update(section) : section)); }
   function patchBlock(sectionIndex: number, blockIndex: number, block: BlogContentBlock) { patchSection(sectionIndex, section => ({ ...section, blocks: section.blocks.map((item, index) => index === blockIndex ? block : item) })); }
 
@@ -166,7 +170,7 @@ export function BlogPostEditor({ initialValue, toolOptions, categoryOptions }: {
     const text = event.clipboardData.getData("text/plain");
     const html = event.clipboardData.getData("text/html");
     if (!text && !html) return;
-    event.preventDefault(); setSourceText(text); setSourceHtml(html); setImportWarnings([]); setNotice(html ? "Rich document formatting detected." : "Plain text detected.");
+    event.preventDefault(); sourceTouched.current = true; setSourceText(text); setSourceHtml(html); setImportWarnings([]); setDismissedErrorState(state); setNotice(html ? "Rich document formatting detected." : "Plain text detected.");
   }
 
   function formatArticle() {
@@ -184,7 +188,7 @@ export function BlogPostEditor({ initialValue, toolOptions, categoryOptions }: {
   }
 
   function clearSource() {
-    setSourceText(""); setSourceHtml(""); setImportWarnings([]); setNotice("");
+    sourceTouched.current = true; setSourceText(""); setSourceHtml(""); setImportWarnings([]); setNotice("");
     try { window.localStorage.removeItem(importStorageKey(value.id)); } catch { /* ignore */ }
   }
 
@@ -203,14 +207,14 @@ export function BlogPostEditor({ initialValue, toolOptions, categoryOptions }: {
 
   const previewSections = [...value.sections, ...(value.faqs.length ? [{ heading: "Frequently Asked Questions", blocks: value.faqs.flatMap(item => [{ type: "subheading" as const, text: item.question }, { type: "paragraph" as const, text: item.answer }]) }] : [])];
 
-  return <form action={formAction} className="admin-form">
+  return <form action={formAction} className="admin-form" noValidate>
     <input name="payload" type="hidden" value={serialized} />
-    {(state.error || notice) ? <div className={state.error || /failed|unable|too large/i.test(notice) ? "admin-error" : "admin-success"} role="status">{state.error || notice}</div> : null}
+    {(actionError || notice) ? <div className={actionError || /failed|unable|too large/i.test(notice) ? "admin-error" : "admin-success"} role="status">{actionError || notice}</div> : null}
     <nav className="admin-editor-tabs" aria-label="Article editor modes">{(["compose", "preview", "seo", "advanced"] as const).map(item => <button className={view === item ? "active" : ""} key={item} type="button" onClick={() => setView(item)} aria-current={view === item ? "page" : undefined}>{item === "compose" ? "Quick Paste" : item === "seo" ? "SEO" : item[0].toUpperCase() + item.slice(1)}</button>)}</nav>
 
     <div className="admin-editor">
       <div className="admin-editor-main">
-        {view === "compose" ? <><section className="admin-card admin-form"><div><h2>Paste the complete article</h2><p className="admin-muted">Copy from Word or Google Docs, or paste Markdown/plain text. Headings, lists, links, code and FAQs are converted into the website’s standard article format.</p></div><div className="admin-field"><label htmlFor="import-mode">Source format</label><select id="import-mode" value={importMode} onChange={event => setImportMode(event.target.value as BlogImportMode)}><option value="auto">Detect automatically</option><option value="rich">Rich text (Word or Google Docs)</option><option value="markdown">Markdown</option><option value="plain">Plain text with H1:, H2: and H3: labels</option></select></div><div className="admin-field"><label htmlFor="article-source">Complete article</label><textarea id="article-source" className="admin-paste-source" rows={24} placeholder="# Article title&#10;&#10;Opening paragraph...&#10;&#10;## First section&#10;&#10;Section content..." value={sourceText} onPaste={capturePaste} onChange={event => { setSourceText(event.target.value); setSourceHtml(""); setImportWarnings([]); }} /><span className="admin-help">{sourceHtml ? "Rich clipboard structure is ready to import. Editing this field switches to visible text parsing." : "Use H1/H2/H3 styles before copying, or Markdown headings beginning with #, ## and ###."}</span></div><div className="admin-actions"><button className="admin-button" type="button" onClick={formatArticle}>Format article</button><button className="admin-button secondary" type="button" onClick={clearSource} disabled={!sourceText && !sourceHtml}>Clear pasted source</button></div></section><section className="admin-card"><h3>Formatting rules</h3><div className="admin-import-rules"><span>H1 → title</span><span>Opening text → introduction</span><span>H2 → section</span><span>H3 → subheading</span><span>Bullets/numbers → lists</span><span>FAQ section → accordion</span></div></section></> : null}
+        {view === "compose" ? <><section className="admin-card admin-form"><div><h2>Paste the complete article</h2><p className="admin-muted">Copy from Word or Google Docs, or paste Markdown/plain text. Headings, lists, links, code and FAQs are converted into the website’s standard article format.</p></div><div className="admin-field"><label htmlFor="import-mode">Source format</label><select id="import-mode" value={importMode} onChange={event => { sourceTouched.current = true; setImportMode(event.target.value as BlogImportMode); }}><option value="auto">Detect automatically</option><option value="rich">Rich text (Word or Google Docs)</option><option value="markdown">Markdown</option><option value="plain">Plain text with H1:, H2: and H3: labels</option></select></div><div className="admin-field"><label htmlFor="article-source">Complete article</label><textarea id="article-source" className="admin-paste-source" rows={24} placeholder="# Article title&#10;&#10;Opening paragraph...&#10;&#10;## First section&#10;&#10;Section content..." value={sourceText} onPaste={capturePaste} onChange={event => { sourceTouched.current = true; setSourceText(event.target.value); setSourceHtml(""); setImportWarnings([]); }} /><span className="admin-help">{sourceHtml ? "Rich clipboard structure is ready to import. Editing this field switches to visible text parsing." : "Use H1/H2/H3 styles before copying, or Markdown headings beginning with #, ## and ###."}</span></div><div className="admin-actions"><button className="admin-button" type="button" onClick={formatArticle}>Format article</button><button className="admin-button secondary" type="button" onClick={clearSource} disabled={!sourceText && !sourceHtml}>Clear pasted source</button></div></section><section className="admin-card"><h3>Formatting rules</h3><div className="admin-import-rules"><span>H1 → title</span><span>Opening text → introduction</span><span>H2 → section</span><span>H3 → subheading</span><span>Bullets/numbers → lists</span><span>FAQ section → accordion</span></div></section></> : null}
 
         {view === "preview" ? <section className="admin-card admin-preview-shell"><div className="admin-preview-heading"><div><h2>Article preview</h2><p className="admin-muted">This uses the same body renderer as the public article.</p></div><button className="admin-button secondary" type="button" onClick={() => setView("advanced")}>Edit structure</button></div><article className="learn-article blog-article admin-live-preview"><header className="blog-article-hero"><div className="blog-article-hero-grid"><div className="blog-article-hero-copy"><div className="eyebrow">{value.eyebrow}</div><h1>{value.title || "Untitled article"}<span className="title-accent">.</span></h1><p className="learn-lead">{value.description || "The generated search description will appear here."}</p><p className="learn-minutes-line">{estimateReadMinutes(value)} min read · preview</p></div>{value.image ? <figure className="blog-hero-media"><Image src={value.image} alt={value.imageAlt || ""} fill sizes="520px" style={{ objectPosition: value.imagePosition }} /></figure> : <div className="admin-preview-image-missing">Add a cover image</div>}</div></header><BlogArticleBody post={{ slug: value.slug || "preview", intro: value.intro.filter(Boolean), sections: previewSections }} /></article></section> : null}
 
@@ -220,7 +224,7 @@ export function BlogPostEditor({ initialValue, toolOptions, categoryOptions }: {
       </div>
 
       <aside className="admin-editor-side">
-        <section className="admin-card admin-form"><div className="admin-toolbar"><strong>Publishing</strong><span className={`admin-badge ${value.status}`}>{value.status}</span></div>{validationMessages.length ? <div className="admin-checklist" role="status"><strong>Complete before publishing</strong><ul>{validationMessages.map(message => <li key={message}>{message}</li>)}</ul></div> : <div className="admin-ready">Ready to publish</div>}<button className="admin-button secondary" disabled={pending} name="intent" value="save" type="submit">{pending ? "Saving…" : value.status === "published" ? "Save changes" : "Save draft"}</button><button className="admin-button" disabled={pending || !validation.success} name="intent" value="publish" type="submit">{value.status === "published" ? "Update published post" : "Publish"}</button>{value.id ? <a className="admin-button secondary" href={`/admin/posts/${value.id}/preview`} target="_blank">Open private preview</a> : null}<div className="admin-field"><label>Change summary</label><input aria-label="Change summary" value={value.changeSummary} onChange={event => patch("changeSummary", event.target.value)} placeholder="What changed?" /></div><div className="admin-field"><label>Publication date</label><input aria-label="Publication date" type="date" value={value.datePublished} onChange={event => patch("datePublished", event.target.value)} /></div></section>
+        <section className="admin-card admin-form"><div className="admin-toolbar"><strong>Publishing</strong><span className={`admin-badge ${value.status}`}>{value.status}</span></div>{validationMessages.length ? <div className="admin-checklist" role="status"><strong>Complete before publishing</strong><ul>{validationMessages.map(message => <li key={message}>{message}</li>)}</ul></div> : <div className="admin-ready">Ready to publish</div>}<button className="admin-button secondary" disabled={pending || !draftValidation.success} name="intent" value={value.status === "published" ? "save" : "draft"} type="submit">{pending ? "Saving…" : value.status === "published" ? "Save changes" : value.status === "archived" ? "Restore as draft" : "Save draft"}</button><button className="admin-button" disabled={pending || !validation.success} name="intent" value="publish" type="submit">{value.status === "published" ? "Update published post" : "Publish"}</button>{value.id ? <a className="admin-button secondary" href={`/admin/posts/${value.id}/preview`} target="_blank">Open private preview</a> : null}<div className="admin-field"><label>Change summary</label><input aria-label="Change summary" value={value.changeSummary} onChange={event => patch("changeSummary", event.target.value)} placeholder="What changed?" /></div><div className="admin-field"><label>Publication date</label><input aria-label="Publication date" type="date" value={value.datePublished} onChange={event => patch("datePublished", event.target.value)} /></div></section>
         <section className="admin-card admin-form"><strong>Cover image</strong>{value.image ? <div className="admin-media-preview"><Image alt={value.imageAlt || ""} fill sizes="330px" src={value.image} style={{ objectFit: "cover", objectPosition: value.imagePosition }} /></div> : null}<div className="admin-field"><label>Upload image</label><input aria-label="Upload cover image" accept="image/jpeg,image/png,image/webp,image/avif" disabled={uploading} type="file" onChange={event => void uploadImage(event.target.files?.[0])} /><span className="admin-help">JPG, PNG, WebP or AVIF, maximum 5 MB.</span></div><div className="admin-field"><label>Image URL</label><input aria-label="Image URL" value={value.image} onChange={event => patch("image", event.target.value)} required /></div><div className="admin-field"><label>Alt text</label><textarea aria-label="Alt text" rows={3} value={value.imageAlt} onChange={event => patch("imageAlt", event.target.value)} required /></div><div className="admin-field"><label>Focal position</label><select aria-label="Focal position" value={value.imagePosition} onChange={event => patch("imagePosition", event.target.value)}><option>center center</option><option>center top</option><option>center bottom</option><option>left center</option><option>right center</option></select></div></section>
         {importWarnings.length ? <section className="admin-card admin-form"><strong>Import review</strong><ul className="admin-warning-list">{importWarnings.map((warning, index) => <li className={warning.severity} key={`${warning.code}-${index}`}>{warning.message}</li>)}</ul></section> : null}
       </aside>

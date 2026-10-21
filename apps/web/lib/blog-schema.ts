@@ -13,11 +13,19 @@ const safeHref = z.string().max(500).refine(value => {
 }, "Use an internal path or an http, https, or mailto URL.");
 
 const linkSchema = z.object({ text: z.string().trim().min(1).max(160), href: safeHref });
+const draftLinkSchema = z.object({ text: z.string().trim().max(160), href: z.string().max(500) });
 export const blogBlockSchema: z.ZodType<BlogContentBlock> = z.discriminatedUnion("type", [
   z.object({ type: z.literal("paragraph"), text: z.string().trim().min(1).max(12000), links: z.array(linkSchema).max(12).optional() }),
   z.object({ type: z.literal("subheading"), text: z.string().trim().min(1).max(180) }),
   z.object({ type: z.literal("code"), code: z.string().min(1).max(30000), language: z.enum(["json", "javascript", "sql", "text"]) }),
   z.object({ type: z.literal("list"), items: z.array(z.string().trim().min(1).max(800)).min(1).max(40), ordered: z.boolean().optional() })
+]);
+
+const draftBlogBlockSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("paragraph"), text: z.string().trim().max(12000), links: z.array(draftLinkSchema).max(12).optional() }),
+  z.object({ type: z.literal("subheading"), text: z.string().trim().max(180) }),
+  z.object({ type: z.literal("code"), code: z.string().max(30000), language: z.enum(["json", "javascript", "sql", "text"]) }),
+  z.object({ type: z.literal("list"), items: z.array(z.string().trim().max(800)).max(40), ordered: z.boolean().optional() })
 ]);
 
 export const blogSectionSchema = z.object({
@@ -56,6 +64,40 @@ export const blogPostInputSchema = z.object({
   if (!value.sections.some(section => section.heading.length > 0)) {
     context.addIssue({ code: "custom", path: ["sections"], message: "Add at least one section heading." });
   }
+});
+
+/**
+ * Drafts intentionally accept incomplete publication fields. Maximum sizes and
+ * structural limits still protect the API; blogPostInputSchema remains the
+ * publication gate for content that can become public.
+ */
+export const blogPostDraftInputSchema = z.object({
+  id: z.string().uuid().optional(),
+  expectedRevision: z.number().int().nonnegative().default(0),
+  slug: z.string().trim().max(120).refine(value => !value || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value), "Use lowercase letters, numbers, and hyphens."),
+  title: z.string().trim().max(140),
+  metaTitle: z.string().trim().max(70).optional().or(z.literal("")),
+  description: z.string().trim().max(220),
+  eyebrow: z.string().trim().max(80),
+  category: z.string().trim().min(2).max(50),
+  authorId: z.literal("codeformattertools-editorial").default("codeformattertools-editorial"),
+  datePublished: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+  relatedTools: z.array(z.string()).max(12).refine(ids => ids.every(id => toolIds.has(id as never)), "Unknown related tool."),
+  readMinutes: z.number().int().min(1).max(180),
+  image: z.string().trim().max(1000),
+  imageAlt: z.string().trim().max(240),
+  imagePosition: z.string().trim().max(60).default("center center"),
+  intro: z.array(z.string().trim().max(5000)).max(12),
+  sections: z.array(z.object({
+    heading: z.string().trim().max(180),
+    blocks: z.array(draftBlogBlockSchema).max(100)
+  })).max(40),
+  faqs: z.array(z.object({
+    question: z.string().trim().max(240),
+    answer: z.string().trim().max(3000)
+  })).max(30).default([]),
+  noindex: z.boolean().default(false),
+  changeSummary: z.string().trim().max(300).default("")
 });
 
 export type BlogPostInput = z.infer<typeof blogPostInputSchema>;

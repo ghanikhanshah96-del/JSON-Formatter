@@ -11,6 +11,10 @@ import { getBlogRedirect, getPublishedBlogPost } from "@/lib/blog-repository";
 
 type Props = { params: Promise<{ slug: string }> };
 
+function absoluteImageUrl(image: string) {
+  return new URL(image, siteOrigin()).toString();
+}
+
 export function generateStaticParams() {
   return blogPosts.map(post => ({ slug: post.slug }));
 }
@@ -20,13 +24,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return {};
   const editorialProfile = getEditorialProfile(post.authorId);
   const editorialProfileUrl = `${siteOrigin()}${editorialProfile.path}`;
+  const pageTitle = post.metaTitle || `${post.title} | ${siteConfig.name}`;
+  const image = absoluteImageUrl(post.image);
   return {
-    title: `${post.metaTitle ?? post.title} | ${siteConfig.name}`,
+    title: pageTitle,
     description: post.description,
     alternates: { canonical: `/blog/${post.slug}` },
-    robots: post.noindex ? { index: false, follow: false } : undefined,
+    robots: post.noindex ? { index: false, follow: true } : undefined,
     openGraph: {
-      title: `${post.metaTitle ?? post.title} | ${siteConfig.name}`,
+      title: pageTitle,
       description: post.description,
       url: `${siteOrigin()}/blog/${post.slug}`,
       siteName: siteConfig.name,
@@ -35,8 +41,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       modifiedTime: post.dateModified,
       authors: [editorialProfileUrl],
       section: post.category,
-      images: [{ url: post.image, width: 1200, height: 675, alt: post.imageAlt }]
-    }
+      images: [{ url: image, width: 1200, height: 675, alt: post.imageAlt }]
+    },
+    twitter: { card: "summary_large_image", title: pageTitle, description: post.description, images: [image] }
   };
 }
 
@@ -56,7 +63,7 @@ export default async function BlogPostPage({ params }: Props) {
     "@type": "BlogPosting",
     headline: post.title,
     description: post.description,
-    image: [`${siteOrigin()}${post.image}`],
+    image: [absoluteImageUrl(post.image)],
     datePublished: post.datePublished,
     dateModified: post.dateModified,
     articleSection: post.category,

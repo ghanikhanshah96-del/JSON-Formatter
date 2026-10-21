@@ -14,19 +14,37 @@ export type AdminPostEditorValue = BlogPostInput & { status: "draft" | "publishe
 export async function getAdminPosts() {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.from("blog_posts")
-    .select("id,slug,title,status,category_slug,date_published,date_modified,revision")
+    .select("id,slug,title,status,category_slug,date_published,date_modified,revision,draft_payload")
     .order("date_modified", { ascending: false });
   if (error) throw new Error(error.message);
-  return data as AdminPostSummary[];
+  return data.map(post => {
+    const draft = post.status !== "published" && post.draft_payload && typeof post.draft_payload === "object"
+      ? post.draft_payload as { title?: string; slug?: string; category?: string }
+      : null;
+    return {
+      id: post.id,
+      slug: draft?.slug || post.slug,
+      title: draft?.title || post.title,
+      status: post.status,
+      category_slug: draft?.category || post.category_slug,
+      date_published: post.date_published,
+      date_modified: post.date_modified,
+      revision: post.revision
+    } as AdminPostSummary;
+  });
 }
 
 export async function getAdminPost(id: string): Promise<AdminPostEditorValue | null> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.from("blog_posts")
-    .select("id,slug,title,meta_title,description,eyebrow,category_slug,author_id,content_json,image_url,image_alt,image_position,read_minutes,status,noindex,date_published,revision,blog_post_tools(tool_id,sort_order),blog_faqs(question,answer,sort_order)")
+    .select("id,slug,title,meta_title,description,eyebrow,category_slug,author_id,content_json,draft_payload,image_url,image_alt,image_position,read_minutes,status,noindex,date_published,revision,blog_post_tools(tool_id,sort_order),blog_faqs(question,answer,sort_order)")
     .eq("id", id).maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) return null;
+  if (data.draft_payload && data.status !== "published") {
+    const draft = data.draft_payload as unknown as BlogPostInput;
+    return { ...draft, id: data.id, expectedRevision: data.revision, status: data.status };
+  }
   const content = data.content_json as { intro?: string[]; sections?: { heading: string; blocks: BlogContentBlock[] }[] };
   return {
     id: data.id,

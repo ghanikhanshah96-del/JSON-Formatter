@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { blogPostInputSchema, estimateReadMinutes, extractFaqs } from "./blog-schema.ts";
+import { blogPostDraftInputSchema, blogPostInputSchema, estimateReadMinutes, extractFaqs } from "./blog-schema.ts";
 import { blogPosts } from "./learn-guides.ts";
 
 function validInput() {
@@ -29,6 +29,27 @@ function validInput() {
 
 test("accepts a valid structured blog post", () => {
   assert.equal(blogPostInputSchema.safeParse(validInput()).success, true);
+});
+
+test("accepts incomplete drafts while keeping them ineligible for publishing", () => {
+  const draft = {
+    ...validInput(),
+    slug: "",
+    title: "Started",
+    description: "",
+    image: "",
+    imageAlt: "",
+    intro: [""],
+    sections: [{ heading: "", blocks: [{ type: "paragraph" as const, text: "" }] }],
+    faqs: [{ question: "", answer: "" }]
+  };
+  assert.equal(blogPostDraftInputSchema.safeParse(draft).success, true);
+  assert.equal(blogPostInputSchema.safeParse(draft).success, false);
+});
+
+test("draft validation still enforces safety limits", () => {
+  assert.equal(blogPostDraftInputSchema.safeParse({ ...validInput(), title: "x".repeat(141) }).success, false);
+  assert.equal(blogPostDraftInputSchema.safeParse({ ...validInput(), relatedTools: ["made-up-tool"] }).success, false);
 });
 
 test("rejects unsafe link protocols", () => {
