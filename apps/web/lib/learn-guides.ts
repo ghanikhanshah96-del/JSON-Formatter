@@ -1,7 +1,7 @@
 export type BlogContentBlock =
   | { type: "paragraph"; text: string; links?: { text: string; href: string }[] }
   | { type: "subheading"; text: string }
-  | { type: "code"; code: string; language: "json" | "javascript" | "text" }
+  | { type: "code"; code: string; language: "json" | "javascript" | "sql" | "text" }
   | { type: "list"; items: string[]; ordered?: boolean };
 
 export type BlogPost = {

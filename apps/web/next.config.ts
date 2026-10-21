@@ -31,6 +31,8 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  agentRules: false,
+  allowedDevOrigins: ["127.0.0.1"],
   images: {
     dangerouslyAllowLocalIP: configuredSupabasePattern?.hostname === "127.0.0.1" || configuredSupabasePattern?.hostname === "localhost",
     remotePatterns: [

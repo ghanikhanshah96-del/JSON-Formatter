@@ -3,6 +3,10 @@ import Link from "next/link";
 import { FaqAccordion } from "./faq-accordion";
 import type { BlogContentBlock, BlogPost } from "@/lib/learn-guides";
 
+function displayListItem(value: string) {
+  return value.trim().replace(/^(?:[-*+]|•|·|●|◦|▪|)\s+/, "").trim();
+}
+
 function renderLinkedText(text: string, links: { text: string; href: string }[] = []): ReactNode[] {
   const nodes: ReactNode[] = [];
   let cursor = 0;
@@ -24,7 +28,7 @@ function renderBlocks(blocks: BlogContentBlock[], keyPrefix: string) {
     if (block.type === "code") return <pre className="blog-code" key={`${keyPrefix}-code-${index}`}><code>{block.code}</code></pre>;
     const List = block.ordered ? "ol" : "ul";
     const isCompact = block.items.length >= 4 && block.items.every(item => item.length <= 72);
-    return <List className={`seo-list${isCompact ? " seo-list-compact" : ""}`} key={`${keyPrefix}-list-${index}`}>{block.items.map((item, itemIndex) => <li key={`${item}-${itemIndex}`}>{item}</li>)}</List>;
+    return <List className={`seo-list${isCompact ? " seo-list-compact" : ""}`} key={`${keyPrefix}-list-${index}`}>{block.items.map((item, itemIndex) => <li key={`${item}-${itemIndex}`}>{displayListItem(item)}</li>)}</List>;
   });
 }
 

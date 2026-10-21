@@ -65,7 +65,7 @@ export function MfaForm() {
     {error ? <div className="admin-error" role="alert">{error}</div> : null}
     {enrollment ? <div>
       <p>Scan this QR code with your authenticator app, then enter the six-digit code.</p>
-      <Image alt="TOTP enrollment QR code" height={220} src={enrollment.qrCode} unoptimized width={220} />
+      <Image alt="TOTP enrollment QR code" height={220} src={enrollment.qrCode.trimEnd()} unoptimized width={220} />
       <p className="admin-help">Manual key: <span className="admin-code">{enrollment.secret}</span></p>
     </div> : <p>{busy ? "Preparing verification…" : "Enter the current code from your authenticator app."}</p>}
     <div className="admin-field"><label htmlFor="code">Authentication code</label><input autoComplete="one-time-code" id="code" inputMode="numeric" maxLength={6} pattern="[0-9]{6}" value={code} onChange={event => setCode(event.target.value.replace(/\D/g, ""))} required /></div>

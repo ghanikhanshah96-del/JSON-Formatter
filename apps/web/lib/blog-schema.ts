@@ -16,7 +16,7 @@ const linkSchema = z.object({ text: z.string().trim().min(1).max(160), href: saf
 export const blogBlockSchema: z.ZodType<BlogContentBlock> = z.discriminatedUnion("type", [
   z.object({ type: z.literal("paragraph"), text: z.string().trim().min(1).max(12000), links: z.array(linkSchema).max(12).optional() }),
   z.object({ type: z.literal("subheading"), text: z.string().trim().min(1).max(180) }),
-  z.object({ type: z.literal("code"), code: z.string().min(1).max(30000), language: z.enum(["json", "javascript", "text"]) }),
+  z.object({ type: z.literal("code"), code: z.string().min(1).max(30000), language: z.enum(["json", "javascript", "sql", "text"]) }),
   z.object({ type: z.literal("list"), items: z.array(z.string().trim().min(1).max(800)).min(1).max(40), ordered: z.boolean().optional() })
 ]);
 

@@ -6,7 +6,7 @@ export default async function NewPostPage() {
   await requireCmsUser();
   const today = new Date().toISOString().slice(0, 10);
   return <main className="admin-main">
-    <div className="admin-heading"><div><h1>New article</h1><p className="admin-muted">Build a structured article that keeps the public blog layout consistent.</p></div></div>
+    <div className="admin-heading"><div><h1>New article</h1><p className="admin-muted">Paste a complete document, add its cover image, review the generated preview, and publish in the standard blog format.</p></div></div>
     <BlogPostEditor
       categoryOptions={categories.map(item => ({ id: item.id, name: item.name.replace(/ tools$/i, "") }))}
       toolOptions={tools.map(item => ({ id: item.id, name: item.name }))}
