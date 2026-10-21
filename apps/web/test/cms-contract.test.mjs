@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const migrationUrl = new URL("../../../supabase/migrations/202610200001_blog_cms.sql", import.meta.url);
+const archiveMigrationUrl = new URL("../../../supabase/migrations/202610210001_atomic_archive_post.sql", import.meta.url);
 const configUrl = new URL("../../../supabase/config.toml", import.meta.url);
 const envUrl = new URL("../../../.env.example", import.meta.url);
 
@@ -14,6 +15,15 @@ test("CMS migration enables RLS for every exposed editorial table", async () => 
   assert.match(sql, /auth\.jwt\(\)->>'aal'.*'aal2'/s);
   const config = await readFile(configUrl, "utf8");
   assert.match(config, /enable_signup = false/i);
+});
+
+test("post archive is an atomic revision-checked database operation", async () => {
+  const sql = await readFile(archiveMigrationUrl, "utf8");
+  assert.match(sql, /for update/i);
+  assert.match(sql, /Revision conflict/i);
+  assert.match(sql, /insert into public\.blog_revisions/i);
+  assert.match(sql, /insert into public\.audit_events/i);
+  assert.match(sql, /security invoker/i);
 });
 
 test("dashboard environment contract documents every required secret and rollout flag", async () => {

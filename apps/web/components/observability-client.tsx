@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { Analytics, type BeforeSendEvent } from "@vercel/analytics/next";
-import { track as vercelTrack } from "@vercel/analytics";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { setAnalyticsProvider, type AnalyticsEvent } from "@codeformattools/analytics";
 
@@ -18,10 +16,6 @@ function cleanUrl(value: string): string {
   } catch {
     return value.split("?")[0]?.split("#")[0] ?? value;
   }
-}
-
-function cleanAnalyticsEvent(event: BeforeSendEvent): BeforeSendEvent {
-  return { ...event, url: cleanUrl(event.url) };
 }
 
 function cleanSpeedEvent<T extends { url: string }>(event: T): T {
@@ -41,13 +35,17 @@ function eventProperties(event: AnalyticsEvent): Record<string, string | number 
 export function ObservabilityClient() {
   useEffect(() => {
     if (!analyticsEnabled) return;
-    setAnalyticsProvider({ track: event => vercelTrack(event.name, eventProperties(event)) });
+    setAnalyticsProvider({
+      track: event => {
+        const gtag = (window as typeof window & {
+          gtag?: (command: "event", name: string, properties: Record<string, string | number | boolean | null | undefined>) => void;
+        }).gtag;
+        gtag?.("event", event.name, eventProperties(event));
+      },
+    });
   }, []);
 
   if (!analyticsEnabled) return null;
 
-  return <>
-    <Analytics beforeSend={cleanAnalyticsEvent} />
-    <SpeedInsights beforeSend={cleanSpeedEvent} />
-  </>;
+  return <SpeedInsights beforeSend={cleanSpeedEvent} />;
 }

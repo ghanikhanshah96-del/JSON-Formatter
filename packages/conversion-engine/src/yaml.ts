@@ -39,6 +39,7 @@ export function fromYaml(input: string, mode: string): { value: Value; diagnosti
 }
 
 export function toYaml(value: Value, mode: string): { output: string; diagnostics: Diagnostic[] } {
+  void mode; // Reserved for parity with other conversion targets and future YAML output modes.
   const convert = (item: Value): Node => {
     const base = { tagged: false };
     switch (item.kind) {

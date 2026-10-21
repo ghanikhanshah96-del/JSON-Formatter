@@ -330,7 +330,7 @@ We may receive personal information when you submit our contact form or otherwis
 We use this information primarily to process and respond to your communication and for related operational, legal, or security purposes. Please do not send secrets or full confidential production payloads through the contact form.
 
 ## 6. Website Analytics and Performance Measurement
-CodeFormatterTools currently uses Vercel Web Analytics, Vercel Speed Insights, and Google Analytics to help measure website usage and performance. Analytics or performance events may include information relating to:
+CodeFormatterTools currently uses Vercel Speed Insights and Google Analytics to help measure website usage and performance. Analytics or performance events may include information relating to:
 
 - Page views
 - Tool visits
@@ -360,7 +360,6 @@ When you visit CodeFormatterTools, your browser may make network requests necess
 - JavaScript
 - Stylesheets
 - Fonts or other static assets
-- Vercel analytics scripts
 - Vercel performance scripts
 - Google Analytics scripts and measurement endpoints
 - Advertising resources if advertising is enabled

@@ -16,7 +16,7 @@ The production brand is **Code Format Tools** and the production origin is `http
 - XML formatter and validator with DOCTYPE blocking, no entity expansion, and depth and tag limits
 - CSV parser and writer with row, column, malformed quote, uneven row, duplicate header, output, and formula escaping guards
 - JSON/YAML/XML/CSV converters with explicit lossless, best effort, and compatibility modes where mappings can lose information
-- Vercel Web Analytics and Speed Insights through a privacy-safe analytics abstraction
+- Google Analytics and Vercel Speed Insights through a privacy-safe analytics abstraction
 
 ## Run
 

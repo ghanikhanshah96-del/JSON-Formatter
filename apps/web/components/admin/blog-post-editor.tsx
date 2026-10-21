@@ -47,8 +47,11 @@ export function BlogPostEditor({ initialValue, toolOptions, categoryOptions }: {
     const timer = window.setTimeout(() => {
       setNotice(state.status === "published" ? "Published successfully." : "Draft saved.");
       setValue(current => ({ ...current, id: state.id ?? current.id, expectedRevision: state.revision ?? current.expectedRevision, status: state.status as EditorValue["status"] ?? current.status }));
-      if (!initialValue.id && state.id) router.replace(`/admin/posts/${state.id}/edit?saved=1`);
-      router.refresh();
+      if (!initialValue.id && state.id) {
+        router.replace(`/admin/posts/${state.id}/edit?saved=1`);
+      } else {
+        router.refresh();
+      }
     }, 0);
     return () => window.clearTimeout(timer);
   }, [state, initialValue.id, router]);

@@ -4,6 +4,7 @@ import { getCmsUser } from "@/lib/cms-auth";
 import "./admin.css";
 
 export const metadata = { title: "Editorial dashboard", robots: { index: false, follow: false } };
+export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const user = await getCmsUser();

@@ -26,6 +26,7 @@ export async function updateUserAction(formData: FormData) {
   const admin = createSupabaseAdminClient();
   const role = formData.get("role") === "owner" ? "owner" : "editor";
   const active = formData.get("active") === "true";
+  if (userId === owner.id && role !== "owner") throw new Error("You cannot remove your own owner role.");
   const result = await admin.from("profiles").update({ role, active }).eq("user_id", userId);
   if (result.error) throw new Error(result.error.message);
   await admin.from("audit_events").insert({ actor_id: owner.id, action: "user.updated", entity_type: "profile", entity_id: userId, metadata: { role, active } });

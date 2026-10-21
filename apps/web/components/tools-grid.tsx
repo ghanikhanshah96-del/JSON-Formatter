@@ -22,13 +22,12 @@ export function ToolsGrid({ tools, categories }: { tools: Tool[]; categories: re
           defaultChecked={index === 0}
         />
       ))}
-      <div className="tools-filter" role="tablist" aria-label="Tool categories">
+      <div className="tools-filter" role="group" aria-label="Tool categories">
         {filters.map(filter => (
           <label
             key={filter.id}
             htmlFor={`tools-cat-${filter.id}`}
             className="tools-filter-chip"
-            role="tab"
           >
             {filter.name}
           </label>

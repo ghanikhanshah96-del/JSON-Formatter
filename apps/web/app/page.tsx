@@ -1,5 +1,6 @@
 /* eslint-disable react/no-unescaped-entities -- The hero displays literal JSON syntax. */
 import type { Metadata } from "next";
+import Image from "next/image";
 import { homeSchemas, siteConfig, siteOrigin } from "@codeformattools/seo";
 import { categories, homeSeoCopy, tools } from "@codeformattools/tool-registry";
 import { FaqAccordion } from "@/components/faq-accordion";
@@ -58,7 +59,7 @@ export default async function Home() {
         {featuredPosts.map(post => post ? (
           <a className="home-guide-card" href={`/blog/${post.slug}`} key={post.slug}>
             <div className="home-guide-media">
-              <img src={post.image} alt="" width={1200} height={675} loading="lazy" decoding="async" aria-hidden="true" />
+              <Image src={post.image} alt="" width={1200} height={675} sizes="(max-width: 650px) calc(100vw - 48px), (max-width: 900px) 50vw, 380px" aria-hidden="true" />
             </div>
             <div className="home-guide-body">
               <div className="home-guide-meta">

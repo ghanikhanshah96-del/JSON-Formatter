@@ -73,7 +73,7 @@ test("trust pages, contact form, and footer links are launch ready", async ({ pa
 
   await page.goto("/privacy-policy");
   await expect(page.getByText("Tool input and generated results generally remain within your browser session.")).toBeVisible();
-  await expect(page.getByText(/currently uses Vercel Web Analytics, Vercel Speed Insights, and Google Analytics/)).toBeVisible();
+  await expect(page.getByText(/currently uses Vercel Speed Insights and Google Analytics/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Google AdSense and Advertising" })).toBeVisible();
   const policyListColumns = await page.locator(".site-policy-page .site-page-sections ul").first().evaluate(el =>
     getComputedStyle(el).gridTemplateColumns.split(" ").length

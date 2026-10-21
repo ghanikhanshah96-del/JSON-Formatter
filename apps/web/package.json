@@ -23,7 +23,6 @@
     "@codeformattools/worker-runtime": "workspace:*",
     "@supabase/ssr": "0.7.0",
     "@supabase/supabase-js": "2.76.1",
-    "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "critters": "^0.0.25",
     "next": "16.3.3",

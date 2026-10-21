@@ -3,9 +3,17 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { siteConfig } from "@codeformattools/seo";
-import { categories } from "@codeformattools/tool-registry";
 import { HomeBrandLink } from "@/components/home-brand-link";
 import { ThemeToggle } from "@/components/theme-toggle";
+
+const CATEGORY_TITLES: Record<string, string> = {
+  json: "JSON Tools",
+  sql: "SQL Tools",
+  yaml: "YAML Tools",
+  xml: "XML Tools",
+  csv: "CSV Tools",
+  converters: "Converters",
+};
 
 const NAV_LINKS = [
   { href: "/tools", label: "Tools", hint: "Format, validate, convert", icon: "grid" },
@@ -98,7 +106,7 @@ function titleFromPath(pathname: string) {
   if (TOOL_TITLES[pathname]) return TOOL_TITLES[pathname];
   if (pathname === "/tools") return "All Developer Tools";
   if (pathname.startsWith("/tools/")) {
-    return categories.find(category => pathname === `/tools/${category.id}`)?.name ?? "Developer Tools";
+    return CATEGORY_TITLES[pathname.slice("/tools/".length)] ?? "Developer Tools";
   }
   if (pathname.startsWith("/blog")) return "Blog";
   if (pathname === "/about-us") return "About Us";
@@ -176,11 +184,11 @@ export function SiteHeader() {
   return (
     <header className={`site-header${open ? " nav-open" : ""}`}>
       <div className="container header-inner">
-        <HomeBrandLink className="brand" aria-label={`${siteConfig.name} home`} href="/">
+        <HomeBrandLink className="brand" href="/">
           <span className="brand-mark" aria-hidden="true">{`{ }`}</span>
           <span className="brand-text">
             <span className="brand-text-full">{siteConfig.name}</span>
-            <span className="brand-text-compact" aria-hidden="true">
+            <span className="brand-text-compact">
               CFT
             </span>
             <span className="brand-dot" aria-hidden="true">
@@ -241,7 +249,6 @@ export function SiteHeader() {
             className="mobile-drawer-brand"
             href="/"
             onClick={close}
-            aria-label={`${siteConfig.name} home`}
           >
             <span className="brand-mark" aria-hidden="true">{`{ }`}</span>
             <span>

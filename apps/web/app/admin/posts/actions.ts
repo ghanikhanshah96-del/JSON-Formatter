@@ -46,16 +46,15 @@ export async function savePostAction(_previous: SavePostState, formData: FormDat
 }
 
 export async function archivePostAction(formData: FormData) {
-  const user = await authorizeCmsMutation();
+  await authorizeCmsMutation();
   const id = String(formData.get("id") ?? "");
   const revision = Number(formData.get("revision"));
   const supabase = await createSupabaseServerClient();
-  const { data: current } = await supabase.from("blog_posts").select("*").eq("id", id).eq("revision", revision).maybeSingle();
-  if (!current) throw new Error("The post changed before it could be archived.");
-  await supabase.from("blog_revisions").insert({ post_id: id, revision_no: revision, snapshot: current, change_summary: "Archived", created_by: user.id });
-  const { error } = await supabase.from("blog_posts").update({ status: "archived", updated_by: user.id, revision: revision + 1 }).eq("id", id).eq("revision", revision);
-  if (error) throw new Error(error.message);
-  await supabase.from("audit_events").insert({ actor_id: user.id, action: "post.archived", entity_type: "blog_post", entity_id: id, metadata: { revision: revision + 1 } });
+  const { error } = await supabase.rpc("cms_archive_post", { p_id: id, p_expected_revision: revision });
+  if (error) {
+    if (error.message.includes("Revision conflict")) throw new Error("The post changed before it could be archived.");
+    throw new Error(error.message);
+  }
   updateTag(BLOG_CACHE_TAG); revalidatePath("/blog"); revalidatePath("/sitemap.xml"); revalidatePath("/blog/rss.xml");
   redirect("/admin/posts?archived=1");
 }

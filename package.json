@@ -20,6 +20,8 @@
     "benchmark:json": "node --experimental-strip-types tests/performance/json-benchmark.mjs"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@codeformattools/tool-registry": "workspace:*",
     "@playwright/test": "^1.63.0",
     "browserslist": "^4.29.2",
     "eslint": "9.39.5",

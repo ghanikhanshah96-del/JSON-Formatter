@@ -18,20 +18,31 @@ export function MfaForm() {
   useEffect(() => {
     let active = true;
     async function prepare() {
-      const supabase = createSupabaseBrowserClient();
-      const { data } = await supabase.auth.mfa.listFactors();
-      const verified = data?.totp.find((item: { id: string; status: string }) => item.status === "verified");
-      if (!active) return;
-      if (verified) setFactorId(verified.id);
-      else {
-        const result = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: "CodeFormatterTools Editorial" });
-        if (result.error) setError(result.error.message);
-        else if (result.data) {
-          setFactorId(result.data.id);
-          setEnrollment({ id: result.data.id, qrCode: result.data.totp.qr_code, secret: result.data.totp.secret });
+      try {
+        const supabase = createSupabaseBrowserClient();
+        const { data, error: listError } = await supabase.auth.mfa.listFactors();
+        if (listError) throw listError;
+        const verified = data?.totp.find((item: { id: string; status: string }) => item.status === "verified");
+        if (!active) return;
+        if (verified) {
+          setFactorId(verified.id);
+        } else {
+          for (const factor of data?.totp.filter((item: { status: string }) => item.status === "unverified") ?? []) {
+            const removal = await supabase.auth.mfa.unenroll({ factorId: factor.id });
+            if (removal.error) throw removal.error;
+          }
+          const result = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: "CodeFormatterTools Editorial" });
+          if (result.error) throw result.error;
+          if (result.data && active) {
+            setFactorId(result.data.id);
+            setEnrollment({ id: result.data.id, qrCode: result.data.totp.qr_code, secret: result.data.totp.secret });
+          }
         }
+      } catch {
+        if (active) setError("Unable to prepare multi-factor authentication. Refresh the page and try again.");
+      } finally {
+        if (active) setBusy(false);
       }
-      setBusy(false);
     }
     void prepare();
     return () => { active = false; };

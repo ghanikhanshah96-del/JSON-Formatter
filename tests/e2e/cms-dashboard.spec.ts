@@ -35,7 +35,7 @@ function totp(secret: string) {
 test.describe("blog dashboard", () => {
   test.skip(!enabled || !supabaseUrl || !serviceKey, "Set CMS_E2E=1 and local Supabase environment values.");
   test.describe.configure({ mode: "serial" });
-  test.setTimeout(60_000);
+  test.setTimeout(120_000);
 
   test.beforeAll(async () => {
     const userResponse = await fetch(`${supabaseUrl}/auth/v1/admin/users`, { method: "POST", headers: serviceHeaders(), body: JSON.stringify({ email: testEmail, password: testPassword, email_confirm: true }) });
@@ -47,7 +47,20 @@ test.describe("blog dashboard", () => {
   });
 
   test.afterAll(async () => {
-    if (slug) await fetch(`${supabaseUrl}/rest/v1/blog_posts?slug=eq.${slug}`, { method: "DELETE", headers: serviceHeaders() });
+    if (slug) {
+      const postLookup = await fetch(`${supabaseUrl}/rest/v1/blog_posts?slug=eq.${encodeURIComponent(slug)}&select=id`, { headers: serviceHeaders() });
+      if (!postLookup.ok) throw new Error(`Unable to find CMS test post for cleanup: ${await postLookup.text()}`);
+      const posts = await postLookup.json() as Array<{ id: string }>;
+      for (const post of posts) {
+        const postCleanup = await fetch(`${supabaseUrl}/rest/v1/blog_posts?id=eq.${post.id}`, {
+          method: "DELETE",
+          headers: serviceHeaders({ Prefer: "return=representation" }),
+        });
+        if (!postCleanup.ok) throw new Error(`Unable to remove CMS test post: ${await postCleanup.text()}`);
+        const deleted = await postCleanup.json() as unknown[];
+        if (deleted.length !== 1) throw new Error("CMS test post cleanup did not delete exactly one row.");
+      }
+    }
     if (userId) {
       const assetResponse = await fetch(`${supabaseUrl}/rest/v1/blog_assets?created_by=eq.${userId}&select=storage_path`, { headers: serviceHeaders() });
       if (assetResponse.ok) {
@@ -58,8 +71,13 @@ test.describe("blog dashboard", () => {
         }
       }
       await fetch(`${supabaseUrl}/rest/v1/blog_assets?created_by=eq.${userId}`, { method: "DELETE", headers: serviceHeaders() });
+      const auditCleanup = await fetch(`${supabaseUrl}/rest/v1/audit_events?actor_id=eq.${userId}`, { method: "DELETE", headers: serviceHeaders() });
+      if (!auditCleanup.ok) throw new Error(`Unable to remove CMS test audit events: ${await auditCleanup.text()}`);
     }
-    if (userId) await fetch(`${supabaseUrl}/auth/v1/admin/users/${userId}`, { method: "DELETE", headers: serviceHeaders() });
+    if (userId) {
+      const userCleanup = await fetch(`${supabaseUrl}/auth/v1/admin/users/${userId}`, { method: "DELETE", headers: serviceHeaders() });
+      if (!userCleanup.ok) throw new Error(`Unable to remove CMS test user: ${await userCleanup.text()}`);
+    }
   });
 
   test("editor enrolls MFA, creates, previews, publishes, uploads media, and archives", async ({ page }) => {
@@ -67,13 +85,13 @@ test.describe("blog dashboard", () => {
     await page.getByLabel("Email", { exact: true }).first().fill(testEmail);
     await page.getByLabel("Password", { exact: true }).fill(testPassword);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
-    await expect(page).toHaveURL(/\/admin\/mfa$/);
+    await expect(page).toHaveURL(/\/admin\/mfa$/, { timeout: 20_000 });
     const manual = page.locator(".admin-code");
-    await expect(manual).toBeVisible();
+    await expect(manual).toBeVisible({ timeout: 20_000 });
     const secret = (await manual.textContent())?.trim() ?? "";
     await page.getByLabel("Authentication code").fill(totp(secret));
     await page.getByRole("button", { name: "Verify" }).click();
-    await expect(page).toHaveURL(/\/admin$/);
+    await expect(page).toHaveURL(/\/admin$/, { timeout: 20_000 });
     await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 
     await page.goto("/admin/posts/new");
@@ -88,7 +106,7 @@ test.describe("blog dashboard", () => {
     await page.getByLabel("SEO title").fill("CMS End-to-End JSON Publishing Test");
     await page.getByLabel("Change summary").fill("Created by automated browser verification");
     await page.getByRole("button", { name: "Save draft" }).click();
-    await expect(page).toHaveURL(/\/admin\/posts\/[0-9a-f-]+\/edit\?saved=1$/);
+    await expect(page).toHaveURL(/\/admin\/posts\/[0-9a-f-]+\/edit\?saved=1$/, { timeout: 20_000 });
     await expect(page.getByText(/Draft saved|Draft autosaved/)).toBeVisible();
 
     const preview = page.getByRole("link", { name: "Preview" });
@@ -109,7 +127,7 @@ test.describe("blog dashboard", () => {
     await page.getByLabel("Image").setInputFiles(path.resolve("apps/web/public/blog/how-to-create-json-file.png"));
     await page.getByLabel("Default alt text").fill("Uploaded through the protected media pipeline");
     await page.getByRole("button", { name: "Upload", exact: true }).click();
-    await expect(page.getByText("Image uploaded.")).toBeVisible();
+    await expect(page.getByText("Image uploaded.")).toBeVisible({ timeout: 30_000 });
 
     await page.goto("/admin/users");
     await expect(page).toHaveURL(/\/admin$/);

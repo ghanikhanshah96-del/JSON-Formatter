@@ -1,16 +1,23 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import Script from "next/script";
+
 const GOOGLE_ANALYTICS_ID = "G-MZTR2SCLZS";
 
 export function GoogleAnalytics() {
+  const pathname = usePathname();
+  if (pathname.startsWith("/admin")) return null;
   return (
     <>
-      <script
-        async
+      <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`}
+        strategy="lazyOnload"
       />
-      <script
+      <Script
         id="google-analytics"
-        dangerouslySetInnerHTML={{
-          __html: `
+        strategy="afterInteractive"
+      >{`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
@@ -20,9 +27,7 @@ export function GoogleAnalytics() {
             allow_ad_personalization_signals: false,
             page_location: window.location.origin + window.location.pathname
           });
-        `
-        }}
-      />
+        `}</Script>
     </>
   );
 }
