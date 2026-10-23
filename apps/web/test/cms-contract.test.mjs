@@ -4,6 +4,7 @@ import test from "node:test";
 
 const migrationUrl = new URL("../../../supabase/migrations/202610200001_blog_cms.sql", import.meta.url);
 const archiveMigrationUrl = new URL("../../../supabase/migrations/202610210001_atomic_archive_post.sql", import.meta.url);
+const adminSecurityMigrationUrl = new URL("../../../supabase/migrations/202610220002_admin_security_rbac_media.sql", import.meta.url);
 const configUrl = new URL("../../../supabase/config.toml", import.meta.url);
 const envUrl = new URL("../../../.env.example", import.meta.url);
 
@@ -24,6 +25,21 @@ test("post archive is an atomic revision-checked database operation", async () =
   assert.match(sql, /insert into public\.blog_revisions/i);
   assert.match(sql, /insert into public\.audit_events/i);
   assert.match(sql, /security invoker/i);
+});
+
+test("admin security migration enforces onboarding, RBAC, and server-only media writes", async () => {
+  const sql = await readFile(adminSecurityMigrationUrl, "utf8");
+  assert.match(sql, /add column if not exists password_set_at timestamptz/i);
+  assert.match(sql, /password_set_at is not null/s);
+  assert.match(sql, /coalesce\(\(select auth\.jwt\(\)->>'aal'\), ''\) = 'aal2'/s);
+  assert.match(sql, /revoke insert, update, delete on public\.blog_assets from authenticated/i);
+  for (const policy of ["blog_media_editor_insert", "blog_media_editor_update", "blog_media_editor_delete"]) {
+    assert.match(sql, new RegExp(`drop policy if exists ${policy} on storage\\.objects`, "i"));
+  }
+  assert.match(sql, /pg_advisory_xact_lock/i);
+  assert.match(sql, /final active owner cannot be demoted or deactivated/i);
+  assert.match(sql, /blog_assets_guard_references/i);
+  assert.match(sql, /blog_posts_guard_asset_availability/i);
 });
 
 test("dashboard environment contract documents every required secret and rollout flag", async () => {

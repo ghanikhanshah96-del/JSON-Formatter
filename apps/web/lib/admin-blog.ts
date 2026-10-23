@@ -74,7 +74,7 @@ export async function getAdminPost(id: string): Promise<AdminPostEditorValue | n
 export async function getAdminAssets() {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.from("blog_assets")
-    .select("id,public_url,original_name,mime_type,width,height,size_bytes,default_alt,created_at,deleted_at")
+    .select("id,public_url,original_name,mime_type,width,height,size_bytes,default_alt,created_by,created_at,deleted_at")
     .is("deleted_at", null).order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return data;
@@ -92,7 +92,7 @@ export async function getAdminAudit() {
 export async function getAdminProfiles() {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.from("profiles")
-    .select("user_id,email,display_name,role,active,created_at").order("created_at");
+    .select("user_id,email,display_name,role,active,password_set_at,created_at").order("created_at");
   if (error) throw new Error(error.message);
   return data;
 }

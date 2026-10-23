@@ -387,15 +387,16 @@ test("contact API returns 503 when Resend is not configured", async ({ request }
   }
 });
 
-test("ad regions only mount when AdSense is configured", async ({ page }) => {
-  const requested: string[] = [];
-  page.on("request", request => requested.push(request.url()));
+test("AdSense loader mounts once and ad regions only mount when configured", async ({ page }) => {
   await page.goto("/json-formatter");
+  const loader = page.locator('script#google-adsense[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]');
+  await expect(loader).toHaveCount(1);
+  await expect(loader).toHaveAttribute("src", /client=ca-pub-9309280380486229/);
+  await expect(loader).toHaveAttribute("crossorigin", "anonymous");
   const slot = page.locator(".ad-slot-placeholder");
   const count = await slot.count();
   if (count > 0) {
     await expect(slot).toHaveAttribute("data-ads-provider", "google");
     expect(await slot.evaluate(element => (element as HTMLElement).offsetHeight)).toBeGreaterThanOrEqual(90);
   }
-  expect(requested.some(url => /googlesyndication|doubleclick|googleadservices|adsystem/i.test(url))).toBe(false);
 });

@@ -4,6 +4,7 @@ import { siteConfig, siteOrigin } from "@codeformattools/seo";
 import { HomeBrandLink } from "@/components/home-brand-link";
 import { AuthFragmentBridge } from "@/components/auth-fragment-bridge";
 import { GoogleAnalytics } from "@/components/google-analytics";
+import { GoogleAdSense } from "@/components/google-adsense";
 import { Observability } from "@/components/observability";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning className={`${sora.variable} ${ibmPlexMono.variable}`}>
       <head>
         <GoogleAnalytics />
+        <GoogleAdSense />
       </head>
       <body style={{ fontFamily: "var(--font-sora), var(--font-sans)" }} suppressHydrationWarning>
         <AuthFragmentBridge />

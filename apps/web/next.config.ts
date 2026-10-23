@@ -11,7 +11,9 @@ const scriptSources = [
   ...(process.env.NODE_ENV === "production" ? [] : ["'unsafe-eval'"]),
   "https://va.vercel-scripts.com",
   "https://*.vercel-scripts.com",
-  "https://www.googletagmanager.com"
+  "https://www.googletagmanager.com",
+  "https://pagead2.googlesyndication.com",
+  "https://*.adtrafficquality.google"
 ].join(" ");
 
 const contentSecurityPolicy = [
@@ -19,13 +21,14 @@ const contentSecurityPolicy = [
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
-  `img-src 'self' data: https://*.supabase.co ${configuredSupabaseOrigin} https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com`,
+  `img-src 'self' data: https://*.supabase.co ${configuredSupabaseOrigin} https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://*.adtrafficquality.google`,
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
   `script-src ${scriptSources}`,
   "script-src-attr 'none'",
   "form-action 'self'",
-  `connect-src 'self' https://*.supabase.co wss://*.supabase.co ${configuredSupabaseOrigin} https://vitals.vercel-insights.com https://*.vercel-insights.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com`,
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co ${configuredSupabaseOrigin} https://vitals.vercel-insights.com https://*.vercel-insights.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://*.adtrafficquality.google`,
+  "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com https://*.adtrafficquality.google",
   "worker-src 'self' blob:",
   "manifest-src 'self'"
 ].join("; ");
@@ -33,6 +36,7 @@ const contentSecurityPolicy = [
 const nextConfig: NextConfig = {
   agentRules: false,
   allowedDevOrigins: ["127.0.0.1"],
+  serverExternalPackages: ["sharp"],
   images: {
     dangerouslyAllowLocalIP: configuredSupabasePattern?.hostname === "127.0.0.1" || configuredSupabasePattern?.hostname === "localhost",
     remotePatterns: [

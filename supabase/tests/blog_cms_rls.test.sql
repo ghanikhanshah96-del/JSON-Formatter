@@ -6,8 +6,8 @@ values
   ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'editor-test@example.com', crypt('test-password', gen_salt('bf')), now(), '{}'::jsonb, '{}'::jsonb, now(), now()),
   ('10000000-0000-0000-0000-000000000002', 'authenticated', 'authenticated', 'outsider-test@example.com', crypt('test-password', gen_salt('bf')), now(), '{}'::jsonb, '{}'::jsonb, now(), now());
 
-insert into public.profiles(user_id, email, display_name, role, active)
-values ('10000000-0000-0000-0000-000000000001', 'editor-test@example.com', 'Editor Test', 'editor', true);
+insert into public.profiles(user_id, email, display_name, role, active, password_set_at)
+values ('10000000-0000-0000-0000-000000000001', 'editor-test@example.com', 'Editor Test', 'editor', true, now());
 
 insert into public.blog_posts(id, slug, title, description, eyebrow, category_slug, content_json, image_url, image_alt, read_minutes, status, date_published, created_by, updated_by, published_by)
 values

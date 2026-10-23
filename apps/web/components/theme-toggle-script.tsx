@@ -2,7 +2,7 @@
 export function ThemeToggleScript() {
   const code = `
 (function(){
-  if (window.__cftThemeBound) return;
+  var alreadyBound=window.__cftThemeBound===true;
   window.__cftThemeBound = true;
   var themes=["light","dark","system"];
   var nextKey="codeformattertools.theme";
@@ -58,6 +58,7 @@ export function ThemeToggleScript() {
   var theme=read();
   apply(theme);
   paint(theme);
+  if(alreadyBound) return;
   document.addEventListener("click",function(event){
     var btn=event.target && event.target.closest && event.target.closest("[data-theme-toggle]");
     if(!btn) return;
