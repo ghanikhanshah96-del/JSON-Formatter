@@ -12,7 +12,7 @@ export function LoginForm() {
     <div className="admin-field"><label htmlFor="email">Email</label><input autoComplete="email" id="email" name="email" type="email" required /></div>
     <div className="admin-field"><label htmlFor="password">Password</label><input autoComplete="current-password" id="password" name="password" type="password" required /></div>
     <button className="admin-button" disabled={pending} type="submit">{pending ? "Signing in…" : "Sign in"}</button>
-  </form>;
+  </form>
   <hr />
   <form action={magicAction} className="admin-form">
     <p className="admin-muted">Or request a secure email link for an existing invited account.</p>

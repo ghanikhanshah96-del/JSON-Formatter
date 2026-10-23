@@ -10,8 +10,24 @@ export async function loginAction(_previous: { error: string }, formData: FormDa
   const password = String(formData.get("password") ?? "");
   if (!email || !password) return { error: "Enter your email and password." };
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { error: "Unable to sign in with those credentials." };
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("active,role,password_set_at")
+    .eq("user_id", data.user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    console.error("CMS profile lookup failed after sign in.", { code: profileError.code });
+    await supabase.auth.signOut();
+    return { error: "Your account was authenticated, but the editorial profile could not be loaded. Please try again or contact the site owner." };
+  }
+  if (!profile?.active || (profile.role !== "owner" && profile.role !== "editor")) {
+    await supabase.auth.signOut();
+    return { error: "Your editorial access is not active. Contact the site owner." };
+  }
   redirect("/admin");
 }
 
