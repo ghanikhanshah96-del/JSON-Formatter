@@ -12,7 +12,8 @@
     "cms:bootstrap": "node scripts/bootstrap-cms.mjs",
     "cms:send-owner-link": "node scripts/send-owner-magic-link.mjs",
     "cms:migrate": "node --experimental-strip-types scripts/migrate-blog-to-supabase.mjs",
-    "cms:verify": "node --experimental-strip-types scripts/verify-blog-migration.mjs"
+    "cms:verify": "node --experimental-strip-types scripts/verify-blog-migration.mjs",
+    "cms:remediate-formatting": "node --experimental-strip-types scripts/remediate-published-blog-formatting.mjs"
   },
   "dependencies": {
     "@codeformattools/analytics": "workspace:*",

@@ -26,6 +26,7 @@ function renderBlocks(blocks: BlogContentBlock[], keyPrefix: string) {
     if (block.type === "paragraph") return <p key={`${keyPrefix}-p-${index}`}>{renderLinkedText(block.text, block.links)}</p>;
     if (block.type === "subheading") return <h3 key={`${keyPrefix}-h-${index}`}>{block.text}</h3>;
     if (block.type === "code") return <pre className="blog-code" key={`${keyPrefix}-code-${index}`}><code>{block.code}</code></pre>;
+    if (block.type === "table") return <div className="blog-table-scroll" key={`${keyPrefix}-table-${index}`} tabIndex={0} role="region" aria-label="Scrollable comparison table"><table className="blog-table"><thead><tr>{block.headers.map((header, cellIndex) => <th key={`${header}-${cellIndex}`} scope="col">{header}</th>)}</tr></thead><tbody>{block.rows.map((row, rowIndex) => <tr key={`row-${rowIndex}`}>{block.headers.map((_, cellIndex) => <td key={`cell-${rowIndex}-${cellIndex}`}>{row[cellIndex] ?? ""}</td>)}</tr>)}</tbody></table></div>;
     const List = block.ordered ? "ol" : "ul";
     const isCompact = block.items.length >= 4 && block.items.every(item => item.length <= 72);
     return <List className={`seo-list${isCompact ? " seo-list-compact" : ""}`} key={`${keyPrefix}-list-${index}`}>{block.items.map((item, itemIndex) => <li key={`${item}-${itemIndex}`}>{displayListItem(item)}</li>)}</List>;

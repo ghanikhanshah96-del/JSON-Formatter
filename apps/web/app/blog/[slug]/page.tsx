@@ -97,7 +97,7 @@ export default async function BlogPostPage({ params }: Props) {
         <div className="blog-article-hero-grid">
           <div className="blog-article-hero-copy">
             <div className="eyebrow">{post.eyebrow}</div>
-            <h1>{post.title}<span className="title-accent">.</span></h1>
+            <h1>{post.title}{/[.!?…:]$/.test(post.title.trim()) ? null : <span className="title-accent">.</span>}</h1>
             <p className="learn-lead">{post.description}</p>
             <p className="learn-minutes-line">
               {post.readMinutes} min read · Published <time dateTime={post.datePublished}>{formatEditorialDate(post.datePublished)}</time>

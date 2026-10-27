@@ -14,18 +14,29 @@ const safeHref = z.string().max(500).refine(value => {
 
 const linkSchema = z.object({ text: z.string().trim().min(1).max(160), href: safeHref });
 const draftLinkSchema = z.object({ text: z.string().trim().max(160), href: z.string().max(500) });
+const tableBlockSchema = z.object({
+  type: z.literal("table"),
+  headers: z.array(z.string().trim().min(1).max(240)).min(2).max(8),
+  rows: z.array(z.array(z.string().trim().max(1200)).min(2).max(8)).min(1).max(100)
+}).superRefine((table, context) => {
+  table.rows.forEach((row, index) => {
+    if (row.length !== table.headers.length) context.addIssue({ code: "custom", path: ["rows", index], message: "Every table row must have the same number of cells as the header." });
+  });
+});
 export const blogBlockSchema: z.ZodType<BlogContentBlock> = z.discriminatedUnion("type", [
   z.object({ type: z.literal("paragraph"), text: z.string().trim().min(1).max(12000), links: z.array(linkSchema).max(12).optional() }),
   z.object({ type: z.literal("subheading"), text: z.string().trim().min(1).max(180) }),
-  z.object({ type: z.literal("code"), code: z.string().min(1).max(30000), language: z.enum(["json", "javascript", "sql", "text"]) }),
-  z.object({ type: z.literal("list"), items: z.array(z.string().trim().min(1).max(800)).min(1).max(40), ordered: z.boolean().optional() })
+  z.object({ type: z.literal("code"), code: z.string().min(1).max(30000), language: z.enum(["json", "javascript", "sql", "yaml", "xml", "text"]) }),
+  z.object({ type: z.literal("list"), items: z.array(z.string().trim().min(1).max(800)).min(1).max(40), ordered: z.boolean().optional() }),
+  tableBlockSchema
 ]);
 
 const draftBlogBlockSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("paragraph"), text: z.string().trim().max(12000), links: z.array(draftLinkSchema).max(12).optional() }),
   z.object({ type: z.literal("subheading"), text: z.string().trim().max(180) }),
-  z.object({ type: z.literal("code"), code: z.string().max(30000), language: z.enum(["json", "javascript", "sql", "text"]) }),
-  z.object({ type: z.literal("list"), items: z.array(z.string().trim().max(800)).max(40), ordered: z.boolean().optional() })
+  z.object({ type: z.literal("code"), code: z.string().max(30000), language: z.enum(["json", "javascript", "sql", "yaml", "xml", "text"]) }),
+  z.object({ type: z.literal("list"), items: z.array(z.string().trim().max(800)).max(40), ordered: z.boolean().optional() }),
+  z.object({ type: z.literal("table"), headers: z.array(z.string().trim().max(240)).max(8), rows: z.array(z.array(z.string().trim().max(1200)).max(8)).max(100) })
 ]);
 
 export const blogSectionSchema = z.object({
@@ -64,6 +75,18 @@ export const blogPostInputSchema = z.object({
   if (!value.sections.some(section => section.heading.length > 0)) {
     context.addIssue({ code: "custom", path: ["sections"], message: "Add at least one section heading." });
   }
+  const normalizedAlt = value.imageAlt.toLowerCase().replace(/\.[a-z0-9]+$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  if (normalizedAlt === value.slug) {
+    context.addIssue({ code: "custom", path: ["imageAlt"], message: "Replace the filename or slug with a short description of what the image shows." });
+  }
+  value.sections.forEach((section, sectionIndex) => section.blocks.forEach((block, blockIndex) => {
+    if (block.type === "list" && block.items.length >= 2 && block.items.every(item => item.includes(" | "))) {
+      context.addIssue({ code: "custom", path: ["sections", sectionIndex, "blocks", blockIndex], message: "This looks like a comparison table. Convert it to a table block before publishing." });
+    }
+    if (block.type === "paragraph" && (/^<\/?[A-Za-z_][\w:.-]*(?:\s|>|\/)/.test(block.text) || /^(?:select|with|insert|update|delete|merge|create|alter|drop|truncate)\b.*;$/i.test(block.text) || /^[{}]$/.test(block.text))) {
+      context.addIssue({ code: "custom", path: ["sections", sectionIndex, "blocks", blockIndex], message: "This paragraph looks like source code. Convert it to a code block before publishing." });
+    }
+  }));
 });
 
 /**
@@ -106,7 +129,7 @@ export function estimateReadMinutes(input: Pick<BlogPostInput, "intro" | "sectio
   const text = [
     ...input.intro,
     ...input.sections.flatMap(section => [section.heading, ...section.blocks.flatMap(block =>
-      block.type === "list" ? block.items : block.type === "code" ? [block.code] : [block.text]
+      block.type === "list" ? block.items : block.type === "table" ? [...block.headers, ...block.rows.flat()] : block.type === "code" ? [block.code] : [block.text]
     )]),
     ...input.faqs.flatMap(item => [item.question, item.answer])
   ].join(" ");

@@ -81,6 +81,22 @@ test("supports labelled plain text and warns when structure must be inferred", (
   assert.equal(result.warnings.some(warning => warning.severity === "error"), false);
 });
 
+test("automatic detection keeps labelled plain-text headings when the article also contains bullets", () => {
+  const source = `H1: A Complete Labelled Guide
+
+This introduction is long enough to provide a useful summary for the automatically detected article.
+
+H2: Main instructions
+
+- First step
+- Second step`;
+  const result = parseBlogDocument({ text: source, mode: "auto" });
+  assert.equal(result.source, "plain");
+  assert.equal(result.title, "A Complete Labelled Guide");
+  assert.equal(result.sections[0].heading, "Main instructions");
+  assert.equal(result.sections[0].blocks.some(block => block.type === "list"), true);
+});
+
 test("creates actionable warnings instead of silently dropping incomplete structure", () => {
   const result = parseBlogDocument({ text: "An inferred title without heading markup\n\nA short body.", mode: "plain" });
   assert.equal(result.warnings.some(warning => warning.code === "title-inferred"), true);
@@ -306,6 +322,85 @@ Correct the missing comma before using the data.`;
   assert.equal(blocks.some(block => block.type === "paragraph" && block.text === "Correct the missing comma before using the data."), true);
 });
 
+test("preserves XML, YAML, SQL output, and comparison tables as semantic blocks", () => {
+  const source = `# Structured examples guide
+
+This introduction is long enough to explain how technical examples and comparison tables should be imported.
+
+## XML example
+
+Invalid XML:
+
+<user>
+<name>Alex</name>
+</user>
+
+## YAML example
+
+YAML output:
+
+app: Website
+port: 8080
+debug: false
+
+## SQL example
+
+SELECT FORMAT(1234.5, 'N2') AS Value;
+
+Output:
+
+1,234.50
+
+## Comparison
+
+| YAML | JSON |
+| --- | --- |
+| Uses indentation | Uses braces |
+| Supports comments | No standard comments |`;
+  const result = parseBlogDocument({ text: source, mode: "markdown" });
+  const blocks = result.sections.flatMap(section => section.blocks);
+  assert.deepEqual(blocks.filter(block => block.type === "code").map(block => block.type === "code" ? block.language : ""), ["xml", "yaml", "sql", "text"]);
+  const table = blocks.find(block => block.type === "table");
+  assert.deepEqual(table?.type === "table" ? table.headers : [], ["YAML", "JSON"]);
+  assert.deepEqual(table?.type === "table" ? table.rows : [], [["Uses indentation", "Uses braces"], ["Supports comments", "No standard comments"]]);
+});
+
+test("removes Word-style blank lines from imported SQL code", () => {
+  const source = `# SQL formatting guide
+
+This introduction explains how SQL formatting examples are kept readable after importing them from a document.
+
+## Example
+
+After formatting:
+
+SELECT
+
+    id,
+
+    name
+
+FROM users;`;
+  const result = parseBlogDocument({ text: source, mode: "markdown" });
+  const code = result.sections.flatMap(section => section.blocks).find(block => block.type === "code");
+  assert.equal(code?.type === "code" ? code.code : "", "SELECT\nid,\nname\nFROM users;");
+});
+
+test("does not mistake a single labelled prose sentence for YAML", () => {
+  const source = `# Labelled prose guide
+
+This introduction is long enough to explain why ordinary labelled prose should remain readable article text.
+
+## Guidance
+
+For example:
+
+Note: Review the output before using it in production.`;
+  const result = parseBlogDocument({ text: source, mode: "markdown" });
+  assert.equal(result.sections[0].blocks.some(block => block.type === "code"), false);
+  assert.equal(result.sections[0].blocks.some(block => block.type === "paragraph" && block.text.startsWith("Note:")), true);
+});
+
 function serializeParagraph(block: Extract<BlogContentBlock, { type: "paragraph" }>, markdownLinks: boolean) {
   if (!markdownLinks || !block.links?.length) return block.text;
   let text = block.text;
@@ -336,7 +431,8 @@ function serializeCompletePost(post: BlogPost, format: "markdown" | "plain") {
       if (block.type === "paragraph") output.push(serializeParagraph(block, format === "markdown"));
       else if (block.type === "subheading") output.push(heading(3, block.text));
       else if (block.type === "code") output.push(`\`\`\`${block.language}\n${block.code}\n\`\`\``);
-      else block.items.forEach((item, index) => output.push(block.ordered ? `${index + 1}. ${item}` : `- ${item}`));
+      else if (block.type === "list") block.items.forEach((item, index) => output.push(block.ordered ? `${index + 1}. ${item}` : `- ${item}`));
+      else output.push(`| ${block.headers.join(" | ")} |`, `| ${block.headers.map(() => "---").join(" | ")} |`, ...block.rows.map(row => `| ${row.join(" | ")} |`));
     }
   }
   return output.join("\n\n");

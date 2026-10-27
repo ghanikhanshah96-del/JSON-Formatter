@@ -26,7 +26,8 @@ type ParsedNode =
   | { type: "h3"; text: string }
   | { type: "paragraph"; text: string; rawText?: string; links?: { text: string; href: string }[] }
   | { type: "list"; items: string[]; ordered: boolean }
-  | { type: "code"; code: string; language: "json" | "javascript" | "sql" | "text" };
+  | { type: "code"; code: string; language: "json" | "javascript" | "sql" | "yaml" | "xml" | "text" }
+  | { type: "table"; headers: string[]; rows: string[][] };
 
 type SeoFrontMatter = {
   metaTitle?: string;
@@ -68,11 +69,13 @@ function truncateSentence(value: string, maximum: number) {
   return `${candidate.slice(0, boundary > 39 ? boundary : maximum).replace(/[,:;\s]+$/, "")}…`;
 }
 
-function codeLanguage(value: string): "json" | "javascript" | "sql" | "text" {
+function codeLanguage(value: string): "json" | "javascript" | "sql" | "yaml" | "xml" | "text" {
   const language = value.toLowerCase();
   if (language === "json" || language.includes("application/json")) return "json";
   if (["js", "jsx", "javascript", "typescript", "ts", "tsx"].includes(language)) return "javascript";
   if (["sql", "mysql", "postgres", "postgresql", "sqlite", "tsql"].includes(language)) return "sql";
+  if (["yaml", "yml"].some(item => language.includes(item))) return "yaml";
+  if (["xml", "html", "markup"].some(item => language.includes(item))) return "xml";
   return "text";
 }
 
@@ -113,6 +116,16 @@ function inlineMarkdown(value: string, warnings: BlogImportWarning[]) {
   return { text: cleanText(text), links: links.length ? links : undefined };
 }
 
+function splitTableRow(value: string) {
+  const trimmed = value.trim().replace(/^\|/, "").replace(/\|$/, "");
+  return trimmed.split("|").map(cell => cleanText(cell));
+}
+
+function isMarkdownTableDivider(value: string) {
+  const cells = splitTableRow(value);
+  return cells.length >= 2 && cells.every(cell => /^:?-{3,}:?$/.test(cell));
+}
+
 function parseTextNodes(source: string, plain: boolean, warnings: BlogImportWarning[]): ParsedNode[] {
   const lines = cleanMultiline(source).split("\n");
   const nodes: ParsedNode[] = [];
@@ -127,7 +140,8 @@ function parseTextNodes(source: string, plain: boolean, warnings: BlogImportWarn
     paragraph = [];
   };
 
-  for (const rawLine of lines) {
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const rawLine = lines[lineIndex];
     const line = rawLine.trimEnd();
     const trimmed = line.trim();
     const fenceMatch = trimmed.match(/^```\s*([\w-]*)/);
@@ -145,6 +159,22 @@ function parseTextNodes(source: string, plain: boolean, warnings: BlogImportWarn
     }
     if (!trimmed) {
       flushParagraph();
+      continue;
+    }
+
+    if (trimmed.includes("|") && isMarkdownTableDivider(lines[lineIndex + 1] ?? "")) {
+      flushParagraph();
+      const headers = splitTableRow(trimmed);
+      const rows: string[][] = [];
+      lineIndex += 2;
+      while (lineIndex < lines.length && lines[lineIndex].trim().includes("|")) {
+        const row = splitTableRow(lines[lineIndex]);
+        rows.push(Array.from({ length: headers.length }, (_, index) => row[index] ?? ""));
+        lineIndex += 1;
+      }
+      lineIndex -= 1;
+      if (rows.length) nodes.push({ type: "table", headers, rows });
+      else warnings.push({ code: "table-incomplete", severity: "warning", message: "A Markdown table header had no body rows. Review it before publishing." });
       continue;
     }
 
@@ -243,9 +273,14 @@ function parseRichNodes(html: string, warnings: BlogImportWarning[]): ParsedNode
       return;
     }
     if (tag === "TABLE") {
-      const items = Array.from(element.querySelectorAll("tr")).map(row => Array.from(row.querySelectorAll("th,td")).map(cell => cleanText(cell.textContent ?? "")).filter(Boolean).join(" | ")).filter(Boolean);
-      if (items.length) nodes.push({ type: "list", items, ordered: false });
-      warnings.push({ code: "table-converted", severity: "warning", message: "A pasted table was converted to a list because blog articles do not currently have a table block." });
+      const rows = Array.from(element.querySelectorAll("tr")).map(row => Array.from(row.querySelectorAll("th,td")).map(cell => cleanText(cell.textContent ?? "")));
+      const width = Math.max(0, ...rows.map(row => row.length));
+      if (rows.length >= 2 && width >= 2) {
+        const normalized = rows.map(row => Array.from({ length: width }, (_, index) => row[index] ?? ""));
+        nodes.push({ type: "table", headers: normalized[0], rows: normalized.slice(1) });
+      } else if (rows.some(row => row.some(Boolean))) {
+        warnings.push({ code: "table-incomplete", severity: "warning", message: "A pasted table did not contain both headers and body rows. Review it before publishing." });
+      }
       return;
     }
     if (["P", "BLOCKQUOTE", "LI"].includes(tag)) {
@@ -314,8 +349,33 @@ function looksLikeJsonStart(value: string) {
   return trimmed.startsWith("{") || trimmed.startsWith("[");
 }
 
-function codeCue(value: string) {
-  return /(?:for example|consider this example|before(?:\s+(?:formatting|sorting))?|after(?:\s+(?:formatting|sorting))?|looks? like this|becomes|this is invalid|must be removed)\s*[^.]*:\s*$/i.test(value.trim());
+function looksLikeXmlStart(value: string) {
+  return /^<\??[A-Za-z_][\w:.-]*(?:\s|>|\/)/.test(value.trim());
+}
+
+function looksLikeYamlLine(value: string) {
+  return /^(?:\s*-\s+)?[A-Za-z_][\w.-]*:\s*(?:.*)$/.test(value.replace(/\u00a0/g, " "));
+}
+
+function looksLikeYamlBlock(nodes: ParsedNode[], firstIndex: number) {
+  const first = nodes[firstIndex];
+  const second = nodes[firstIndex + 1];
+  if (first?.type !== "paragraph" || !looksLikeYamlLine(first.rawText || first.text)) return false;
+  return second?.type === "list" || second?.type === "paragraph" && looksLikeYamlLine(second.rawText || second.text);
+}
+
+type CodeLanguage = Extract<ParsedNode, { type: "code" }>["language"];
+
+function codeCueLanguage(value: string): CodeLanguage | null | undefined {
+  const cue = value.trim();
+  if (!/:\s*$/.test(cue)) return undefined;
+  if (/\bjson\b/i.test(cue)) return "json";
+  if (/\byaml\b|\byml\b/i.test(cue)) return "yaml";
+  if (/\bxml\b/i.test(cue)) return "xml";
+  if (/\bsql\b|\bquery\b/i.test(cue)) return "sql";
+  if (/^(?:output|result|press|shortcut)\s*:/i.test(cue)) return "text";
+  if (/(?:for example|consider this example|before(?:\s+(?:formatting|sorting|minification|conversion))?|after(?:\s+(?:formatting|sorting|minification|conversion))?|looks? like this|becomes|this is invalid|invalid|correct|must be removed)\s*[^.]*:\s*$/i.test(cue)) return null;
+  return undefined;
 }
 
 function jsonBalance(value: string) {
@@ -336,23 +396,60 @@ function jsonBalance(value: string) {
   return braces + brackets;
 }
 
-function normalizeImportedCode(lines: string[], language: "json" | "sql") {
-  const code = lines.join("\n");
+function normalizeImportedCode(lines: string[], language: CodeLanguage) {
+  const expanded = lines.flatMap(line => cleanMultiline(line).split("\n"));
+  const meaningful = expanded.filter(line => line.trim().length > 0);
+  const code = (language === "sql" ? meaningful.map(line => line.trim()) : meaningful.map(line => line.trimEnd())).join("\n");
   if (language === "json" && code.includes("\n")) {
     try { return JSON.stringify(JSON.parse(code), null, 2); } catch { /* preserve intentionally invalid examples */ }
   }
   return code;
 }
 
+function promoteDelimitedTables(nodes: ParsedNode[]) {
+  const result: ParsedNode[] = [];
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = nodes[index];
+    if (node.type !== "paragraph" || !node.text.includes("|")) { result.push(node); continue; }
+    const rows: string[][] = [];
+    let end = index;
+    while (end < nodes.length) {
+      const candidate = nodes[end];
+      if (candidate.type !== "paragraph" || !candidate.text.includes("|")) break;
+      const cells = splitTableRow(candidate.text);
+      if (cells.length < 2 || (rows.length && cells.length !== rows[0].length)) break;
+      rows.push(cells); end += 1;
+    }
+    if (rows.length >= 2) {
+      result.push({ type: "table", headers: rows[0], rows: rows.slice(1) });
+      index = end - 1;
+    } else result.push(node);
+  }
+  return result;
+}
+
 function promoteLabelledCode(nodes: ParsedNode[]) {
   const result: ParsedNode[] = [];
   for (let index = 0; index < nodes.length; index += 1) {
     const node = nodes[index];
+    if (node.type === "code") {
+      const normalized = normalizeImportedCode([node.code], node.language);
+      result.push({ ...node, code: normalized }); continue;
+    }
+    if (node.type === "paragraph" && looksLikeSqlStart(node.text) && /;\s*$/.test(node.text)) {
+      result.push({ type: "code", code: normalizeImportedCode([node.rawText || node.text], "sql"), language: "sql" }); continue;
+    }
     result.push(node);
-    if (node.type !== "paragraph" || !codeCue(node.text)) continue;
+    if (node.type !== "paragraph") continue;
+    const hintedLanguage = codeCueLanguage(node.text);
+    if (hintedLanguage === undefined) continue;
     const first = nodes[index + 1];
     if (first?.type !== "paragraph") continue;
-    const language = looksLikeSqlStart(first.text) ? "sql" : looksLikeJsonStart(first.text) ? "json" : null;
+    const language: CodeLanguage | null = looksLikeSqlStart(first.text) ? "sql"
+      : looksLikeJsonStart(first.text) ? "json"
+      : looksLikeXmlStart(first.text) ? "xml"
+      : hintedLanguage === "yaml" || looksLikeYamlBlock(nodes, index + 1) ? "yaml"
+      : hintedLanguage;
     if (!language) continue;
     const lines = [first.rawText || first.text];
     let end = index + 1;
@@ -364,7 +461,7 @@ function promoteLabelledCode(nodes: ParsedNode[]) {
         end += 1;
       }
       if (!/;\s*$/.test(lines.at(-1) ?? "")) continue;
-    } else {
+    } else if (language === "json") {
       let balance = jsonBalance(lines[0]);
       while (balance > 0 && end + 1 < nodes.length && lines.length < 120) {
         const next = nodes[end + 1];
@@ -375,6 +472,23 @@ function promoteLabelledCode(nodes: ParsedNode[]) {
         end += 1;
       }
       if (balance !== 0) continue;
+    } else if (language === "xml") {
+      while (end + 1 < nodes.length && lines.length < 120) {
+        const next = nodes[end + 1];
+        if (next.type !== "paragraph" || !looksLikeXmlStart(next.text) && !/^<\//.test(next.text.trim())) break;
+        lines.push(next.rawText || next.text); end += 1;
+      }
+    } else if (language === "yaml") {
+      while (end + 1 < nodes.length && lines.length < 120) {
+        const next = nodes[end + 1];
+        if (next.type === "paragraph" && looksLikeYamlLine(next.rawText || next.text)) {
+          lines.push(next.rawText || next.text); end += 1; continue;
+        }
+        if (next.type === "list") {
+          lines.push(...next.items.map(item => `  - ${stripImportedListMarker(item)}`)); end += 1;
+        }
+        break;
+      }
     }
     result.push({ type: "code", code: normalizeImportedCode(lines, language), language });
     index = end;
@@ -386,12 +500,13 @@ function answerText(block: BlogContentBlock) {
   if (block.type === "paragraph") return block.text;
   if (block.type === "list") return block.items.join(" ");
   if (block.type === "code") return block.code;
+  if (block.type === "table") return [...block.headers, ...block.rows.flat()].join(" ");
   return "";
 }
 
 function buildResult(rawNodes: ParsedNode[], source: BlogImportResult["source"], warnings: BlogImportWarning[]): BlogImportResult {
   const frontMatter = extractSeoFrontMatter(rawNodes, warnings);
-  const nodes = promoteLabelledCode(frontMatter.nodes);
+  const nodes = promoteLabelledCode(promoteDelimitedTables(frontMatter.nodes));
   const firstHeading = nodes.findIndex(node => node.type === "h1");
   let title = firstHeading >= 0 ? (nodes[firstHeading] as Extract<ParsedNode, { type: "h1" }>).text : "";
   if (firstHeading >= 0) nodes.splice(firstHeading, 1);
@@ -486,8 +601,9 @@ export function parseBlogDocument(input: { html?: string; text: string; mode?: B
   const warnings: BlogImportWarning[] = [];
   const mode = input.mode ?? "auto";
   const richAvailable = Boolean(html && /<(h1|h2|h3|p|ul|ol|pre|table)\b/i.test(html));
+  const labelledPlainAvailable = /(^|\n)(?:H[1-3]|Title|Section|Subheading)\s*:\s*\S/im.test(text);
   const markdownAvailable = /(^|\n)#{1,3}\s+\S|(^|\n)```|(^|\n)([-*+]\s+|\d+[.)]\s+)/m.test(text);
-  const source: BlogImportResult["source"] = mode === "rich" ? "rich" : mode === "markdown" ? "markdown" : mode === "plain" ? "plain" : richAvailable ? "rich" : markdownAvailable ? "markdown" : "plain";
+  const source: BlogImportResult["source"] = mode === "rich" ? "rich" : mode === "markdown" ? "markdown" : mode === "plain" ? "plain" : richAvailable ? "rich" : labelledPlainAvailable ? "plain" : markdownAvailable ? "markdown" : "plain";
   if (source === "rich" && !richAvailable) warnings.push({ code: "rich-format-missing", severity: "warning", message: "No rich document structure was available, so the visible text was interpreted instead." });
   const nodes = source === "rich" && richAvailable ? parseRichNodes(html, warnings) : parseTextNodes(text, source === "plain", warnings);
   return buildResult(nodes, source, warnings);

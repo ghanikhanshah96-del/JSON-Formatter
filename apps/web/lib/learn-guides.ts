@@ -1,8 +1,9 @@
 export type BlogContentBlock =
   | { type: "paragraph"; text: string; links?: { text: string; href: string }[] }
   | { type: "subheading"; text: string }
-  | { type: "code"; code: string; language: "json" | "javascript" | "sql" | "text" }
-  | { type: "list"; items: string[]; ordered?: boolean };
+  | { type: "code"; code: string; language: "json" | "javascript" | "sql" | "yaml" | "xml" | "text" }
+  | { type: "list"; items: string[]; ordered?: boolean }
+  | { type: "table"; headers: string[]; rows: string[][] };
 
 export type BlogPost = {
   slug: string;

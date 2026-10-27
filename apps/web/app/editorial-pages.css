@@ -721,6 +721,52 @@
   font-size: 14px;
 }
 
+.blog-table-scroll {
+  width: 100%;
+  margin: 18px 0 24px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.blog-table-scroll:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.blog-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.blog-table th,
+.blog-table td {
+  padding: 14px 16px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.blog-table th:last-child,
+.blog-table td:last-child {
+  border-right: 0;
+}
+
+.blog-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.blog-table th {
+  background: var(--surface-subtle);
+  font-weight: 800;
+}
+
 .blog-article .learn-tools {
   width: 100%;
   max-width: none;

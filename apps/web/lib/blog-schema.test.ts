@@ -64,6 +64,29 @@ test("rejects unknown related tool identifiers", () => {
   assert.equal(result.success, false);
 });
 
+test("blocks publication when code, tables, or image alt text were imported incorrectly", () => {
+  const slugAlt = blogPostInputSchema.safeParse({ ...validInput(), imageAlt: "safe-json-guide" });
+  assert.equal(slugAlt.success, false);
+
+  const codeParagraph = validInput();
+  codeParagraph.sections[0].blocks = [{ type: "paragraph", text: "SELECT * FROM users;" }] as never;
+  assert.equal(blogPostInputSchema.safeParse(codeParagraph).success, false);
+
+  const tableList = validInput();
+  tableList.sections[0].blocks = [{ type: "list", items: ["YAML | JSON", "Indentation | Braces"] }] as never;
+  assert.equal(blogPostInputSchema.safeParse(tableList).success, false);
+});
+
+test("accepts semantic table, YAML, and XML blocks", () => {
+  const input = validInput();
+  input.sections[0].blocks = [
+    { type: "code", language: "yaml", code: "app:\n  port: 8080" },
+    { type: "code", language: "xml", code: "<user>Alex</user>" },
+    { type: "table", headers: ["YAML", "JSON"], rows: [["Indentation", "Braces"]] }
+  ] as never;
+  assert.equal(blogPostInputSchema.safeParse(input).success, true);
+});
+
 test("read time is calculated from structured content and never drops below one minute", () => {
   assert.equal(estimateReadMinutes(validInput()), 1);
   const long = validInput();
