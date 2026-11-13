@@ -4,7 +4,7 @@ import { siteConfig, siteOrigin } from "@codeformattools/seo";
 import { HomeBrandLink } from "@/components/home-brand-link";
 import { AuthFragmentBridge } from "@/components/auth-fragment-bridge";
 import { GoogleAnalytics } from "@/components/google-analytics";
-import { GoogleAdSense } from "@/components/google-adsense";
+import { GoogleAdSense, GOOGLE_ADSENSE_CLIENT } from "@/components/google-adsense";
 import { Observability } from "@/components/observability";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
@@ -52,6 +52,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning className={`${sora.variable} ${ibmPlexMono.variable}`}>
       <head>
+        <meta name="google-adsense-account" content={GOOGLE_ADSENSE_CLIENT} />
         <GoogleAnalytics />
         <GoogleAdSense />
       </head>

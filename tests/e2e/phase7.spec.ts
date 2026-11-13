@@ -387,7 +387,14 @@ test("contact API returns 503 when Resend is not configured", async ({ request }
   }
 });
 
-test("AdSense loader mounts once and ad regions only mount when configured", async ({ page }) => {
+test("AdSense loader is present in raw head HTML, mounts once, and ad regions only mount when configured", async ({ page, request }) => {
+  const response = await request.get("/json-formatter");
+  expect(response.status()).toBe(200);
+  const html = await response.text();
+  const head = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i)?.[1] ?? "";
+  expect(head).toMatch(/<script[^>]+src="https:\/\/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js\?client=ca-pub-8270477962353734"[^>]*><\/script>/);
+  expect(head).toContain('<meta name="google-adsense-account" content="ca-pub-8270477962353734"');
+
   await page.goto("/json-formatter");
   const loader = page.locator('script#google-adsense[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]');
   await expect(loader).toHaveCount(1);
