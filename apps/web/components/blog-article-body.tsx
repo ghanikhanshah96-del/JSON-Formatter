@@ -14,7 +14,7 @@ function renderLinkedText(text: string, links: { text: string; href: string }[] 
     const linkStart = text.indexOf(link.text, cursor);
     if (linkStart < 0) return;
     if (linkStart > cursor) nodes.push(text.slice(cursor, linkStart));
-    nodes.push(<Link href={link.href} key={`${link.href}-${index}`}>{link.text}</Link>);
+    nodes.push(<Link href={link.href} key={`inline-link:${index}`}>{link.text}</Link>);
     cursor = linkStart + link.text.length;
   });
   if (cursor < text.length) nodes.push(text.slice(cursor));

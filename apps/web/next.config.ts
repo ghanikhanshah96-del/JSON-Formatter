@@ -5,6 +5,23 @@ const configuredSupabasePattern = configuredSupabaseUrl ? (() => {
   const parsed = new URL(configuredSupabaseUrl);
   return { protocol: parsed.protocol.replace(":", "") as "http" | "https", hostname: parsed.hostname, port: parsed.port, pathname: "/storage/v1/object/public/**" };
 })() : null;
+const toolSlugs = [
+  "json-formatter",
+  "json-validator",
+  "json-minifier",
+  "json-sorter",
+  "sql-formatter",
+  "yaml-formatter",
+  "yaml-validator",
+  "xml-formatter",
+  "xml-validator",
+  "json-to-yaml",
+  "yaml-to-json",
+  "json-to-xml",
+  "xml-to-json",
+  "json-to-csv",
+  "csv-to-json"
+];
 const scriptSources = [
   "'self'",
   "'unsafe-inline'",
@@ -53,6 +70,11 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      ...toolSlugs.map(slug => ({
+        source: `/${slug}-:artifactIndex(\\d+)`,
+        destination: `/${slug}`,
+        permanent: true
+      })),
       { source: "/learn", destination: "/blog", permanent: true },
       { source: "/learn/:slug", destination: "/blog/:slug", permanent: true },
       { source: "/about", destination: "/about-us", permanent: true },

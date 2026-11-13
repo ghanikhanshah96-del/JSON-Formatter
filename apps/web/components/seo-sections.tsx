@@ -68,7 +68,7 @@ function linkify(text: string, related: Tool[]) {
     const end = start + match.tool.name.length;
     if (start < cursor) continue;
     if (start > cursor) nodes.push(text.slice(cursor, start));
-    nodes.push(<a className="seo-inline-link" href={`/${match.tool.slug}`} key={`${match.tool.id}-${start}`}>{text.slice(start, end)}</a>);
+    nodes.push(<a className="seo-inline-link" href={`/${match.tool.slug}`} key={`related-link:${start}`}>{text.slice(start, end)}</a>);
     cursor = end;
   }
   if (cursor < text.length) nodes.push(text.slice(cursor));
