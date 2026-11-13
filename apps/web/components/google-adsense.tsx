@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import Script from "next/script";
 
-export const GOOGLE_ADSENSE_CLIENT = "ca-pub-9309280380486229";
+export const GOOGLE_ADSENSE_CLIENT = "ca-pub-8270477962353734";
 
 /** Load AdSense once on public pages while keeping the editorial admin isolated. */
 export function GoogleAdSense() {

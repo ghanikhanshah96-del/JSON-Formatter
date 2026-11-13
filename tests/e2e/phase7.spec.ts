@@ -391,7 +391,7 @@ test("AdSense loader mounts once and ad regions only mount when configured", asy
   await page.goto("/json-formatter");
   const loader = page.locator('script#google-adsense[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]');
   await expect(loader).toHaveCount(1);
-  await expect(loader).toHaveAttribute("src", /client=ca-pub-9309280380486229/);
+  await expect(loader).toHaveAttribute("src", /client=ca-pub-8270477962353734/);
   await expect(loader).toHaveAttribute("crossorigin", "anonymous");
   const slot = page.locator(".ad-slot-placeholder");
   const count = await slot.count();
